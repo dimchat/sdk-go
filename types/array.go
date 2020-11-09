@@ -25,6 +25,11 @@
  */
 package types
 
+import (
+	"math/rand"
+	"time"
+)
+
 func ArraysEqual(array1, array2 []byte) bool {
 	len1 := len(array1)
 	len2 := len(array2)
@@ -44,4 +49,15 @@ func ArrayCopy(src []byte, srcPos uint8, dest []byte, destPos uint8, length uint
 	for index = 0; index < length; index++ {
 		dest[destPos + index] = src[srcPos + index]
 	}
+}
+
+func RandomArray(size uint) []byte {
+	now := time.Now().UnixNano()
+	random := rand.New(rand.NewSource(now))
+	array := make([]byte, size)
+	var index uint
+	for index = 0; index < size; index++ {
+		array[index] = uint8(random.Intn(256))
+	}
+	return array
 }

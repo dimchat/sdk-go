@@ -26,9 +26,13 @@
 package crypto
 
 import (
+	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/types"
+	. "github.com/dimchat/sdk-go/types"
 )
 
 /**
@@ -44,38 +48,119 @@ import (
 type AESKey struct {
 	Dictionary
 	SymmetricKey
+
+	_data []byte
+	_iv []byte
 }
 
 func (key *AESKey) Init(dictionary map[string]interface{}) *AESKey {
 	if key.Dictionary.Init(dictionary) != nil {
-		// init
+		// TODO: check algorithm parameters
+		// 1. check mode = 'CBC'
+		// 2. check padding = 'PKCS7Padding'
 	}
 	return key
 }
 
-func (key AESKey) Data() []byte {
-	data := key.Get("data")
-	if data == nil {
-		data = key.Get("D")
-	}
-	if data != nil {
-		return Base64Decode(data.(string))
-	}
+func (key AESKey) keySize() uint {
+	// TODO: get from key data
 
-	//
-	// key data empty? generate new key info
-	//
+	size := key.Get("keySize")
+	if size == nil {
+		return 32
+	} else {
+		return size.(uint)
+	}
+}
 
-	// TODO:
-	return nil
+func (key AESKey) blockSize() uint {
+	// TODO: get from iv data
+
+	size := key.Get("blockSize")
+	if size == nil {
+		return aes.BlockSize
+	} else {
+		return size.(uint)
+	}
+}
+
+func (key *AESKey) initVector() []byte {
+	if key._iv == nil {
+		iv := key.Get("iv")
+		if iv == nil {
+			iv = key.Get("I")
+		}
+		if iv == nil {
+			// zero iv
+			zeros := make([]byte, key.blockSize())
+			key.Set("iv", Base64Encode(zeros))
+			key._iv = zeros
+		} else {
+			key._iv = Base64Decode(iv.(string))
+		}
+	}
+	return key._iv
+}
+
+func (key *AESKey) Data() []byte {
+	if key._data == nil {
+		data := key.Get("data")
+		if data == nil {
+			data = key.Get("D")
+		}
+		if data == nil {
+			//
+			// key data empty? generate new key info
+			//
+			pw := RandomArray(key.keySize())
+			iv := RandomArray(key.blockSize())
+			key.Set("data", Base64Encode(pw))
+			key.Set("iv", Base64Encode(iv))
+			// other parameters
+			//key.Set("mode", "CBC");
+			//key.Set("padding", "PKCS7");
+			key._data = pw
+			key._iv = iv
+		} else {
+			key._data = Base64Decode(data.(string))
+		}
+	}
+	return key._data
 }
 
 func (key AESKey) Encrypt(plaintext []byte) []byte {
-	// TODO:
-	return nil
+	block, err := aes.NewCipher(key.Data())
+	if err != nil {
+		//panic("failed to create cipher")
+		return nil
+	}
+	blockMode := cipher.NewCBCEncrypter(block, key.initVector())
+	padded := PKCS5Padding(plaintext, key.blockSize())
+	ciphertext := make([]byte, len(padded))
+	blockMode.CryptBlocks(ciphertext, padded)
+	return ciphertext
 }
 
 func (key AESKey) Decrypt(ciphertext []byte) []byte {
-	// TODO:
-	return nil
+	block, err := aes.NewCipher(key.Data())
+	if err != nil {
+		//panic("failed to create cipher")
+		return nil
+	}
+	blockMode := cipher.NewCBCDecrypter(block, key.initVector())
+	plaintext := make([]byte, len(ciphertext))
+	blockMode.CryptBlocks(plaintext, ciphertext)
+	return PKCS5UnPadding(plaintext)
+}
+
+func PKCS5Padding(src []byte, blockSize uint) []byte {
+	padding := int(blockSize) - len(src) % int(blockSize)
+	tail := bytes.Repeat([]byte{byte(padding)}, padding)
+	return append(src, tail...)
+}
+
+func PKCS5UnPadding(src []byte) []byte {
+	length := len(src)
+	count := int(src[length-1])
+	return src[:(length - count)]
 }
