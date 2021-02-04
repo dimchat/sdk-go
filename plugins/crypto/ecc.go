@@ -2,7 +2,7 @@
  * ==============================================================================
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Albert Moky
+ * Copyright (c) 2021 Albert Moky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,86 +31,75 @@ import (
 )
 
 /**
- *  RSA Public Key
+ *  ECC Public Key
  *
  *      keyInfo format: {
- *          algorithm: "RSA",
- *          data: "..."       // base64
+ *          algorithm    : "ECC",
+ *          curve        : "secp256k1",
+ *          data         : "..." // base64_encode()
  *      }
  */
-type RSAPublicKey struct {
+type ECCPublicKey struct {
 	Dictionary
 	PublicKey
-	EncryptKey
 }
 
-func NewRSAPublicKey(dict map[string]interface{}) *RSAPublicKey {
-	return new(RSAPublicKey).Init(dict)
+func NewECCPublicKey(dict map[string]interface{}) *ECCPublicKey {
+	return new(ECCPublicKey).Init(dict)
 }
 
-func (key *RSAPublicKey) Init(dict map[string]interface{}) *RSAPublicKey {
+func (key *ECCPublicKey) Init(dict map[string]interface{}) *ECCPublicKey {
 	if key.Dictionary.Init(dict) != nil {
 		// init
 	}
 	return key
 }
 
-func (key RSAPublicKey) Data() []byte {
+func (key ECCPublicKey) Data() []byte {
 	// TODO:
 	return nil
 }
 
-func (key RSAPublicKey) Verify(data []byte, signature []byte) bool {
+func (key ECCPublicKey) Verify(data []byte, signature []byte) bool {
 	// TODO:
 	return false
 }
 
-func (key RSAPublicKey) Match(sKey SignKey) bool {
+func (key ECCPublicKey) Match(sKey SignKey) bool {
 	return AsymmetricKeysMatch(sKey, key)
 }
 
-func (key RSAPublicKey) Encrypt(plaintext []byte) []byte {
-	// TODO:
-	return nil
-}
-
 /**
- *  RSA Private Key
+ *  ECC Private Key
  *
  *      keyInfo format: {
- *          algorithm    : "RSA",
- *          keySizeInBits: 1024, // optional
+ *          algorithm    : "ECC",
+ *          curve        : "secp256k1",
  *          data         : "..." // base64_encode()
  *      }
  */
-type RSAPrivateKey struct {
+type ECCPrivateKey struct {
 	Dictionary
 	PrivateKey
-	DecryptKey
 }
 
-func NewRSAPrivateKey(dict map[string]interface{}) *RSAPrivateKey {
-	return new(RSAPrivateKey).Init(dict)
+func NewECCPrivateKey(dict map[string]interface{}) *ECCPrivateKey {
+	return new(ECCPrivateKey).Init(dict)
 }
 
-func (key *RSAPrivateKey) Init(dict map[string]interface{}) *RSAPrivateKey {
+func (key *ECCPrivateKey) Init(dict map[string]interface{}) *ECCPrivateKey {
 	if key.Dictionary.Init(dict) != nil {
 		// init
 	}
 	return key
 }
 
-func (key RSAPrivateKey) Data() []byte {
+func (key ECCPrivateKey) Data() []byte {
 	// TODO:
 	return nil
 }
 
-func (key RSAPrivateKey) Sign(data []byte) []byte {
-	// TODO:
-	return nil
-}
-
-func (key RSAPrivateKey) Decrypt(ciphertext []byte) []byte {
+func (key ECCPrivateKey) Sign(data []byte) []byte {
 	// TODO:
 	return nil
 }

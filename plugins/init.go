@@ -1,9 +1,4 @@
 /* license: https://mit-license.org
- *
- *  Ming-Ke-Ming : Decentralized User Identity Authentication
- *
- *                                Written in 2021 by Moky <albert.moky@gmail.com>
- *
  * ==============================================================================
  * The MIT License (MIT)
  *
@@ -28,20 +23,64 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package mkm
+package main
 
 import (
-	. "github.com/dimchat/mkm-go/mkm"
+	. "github.com/dimchat/mkm-go/digest"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/plugins/crypto"
+	. "github.com/dimchat/plugins/digest"
+	. "github.com/dimchat/plugins/mkm"
 )
 
-type GeneralAddressFactory struct {
-	BaseAddressFactory
+/**
+ *  Data Digesters
+ */
+func RegisterDataDigesters()  {
+	// FIX
+	SetSHA256Digester(new(SHA256Digester))
+
+	SetRIPEMD160Digester(new(RIPEMD160Digester))
+	SetKECCAK256Digester(new(KECCAK256Digester))
 }
 
-func (factory *GeneralAddressFactory) CreateAddress(address string) Address {
-	if len(address) == 42 {
-		return ETHAddressParse(address)
-	}
-	return BTCAddressParse(address)
+/**
+ *  Address factory
+ */
+func BuildAddressFactory() {
+	factory := new(GeneralAddressFactory)
+	AddressSetFactory(factory)
+}
+
+/**
+ *  Meta factories
+ */
+func BuildMetaFactories() {
+	MetaRegister(MKM, NewGeneralMetaFactory(MKM))
+	MetaRegister(BTC, NewGeneralMetaFactory(BTC))
+	MetaRegister(ExBTC, NewGeneralMetaFactory(ExBTC))
+	MetaRegister(ETH, NewGeneralMetaFactory(ETH))
+	MetaRegister(ExETH, NewGeneralMetaFactory(ExETH))
+}
+
+/**
+ *  Document factories
+ */
+func BuildDocumentFactories() {
+	DocumentRegister("*", NewGeneralDocumentFactory("*"))
+	DocumentRegister(VISA, NewGeneralDocumentFactory(VISA))
+	DocumentRegister(PROFILE, NewGeneralDocumentFactory(PROFILE))
+	DocumentRegister(BULLETIN, NewGeneralDocumentFactory(BULLETIN))
+}
+
+func init() {
+	RegisterDataDigesters()
+
+	BuildSymmetricKeyFactories()
+	BuildPrivateKeyFactories()
+	BuildPublicKeyFactories()
+
+	BuildAddressFactory()
+	BuildMetaFactories()
+	BuildDocumentFactories()
 }

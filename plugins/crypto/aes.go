@@ -32,7 +32,6 @@ import (
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/types"
-	. "github.com/dimchat/sdk-go/types"
 )
 
 /**
@@ -53,8 +52,12 @@ type AESKey struct {
 	_iv []byte
 }
 
-func (key *AESKey) Init(dictionary map[string]interface{}) *AESKey {
-	if key.Dictionary.Init(dictionary) != nil {
+func NewAESKey(dict map[string]interface{}) *AESKey {
+	return new(AESKey).Init(dict)
+}
+
+func (key *AESKey) Init(dict map[string]interface{}) *AESKey {
+	if key.Dictionary.Init(dict) != nil {
 		// TODO: check algorithm parameters
 		// 1. check mode = 'CBC'
 		// 2. check padding = 'PKCS7Padding'
@@ -151,6 +154,10 @@ func (key AESKey) Decrypt(ciphertext []byte) []byte {
 	plaintext := make([]byte, len(ciphertext))
 	blockMode.CryptBlocks(plaintext, ciphertext)
 	return PKCS5UnPadding(plaintext)
+}
+
+func (key AESKey) Match(pKey EncryptKey) bool {
+	return CryptographyKeysMatch(pKey, key)
 }
 
 func PKCS5Padding(src []byte, blockSize uint) []byte {

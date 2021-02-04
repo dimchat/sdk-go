@@ -26,25 +26,17 @@
 package digest
 
 import (
-	"crypto/md5"
+	"crypto"
+	. "github.com/dimchat/mkm-go/digest"
+	_ "golang.org/x/crypto/ripemd160"
 )
 
-type md5Lib struct {
-	Hash
+type RIPEMD160Digester struct {
+	DataDigester
 }
 
-func (lib *md5Lib) Digest(data []byte) []byte {
-	hash := md5.New()
+func (digester RIPEMD160Digester) Digest(data []byte) []byte {
+	hash := crypto.RIPEMD160.New()
 	hash.Write(data)
 	return hash.Sum(nil)
-}
-
-var _md5 Hash = new(md5Lib)
-
-func SetMD5(lib Hash) {
-	_md5 = lib
-}
-
-func MD5(data []byte) []byte {
-	return _md5.Digest(data)
 }

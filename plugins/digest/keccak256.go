@@ -26,25 +26,16 @@
 package digest
 
 import (
-	"crypto"
+	. "github.com/dimchat/mkm-go/digest"
+	. "golang.org/x/crypto/sha3"
 )
 
-type ripemd160Lib struct {
-	Hash
+type KECCAK256Digester struct {
+	DataDigester
 }
 
-func (lib *ripemd160Lib) Digest(data []byte) []byte {
-	hash := crypto.RIPEMD160.New()
+func (digester KECCAK256Digester) Digest(data []byte) []byte {
+	hash := NewLegacyKeccak256()
 	hash.Write(data)
 	return hash.Sum(nil)
-}
-
-var _ripemd160 Hash = new(ripemd160Lib)
-
-func SetRIPEMD160(lib Hash) {
-	_ripemd160 = lib
-}
-
-func RIPEMD160(data []byte) []byte {
-	return _ripemd160.Digest(data)
 }
