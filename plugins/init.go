@@ -28,9 +28,9 @@ package main
 import (
 	. "github.com/dimchat/mkm-go/digest"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/plugins/crypto"
-	. "github.com/dimchat/plugins/digest"
-	. "github.com/dimchat/plugins/mkm"
+	. "github.com/dimchat/sdk-go/plugins/crypto"
+	. "github.com/dimchat/sdk-go/plugins/digest"
+	. "github.com/dimchat/sdk-go/plugins/mkm"
 )
 
 /**
