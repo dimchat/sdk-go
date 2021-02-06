@@ -69,27 +69,27 @@ func (address *BTCAddress) Init(string string, network uint8) *BTCAddress {
 	return address
 }
 
-func (address BTCAddress) String() string {
+func (address *BTCAddress) String() string {
 	return address.ConstantString.String()
 }
 
-func (address BTCAddress) Equal(other interface{}) bool {
+func (address *BTCAddress) Equal(other interface{}) bool {
 	return address.ConstantString.Equal(other)
 }
 
-func (address BTCAddress) Network() uint8 {
+func (address *BTCAddress) Network() uint8 {
 	return address._network
 }
 
-func (address BTCAddress) IsUser() bool {
+func (address *BTCAddress) IsUser() bool {
 	return NetworkTypeIsUser(address._network)
 }
 
-func (address BTCAddress) IsGroup() bool {
+func (address *BTCAddress) IsGroup() bool {
 	return NetworkTypeIsGroup(address._network)
 }
 
-func (address BTCAddress) IsBroadcast() bool {
+func (address *BTCAddress) IsBroadcast() bool {
 	return false
 }
 

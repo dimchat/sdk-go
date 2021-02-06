@@ -45,8 +45,7 @@ import (
  *      }
  */
 type AESKey struct {
-	Dictionary
-	SymmetricKey
+	BaseSymmetricKey
 
 	_data []byte
 	_iv []byte
@@ -57,7 +56,7 @@ func NewAESKey(dict map[string]interface{}) *AESKey {
 }
 
 func (key *AESKey) Init(dict map[string]interface{}) *AESKey {
-	if key.Dictionary.Init(dict) != nil {
+	if key.BaseSymmetricKey.Init(dict) != nil {
 		// TODO: check algorithm parameters
 		// 1. check mode = 'CBC'
 		// 2. check padding = 'PKCS7Padding'
@@ -65,7 +64,7 @@ func (key *AESKey) Init(dict map[string]interface{}) *AESKey {
 	return key
 }
 
-func (key AESKey) keySize() uint {
+func (key *AESKey) keySize() uint {
 	// TODO: get from key data
 
 	size := key.Get("keySize")
@@ -76,7 +75,7 @@ func (key AESKey) keySize() uint {
 	}
 }
 
-func (key AESKey) blockSize() uint {
+func (key *AESKey) blockSize() uint {
 	// TODO: get from iv data
 
 	size := key.Get("blockSize")
@@ -131,7 +130,7 @@ func (key *AESKey) Data() []byte {
 	return key._data
 }
 
-func (key AESKey) Encrypt(plaintext []byte) []byte {
+func (key *AESKey) Encrypt(plaintext []byte) []byte {
 	block, err := aes.NewCipher(key.Data())
 	if err != nil {
 		//panic("failed to create cipher")
@@ -144,7 +143,7 @@ func (key AESKey) Encrypt(plaintext []byte) []byte {
 	return ciphertext
 }
 
-func (key AESKey) Decrypt(ciphertext []byte) []byte {
+func (key *AESKey) Decrypt(ciphertext []byte) []byte {
 	block, err := aes.NewCipher(key.Data())
 	if err != nil {
 		//panic("failed to create cipher")
@@ -154,10 +153,6 @@ func (key AESKey) Decrypt(ciphertext []byte) []byte {
 	plaintext := make([]byte, len(ciphertext))
 	blockMode.CryptBlocks(plaintext, ciphertext)
 	return PKCS5UnPadding(plaintext)
-}
-
-func (key AESKey) Match(pKey EncryptKey) bool {
-	return CryptographyKeysMatch(pKey, key)
 }
 
 func PKCS5Padding(src []byte, blockSize uint) []byte {

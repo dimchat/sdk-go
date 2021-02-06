@@ -47,8 +47,8 @@ func GeneratePassword(password string) SymmetricKey {
 	if length > 0 {
 		// format: {digest_prefix}+{pwd_data}
 		merged := make([]byte, KeySize)
-		ArrayCopy(digest, 0, merged, 0, uint8(length))
-		ArrayCopy(data, 0, merged, uint8(length), uint8(dataLen))
+		ArrayCopy(digest, 0, merged, 0, uint(length))
+		ArrayCopy(data, 0, merged, uint(length), uint(dataLen))
 		data = merged
 	} else if length < 0 {
 		data = digest
@@ -70,37 +70,28 @@ func GeneratePassword(password string) SymmetricKey {
 var PLAIN = "PLAIN"
 
 type PlainKey struct {
-	Dictionary
-	SymmetricKey
+	BaseSymmetricKey
 
 	_data []byte
 }
 
 func (key *PlainKey) Init(dict map[string]interface{}) *PlainKey {
-	if key.Dictionary.Init(dict) != nil {
+	if key.BaseSymmetricKey.Init(dict) != nil {
 		key._data = make([]byte, 0)
 	}
 	return key
 }
 
-func (key PlainKey) Algorithm() string {
-	return CryptographyKeyGetAlgorithm(key.GetMap(false))
-}
-
-func (key PlainKey) Data() []byte {
+func (key *PlainKey) Data() []byte {
 	return key._data
 }
 
-func (key PlainKey) Encrypt(plaintext []byte) []byte {
+func (key *PlainKey) Encrypt(plaintext []byte) []byte {
 	return plaintext
 }
 
-func (key PlainKey) Decrypt(ciphertext []byte) []byte {
+func (key *PlainKey) Decrypt(ciphertext []byte) []byte {
 	return ciphertext
-}
-
-func (key PlainKey) Match(pKey EncryptKey) bool {
-	return CryptographyKeysMatch(pKey, key)
 }
 
 var plainKey *PlainKey = nil

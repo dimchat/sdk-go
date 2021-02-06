@@ -63,27 +63,27 @@ func (address *ETHAddress) Init(string string) *ETHAddress {
 	return address
 }
 
-func (address ETHAddress) String() string {
+func (address *ETHAddress) String() string {
 	return address.ConstantString.String()
 }
 
-func (address ETHAddress) Equal(other interface{}) bool {
+func (address *ETHAddress) Equal(other interface{}) bool {
 	return address.ConstantString.Equal(other)
 }
 
-func (address ETHAddress) Network() uint8 {
+func (address *ETHAddress) Network() uint8 {
 	return MAIN
 }
 
-func (address ETHAddress) IsUser() bool {
+func (address *ETHAddress) IsUser() bool {
 	return true
 }
 
-func (address ETHAddress) IsGroup() bool {
+func (address *ETHAddress) IsGroup() bool {
 	return false
 }
 
-func (address ETHAddress) IsBroadcast() bool {
+func (address *ETHAddress) IsBroadcast() bool {
 	return false
 }
 

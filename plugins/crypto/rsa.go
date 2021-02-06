@@ -27,7 +27,6 @@ package crypto
 
 import (
 	. "github.com/dimchat/mkm-go/crypto"
-	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -39,8 +38,7 @@ import (
  *      }
  */
 type RSAPublicKey struct {
-	Dictionary
-	PublicKey
+	BasePublicKey
 	EncryptKey
 }
 
@@ -49,27 +47,23 @@ func NewRSAPublicKey(dict map[string]interface{}) *RSAPublicKey {
 }
 
 func (key *RSAPublicKey) Init(dict map[string]interface{}) *RSAPublicKey {
-	if key.Dictionary.Init(dict) != nil {
+	if key.BasePublicKey.Init(dict) != nil {
 		// init
 	}
 	return key
 }
 
-func (key RSAPublicKey) Data() []byte {
+func (key *RSAPublicKey) Data() []byte {
 	// TODO:
 	return nil
 }
 
-func (key RSAPublicKey) Verify(data []byte, signature []byte) bool {
+func (key *RSAPublicKey) Verify(data []byte, signature []byte) bool {
 	// TODO:
 	return false
 }
 
-func (key RSAPublicKey) Match(sKey SignKey) bool {
-	return AsymmetricKeysMatch(sKey, key)
-}
-
-func (key RSAPublicKey) Encrypt(plaintext []byte) []byte {
+func (key *RSAPublicKey) Encrypt(plaintext []byte) []byte {
 	// TODO:
 	return nil
 }
@@ -84,8 +78,7 @@ func (key RSAPublicKey) Encrypt(plaintext []byte) []byte {
  *      }
  */
 type RSAPrivateKey struct {
-	Dictionary
-	PrivateKey
+	BasePrivateKey
 	DecryptKey
 }
 
@@ -94,23 +87,28 @@ func NewRSAPrivateKey(dict map[string]interface{}) *RSAPrivateKey {
 }
 
 func (key *RSAPrivateKey) Init(dict map[string]interface{}) *RSAPrivateKey {
-	if key.Dictionary.Init(dict) != nil {
+	if key.BasePrivateKey.Init(dict) != nil {
 		// init
 	}
 	return key
 }
 
-func (key RSAPrivateKey) Data() []byte {
+func (key *RSAPrivateKey) Data() []byte {
 	// TODO:
 	return nil
 }
 
-func (key RSAPrivateKey) Sign(data []byte) []byte {
+func (key *RSAPrivateKey) Sign(data []byte) []byte {
 	// TODO:
 	return nil
 }
 
-func (key RSAPrivateKey) Decrypt(ciphertext []byte) []byte {
+func (key *RSAPrivateKey) Decrypt(ciphertext []byte) []byte {
+	// TODO:
+	return nil
+}
+
+func (key *RSAPrivateKey) PublicKey() PublicKey {
 	// TODO:
 	return nil
 }

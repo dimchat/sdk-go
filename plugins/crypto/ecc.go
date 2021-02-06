@@ -27,7 +27,6 @@ package crypto
 
 import (
 	. "github.com/dimchat/mkm-go/crypto"
-	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -40,8 +39,7 @@ import (
  *      }
  */
 type ECCPublicKey struct {
-	Dictionary
-	PublicKey
+	BasePublicKey
 }
 
 func NewECCPublicKey(dict map[string]interface{}) *ECCPublicKey {
@@ -49,24 +47,20 @@ func NewECCPublicKey(dict map[string]interface{}) *ECCPublicKey {
 }
 
 func (key *ECCPublicKey) Init(dict map[string]interface{}) *ECCPublicKey {
-	if key.Dictionary.Init(dict) != nil {
+	if key.BasePublicKey.Init(dict) != nil {
 		// init
 	}
 	return key
 }
 
-func (key ECCPublicKey) Data() []byte {
+func (key *ECCPublicKey) Data() []byte {
 	// TODO:
 	return nil
 }
 
-func (key ECCPublicKey) Verify(data []byte, signature []byte) bool {
+func (key *ECCPublicKey) Verify(data []byte, signature []byte) bool {
 	// TODO:
 	return false
-}
-
-func (key ECCPublicKey) Match(sKey SignKey) bool {
-	return AsymmetricKeysMatch(sKey, key)
 }
 
 /**
@@ -79,8 +73,7 @@ func (key ECCPublicKey) Match(sKey SignKey) bool {
  *      }
  */
 type ECCPrivateKey struct {
-	Dictionary
-	PrivateKey
+	BasePrivateKey
 }
 
 func NewECCPrivateKey(dict map[string]interface{}) *ECCPrivateKey {
@@ -88,18 +81,23 @@ func NewECCPrivateKey(dict map[string]interface{}) *ECCPrivateKey {
 }
 
 func (key *ECCPrivateKey) Init(dict map[string]interface{}) *ECCPrivateKey {
-	if key.Dictionary.Init(dict) != nil {
+	if key.BasePrivateKey.Init(dict) != nil {
 		// init
 	}
 	return key
 }
 
-func (key ECCPrivateKey) Data() []byte {
+func (key *ECCPrivateKey) Data() []byte {
 	// TODO:
 	return nil
 }
 
-func (key ECCPrivateKey) Sign(data []byte) []byte {
+func (key *ECCPrivateKey) Sign(data []byte) []byte {
+	// TODO:
+	return nil
+}
+
+func (key *ECCPrivateKey) PublicKey() PublicKey {
 	// TODO:
 	return nil
 }

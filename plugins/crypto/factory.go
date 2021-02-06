@@ -50,11 +50,11 @@ func (factory *GeneralSymmetricKeyFactory) Init(g SymmetricKeyGenerator, p Symme
 	return factory
 }
 
-func (factory GeneralSymmetricKeyFactory) GenerateSymmetricKey() SymmetricKey {
+func (factory *GeneralSymmetricKeyFactory) GenerateSymmetricKey() SymmetricKey {
 	return factory._generator()
 }
 
-func (factory GeneralSymmetricKeyFactory) ParseSymmetricKey(key map[string]interface{}) SymmetricKey {
+func (factory *GeneralSymmetricKeyFactory) ParseSymmetricKey(key map[string]interface{}) SymmetricKey {
 	return factory._parser(key)
 }
 
@@ -99,11 +99,11 @@ func (factory *GeneralPrivateKeyFactory) Init(g PrivateKeyGenerator, p PrivateKe
 	return factory
 }
 
-func (factory GeneralPrivateKeyFactory) GeneratePrivateKey() PrivateKey {
+func (factory *GeneralPrivateKeyFactory) GeneratePrivateKey() PrivateKey {
 	return factory._generator()
 }
 
-func (factory GeneralPrivateKeyFactory) ParsePrivateKey(key map[string]interface{}) PrivateKey {
+func (factory *GeneralPrivateKeyFactory) ParsePrivateKey(key map[string]interface{}) PrivateKey {
 	return factory._parser(key)
 }
 
@@ -122,7 +122,7 @@ func (factory *GeneralPublicKeyFactory) Init(p PublicKeyParser) *GeneralPublicKe
 	return factory
 }
 
-func (factory GeneralPublicKeyFactory) ParsePublicKey(key map[string]interface{}) PublicKey {
+func (factory *GeneralPublicKeyFactory) ParsePublicKey(key map[string]interface{}) PublicKey {
 	return factory._parser(key)
 }
 
