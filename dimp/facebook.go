@@ -65,9 +65,33 @@ type IFacebook interface {
 	SaveMembers(members []ID, group ID) bool
 }
 
+/**
+ *  Delegate for entity
+ *  ~~~~~~~~~~~~~~~~~~~
+ *
+ *  Abstract methods:
+ *      // IFacebook
+ *      SaveMeta(meta Meta, identifier ID) bool
+ *      SaveDocument(doc Document) bool
+ *      SaveMembers(members []ID, group ID) bool
+ *      // IBarrack
+ *      GetLocalUsers() []*User
+ *      // EntityDataSource
+ *      GetMeta(identifier ID) Meta
+ *      GetDocument(identifier ID, docType string) Document
+ *      // UserDataSource
+ *      GetContacts(user ID) []ID
+ *      GetPrivateKeysForDecryption(user ID) []DecryptKey
+ *      GetPrivateKeyForSignature(user ID) SignKey
+ *      GetPrivateKeyForVisaSignature(user ID) SignKey
+ */
 type Facebook struct {
 	Barrack
 	IFacebook
+}
+
+func (facebook *Facebook) Init() *Facebook {
+	return facebook
 }
 
 /**
