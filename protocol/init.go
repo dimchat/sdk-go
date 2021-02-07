@@ -33,12 +33,19 @@ package protocol
 import (
 	. "github.com/dimchat/core-go/core"
 	. "github.com/dimchat/core-go/protocol"
+	. "github.com/dimchat/dkd-go/dkd"
 )
 
 /**
  *  Register All Content/Command Factories
  */
 func BuildAllFactories() {
+
+	BuildEnvelopeFactory()
+	BuildInstantMessageFactory()
+	BuildSecureMessageFactory()
+	BuildReliableMessageFactory()
+
 	//
 	//  Register core factories
 	//
@@ -75,4 +82,8 @@ func BuildAllFactories() {
 	CommandRegister(PRIVATE_KEY, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
 		return new(StorageCommand).Init(dict)
 	}))
+}
+
+func init() {
+	BuildAllFactories()
 }

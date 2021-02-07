@@ -75,10 +75,7 @@ func (processor *MessengerProcessor) ProcessContent(content Content, rMsg Reliab
 	// TODO: override to filter the response
 }
 
-/**
- *  Register All Content/Command Processors
- */
-func BuildAllProcessors()  {
+func init() {
 	//
 	//  Register content processors
 	//

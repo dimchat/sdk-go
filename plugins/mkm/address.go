@@ -39,6 +39,12 @@ type GeneralAddressFactory struct {
 	BaseAddressFactory
 }
 
+func (factory *GeneralAddressFactory) Init() *GeneralAddressFactory {
+	if factory.BaseAddressFactory.Init() != nil {
+	}
+	return factory
+}
+
 func (factory *GeneralAddressFactory) CreateAddress(address string) Address {
 	if len(address) == 42 {
 		return ETHAddressParse(address)

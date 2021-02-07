@@ -27,6 +27,7 @@ package plugins
 
 import (
 	. "github.com/dimchat/mkm-go/digest"
+	. "github.com/dimchat/mkm-go/mkm"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/sdk-go/plugins/crypto"
 	. "github.com/dimchat/sdk-go/plugins/digest"
@@ -37,9 +38,6 @@ import (
  *  Data Digesters
  */
 func RegisterDataDigesters()  {
-	// FIX
-	SetSHA256Digester(new(SHA256Digester))
-
 	SetRIPEMD160Digester(new(RIPEMD160Digester))
 	SetKECCAK256Digester(new(KECCAK256Digester))
 }
@@ -47,9 +45,13 @@ func RegisterDataDigesters()  {
 /**
  *  Address factory
  */
-func BuildAddressFactory() {
-	factory := new(GeneralAddressFactory)
-	AddressSetFactory(factory)
+func BuildAddressFactory() AddressFactory {
+	factory := AddressGetFactory()
+	if factory == nil {
+		factory = new(GeneralAddressFactory).Init()
+		AddressSetFactory(factory)
+	}
+	return factory
 }
 
 /**
@@ -81,6 +83,7 @@ func init() {
 	BuildPublicKeyFactories()
 
 	BuildAddressFactory()
+	BuildIDFactory()
 	BuildMetaFactories()
 	BuildDocumentFactories()
 }
