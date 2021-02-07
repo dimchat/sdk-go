@@ -28,53 +28,31 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package cpu
 
 import (
+	"fmt"
+	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/protocol"
 )
 
-/**
- *  Message Transmitter
- *  ~~~~~~~~~~~~~~~~~~~
- */
-type Transmitter interface {
-
-	/**
-	 *  Send message content to receiver
-	 *
-	 * @param sender - sender ID
-	 * @param receiver - receiver ID
-	 * @param content - message content
-	 * @param callback - if needs callback, set it here
-	 * @return true on success
-	 */
-	SendContent(sender ID, receiver ID, content Content, callback MessengerCallback, priority int) bool
-
-	/**
-	 *  Send instant message (encrypt and sign) onto DIM network
-	 *
-	 * @param iMsg - instant message
-	 * @param callback - if needs callback, set it here
-	 * @return true on success
-	 */
-	SendInstantMessage(iMsg InstantMessage, callback MessengerCallback, priority int) bool
-
-	SendReliableMessage(rMsg ReliableMessage, callback MessengerCallback, priority int) bool
+type HistoryCommandProcessor struct {
+	BaseCommandProcessor
 }
 
-type MessengerTransmitter struct {
-	Transmitter
-
-	_messenger *Messenger
+func (cpu *HistoryCommandProcessor) Init() *HistoryCommandProcessor {
+	if cpu.BaseCommandProcessor.Init() != nil {
+	}
+	return cpu
 }
 
-func (transmitter *MessengerTransmitter) Init(messenger *Messenger) *MessengerTransmitter {
-	transmitter._messenger = messenger
-	return transmitter
-}
-
-func (transmitter *MessengerTransmitter) Messenger() *Messenger {
-	return transmitter._messenger
+func (cpu *HistoryCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
+	text := fmt.Sprintf("History command (name: %s) not support yet!", cmd.CommandName())
+	res := NewTextContent(text)
+	// check group message
+	group := cmd.Group()
+	if group != nil {
+		res.SetGroup(group)
+	}
+	return res
 }

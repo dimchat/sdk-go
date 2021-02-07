@@ -28,78 +28,56 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package cpu
 
 import (
-	. "github.com/dimchat/core-go/core"
+	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
-	. "github.com/dimchat/sdk-go/dimp/cpu"
+	. "github.com/dimchat/mkm-go/protocol"
 )
 
-type MessengerProcessor struct {
-	TransceiverProcessor
-
-	_messenger *Messenger
+type MetaCommandProcessor struct {
+	BaseCommandProcessor
 }
 
-func (processor *MessengerProcessor) Init(messenger *Messenger) *MessengerProcessor {
-	transceiver := ObjectPointer(messenger).(*Transceiver)
-	if processor.TransceiverProcessor.Init(transceiver) != nil {
-		processor._messenger = messenger
+func (cpu *MetaCommandProcessor) Init() *MetaCommandProcessor {
+	if cpu.BaseCommandProcessor.Init() != nil {
 	}
-	return processor
+	return cpu
 }
 
-func (processor *MessengerProcessor) Messenger() *Messenger {
-	return processor._messenger
-}
-
-func (processor *MessengerProcessor) ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) InstantMessage {
-	res := processor.TransceiverProcessor.ProcessInstantMessage(iMsg, rMsg)
-	if processor.Messenger().SaveMessage(iMsg) {
-		return res
+func (cpu *MetaCommandProcessor) getMeta(identifier ID) Content {
+	// query meta for ID
+	meta := cpu.Facebook().GetMeta(identifier)
+	if meta == nil {
+		// meta not found
+		text := "Sorry, meta not found for ID: " + identifier.String()
+		return NewTextContent(text)
 	}
-	// error
+	// response
+	return MetaCommandRespond(identifier, meta)
+}
+
+func (cpu *MetaCommandProcessor) putMeta(identifier ID, meta Meta) Content {
+	// received a meta for ID
+	if cpu.Facebook().SaveMeta(meta, identifier) == false {
+		// save meta failed
+		text := "Meta not accepted: " + identifier.String()
+		return NewTextContent(text)
+	}
+	// response
+	//text := "Meta received: " + identifier.String()
+	//return new(ReceiptCommand).InitWithText(text)
 	return nil
 }
 
-func (processor *MessengerProcessor) ProcessContent(content Content, rMsg ReliableMessage) Content {
-	// TODO: override to check group
-	cpu := ContentProcessor.GetProcessor(content)
-	if cpu == nil {
-		cpu = ContentProcessor.GetProcessorByType(0)  // unknown
+func (cpu *MetaCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
+	mCmd, _ := cmd.(*MetaCommand)
+	identifier := mCmd.ID()
+	meta := mCmd.Meta()
+	if meta == nil {
+		return cpu.getMeta(identifier)
+	} else {
+		return cpu.putMeta(identifier, meta)
 	}
-	cpu.SetMessenger(processor.Messenger())
-	return cpu.Processor(content, rMsg)
-}
-
-/**
- *  Register All Content/Command Factories
- */
-func BuildAllFactories() {
-	//
-	//  Register core factories
-	//
-	BuildContentFactories()
-	BuildCommandFactories()
-
-	//
-	//  Register command factories
-	//
-}
-
-/**
- *  Register All Content/Command Processors
- */
-func BuildAllProcessors()  {
-	//
-	//  Register content processors
-	//
-	BuildContentProcessors()
-
-	//
-	//  Register command processors
-	//
-	BuildCommandProcessors()
 }

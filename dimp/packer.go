@@ -32,6 +32,8 @@ package dimp
 
 import (
 	. "github.com/dimchat/core-go/core"
+	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/mkm-go/types"
 )
 
@@ -55,4 +57,87 @@ func (packer *MessengerPacker) Messenger() *Messenger {
 
 func (packer *MessengerPacker) Facebook() *Facebook {
 	return packer._messenger.Facebook()
+}
+
+func (packer *MessengerPacker) isWaiting(identifier ID) bool {
+	if identifier.IsBroadcast() {
+		// broadcast ID doesn't contain meta or visa
+		return false
+	}
+	if identifier.IsGroup() {
+		// if group is not broadcast ID, its meta should be exists
+		return packer.Facebook().GetMeta(identifier) == nil
+	}
+	// if user is not broadcast ID, its visa key should be exists
+	return packer.Facebook().GetPublicKeyForEncryption(identifier) == nil
+}
+
+func (packer *MessengerPacker) EncryptMessage(iMsg InstantMessage) SecureMessage {
+	receiver := iMsg.Receiver()
+	group := iMsg.Group()
+	if packer.isWaiting(receiver) || (group != nil && packer.isWaiting(group)) {
+		// NOTICE: the application will query visa automatically,
+		//         save this message in a queue waiting sender's visa response
+		packer.Messenger().SuspendInstantMessage(iMsg)
+		return nil
+	}
+	// make sure visa.key exists before encrypting message
+	return packer.TransceiverPacker.EncryptMessage(iMsg)
+}
+
+func (packer *MessengerPacker) VerifyMessage(rMsg ReliableMessage) SecureMessage {
+	facebook := packer.Facebook()
+	sender := rMsg.Sender()
+	// [Meta Protocol]
+	meta := rMsg.Meta()
+	if meta == nil {
+		// get from local storage
+		meta = facebook.GetMeta(sender)
+	} else if !facebook.SaveMeta(meta, sender) {
+		// failed to save meta attached to message
+		meta = nil
+	}
+	if meta == nil {
+		// NOTICE: the application will query meta automatically,
+		//         save this message in a queue waiting sender's meta response
+		packer.Messenger().SuspendReliableMessage(rMsg)
+		return nil
+	}
+	// [Visa Protocol]
+	visa := rMsg.Visa()
+	if visa != nil {
+		// check & save visa attached to message
+		doc, ok := visa.(Document)
+		if ok {
+			facebook.SaveDocument(doc)
+		}
+	}
+	// make sure meta exists before verifying message
+	return packer.TransceiverPacker.VerifyMessage(rMsg)
+}
+
+func (packer *MessengerPacker) DecryptMessage(sMsg SecureMessage) InstantMessage {
+	// check message delegate
+	if sMsg.Delegate() == nil {
+		sMsg.SetDelegate(packer.Messenger())
+	}
+	var trimmed SecureMessage
+	receiver := sMsg.Receiver()
+	user := packer.Messenger().SelectLocalUser(receiver)
+	if user == nil {
+		// current users not match
+		trimmed = nil
+	} else if receiver.IsGroup() {
+		// trim group message
+		trimmed = sMsg.Trim(user.ID())
+	} else {
+		trimmed = sMsg
+	}
+	if trimmed == nil {
+		// not for you?
+		panic("receiver error: " + receiver.String())
+		return nil
+	}
+	// make sure private key (decrypt key) exists before decrypting message
+	return packer.TransceiverPacker.DecryptMessage(sMsg)
 }

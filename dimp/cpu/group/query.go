@@ -28,53 +28,50 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package cpu
 
 import (
+	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/protocol"
 )
 
 /**
- *  Message Transmitter
- *  ~~~~~~~~~~~~~~~~~~~
+ *  Group command: QUERY
  */
-type Transmitter interface {
-
-	/**
-	 *  Send message content to receiver
-	 *
-	 * @param sender - sender ID
-	 * @param receiver - receiver ID
-	 * @param content - message content
-	 * @param callback - if needs callback, set it here
-	 * @return true on success
-	 */
-	SendContent(sender ID, receiver ID, content Content, callback MessengerCallback, priority int) bool
-
-	/**
-	 *  Send instant message (encrypt and sign) onto DIM network
-	 *
-	 * @param iMsg - instant message
-	 * @param callback - if needs callback, set it here
-	 * @return true on success
-	 */
-	SendInstantMessage(iMsg InstantMessage, callback MessengerCallback, priority int) bool
-
-	SendReliableMessage(rMsg ReliableMessage, callback MessengerCallback, priority int) bool
+type QueryCommandProcessor struct {
+	GroupCommandProcessor
 }
 
-type MessengerTransmitter struct {
-	Transmitter
+func (gpu *QueryCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Content {
+	//gCmd := cmd.(*GroupCommand)
+	facebook := gpu.Facebook()
 
-	_messenger *Messenger
-}
+	// 0. check group
+	group := cmd.Group()
+	owner := facebook.GetOwner(group)
+	members := facebook.GetMembers(group)
+	if owner == nil || members == nil || len(members) == 0 {
+		text := "Sorry, members nof found in group: " + group.String()
+		return NewTextContent(text)
+	}
 
-func (transmitter *MessengerTransmitter) Init(messenger *Messenger) *MessengerTransmitter {
-	transmitter._messenger = messenger
-	return transmitter
-}
+	// 1. check permission
+	sender := rMsg.Sender()
+	if contains(sender, members) == false {
+		// not a member? check assistants
+		assistants := facebook.GetAssistants(group)
+		if assistants == nil || contains(sender, assistants) == false {
+			panic(sender.String() + " is not a member/assistant" +
+				" of group " + group.String() + ", cannot query")
+			return nil
+		}
+	}
 
-func (transmitter *MessengerTransmitter) Messenger() *Messenger {
-	return transmitter._messenger
+	// 2. respond
+	user := facebook.GetCurrentUser()
+	if user.ID().Equal(owner) {
+		return new(ResetCommand).InitWithMembers(group, members)
+	} else {
+		return new(InviteCommand).InitWithMembers(group, members)
+	}
 }

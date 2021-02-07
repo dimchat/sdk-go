@@ -28,77 +28,51 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package cpu
 
 import (
-	. "github.com/dimchat/core-go/dimp"
-	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/core-go/protocol"
+	. "github.com/dimchat/dkd-go/protocol"
 )
 
 /**
- *  Simple group chat
+ *  Group command: QUIT
  */
-type Polylogue struct {
-	Group
+type QuitCommandProcessor struct {
+	GroupCommandProcessor
 }
 
-func NewPolylogue(identifier ID) *Polylogue {
-	return new(Polylogue).Init(identifier)
-}
+func (gpu *QuitCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Content {
+	//gCmd := cmd.(*GroupCommand)
+	facebook := gpu.Facebook()
 
-func (group *Polylogue) Init(identifier ID) *Polylogue {
-	if group.Group.Init(identifier) != nil {
+	// 0. check group
+	group := cmd.Group()
+	owner := facebook.GetOwner(group)
+	members := facebook.GetMembers(group)
+	if owner == nil || members == nil || len(members) == 0 {
+		panic("group not ready: " + group.String())
+		return nil
 	}
-	return group
-}
 
-func (group *Polylogue) GetOwner() ID {
-	owner := group.Group.GetOwner()
-	if owner == nil {
-		// polylogue's owner is its founder
-		owner = group.GetFounder()
+	// 1. check permission
+	sender := rMsg.Sender()
+	if owner.Equal(sender) {
+		panic("owner cannot quit: " + sender.String() + " -> " + group.String())
+		return nil
 	}
-	return owner
-}
-
-/**
- *  Big group with admins
- */
-type Chatroom struct {
-	Group
-}
-
-func NewChatroom(identifier ID) *Chatroom {
-	return new(Chatroom).Init(identifier)
-}
-
-func (group *Chatroom) Init(identifier ID) *Chatroom {
-	if group.Group.Init(identifier) != nil {
+	assistants := facebook.GetAssistants(group)
+	if assistants != nil && contains(sender, assistants) {
+		panic("assistant cannot quit: " + sender.String() + " -> " + group.String())
+		return nil
 	}
-	return group
-}
 
-func (group Chatroom) DataSource() ChatroomDataSource {
-	delegate := group.Group.DataSource()
-	return delegate.(ChatroomDataSource)
-}
+	// 2. remove the sender from group members
+	if contains(sender, members) {
+		members = remove(members, sender)
+		facebook.SaveMembers(members, group)
+	}
 
-func (group Chatroom) GetAdmins() []ID {
-	return group.DataSource().GetAdmins(group.ID())
-}
-
-/**
- *  This interface is for getting information for chatroom
- *  Chatroom admins should be set complying with the consensus algorithm
- */
-type ChatroomDataSource interface {
-	GroupDataSource
-
-	/**
-	 *  Get all admins in the chatroom
-	 *
-	 * @param chatroom - chatroom ID
-	 * @return admin ID list
-	 */
-	GetAdmins(group ID) []ID
+	// 3. response (no need to response this group command)
+	return nil
 }

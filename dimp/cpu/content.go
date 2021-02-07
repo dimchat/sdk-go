@@ -28,78 +28,79 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package cpu
 
 import (
-	. "github.com/dimchat/core-go/core"
+	"fmt"
+	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
-	. "github.com/dimchat/sdk-go/dimp/cpu"
+	. "github.com/dimchat/sdk-go/dimp"
 )
 
-type MessengerProcessor struct {
-	TransceiverProcessor
+//
+//  CPU
+//
+type ContentProcessor interface {
+
+	SetMessenger(messenger *Messenger)
+
+	Process(content Content, rMsg ReliableMessage) Content
+}
+
+//
+//  CPU Factories
+//
+var contentProcessors = make(map[uint8]ContentProcessor)
+
+func ContentProcessorRegister(msgType uint8, cpu ContentProcessor) {
+	contentProcessors[msgType] = cpu
+}
+func ContentProcessorGet(content Content) ContentProcessor {
+	return ContentProcessorGetByType(content.Type())
+}
+func ContentProcessorGetByType(msgType uint8) ContentProcessor {
+	return contentProcessors[msgType]
+}
+
+/**
+ *  Base Content Processor
+ */
+type BaseContentProcessor struct {
+	ContentProcessor
 
 	_messenger *Messenger
 }
 
-func (processor *MessengerProcessor) Init(messenger *Messenger) *MessengerProcessor {
-	transceiver := ObjectPointer(messenger).(*Transceiver)
-	if processor.TransceiverProcessor.Init(transceiver) != nil {
-		processor._messenger = messenger
+func (cpu *BaseContentProcessor) Init() *BaseContentProcessor {
+	return cpu
+}
+
+func (cpu *BaseContentProcessor) SetMessenger(messenger *Messenger) {
+	cpu._messenger = messenger
+}
+
+func (cpu *BaseContentProcessor) Messenger() *Messenger {
+	return cpu._messenger
+}
+
+func (cpu *BaseContentProcessor) Facebook() *Facebook {
+	return cpu.Messenger().Facebook()
+}
+
+func (cpu *BaseContentProcessor) Process(content Content, _ ReliableMessage) Content {
+	text := fmt.Sprintf("Content (type: %d) not support yet!", content.Type())
+	res := NewTextContent(text)
+	// check group message
+	group := content.Group()
+	if group != nil {
+		res.SetGroup(group)
 	}
-	return processor
+	return res
 }
 
-func (processor *MessengerProcessor) Messenger() *Messenger {
-	return processor._messenger
-}
-
-func (processor *MessengerProcessor) ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) InstantMessage {
-	res := processor.TransceiverProcessor.ProcessInstantMessage(iMsg, rMsg)
-	if processor.Messenger().SaveMessage(iMsg) {
-		return res
-	}
-	// error
-	return nil
-}
-
-func (processor *MessengerProcessor) ProcessContent(content Content, rMsg ReliableMessage) Content {
-	// TODO: override to check group
-	cpu := ContentProcessor.GetProcessor(content)
-	if cpu == nil {
-		cpu = ContentProcessor.GetProcessorByType(0)  // unknown
-	}
-	cpu.SetMessenger(processor.Messenger())
-	return cpu.Processor(content, rMsg)
-}
-
-/**
- *  Register All Content/Command Factories
- */
-func BuildAllFactories() {
-	//
-	//  Register core factories
-	//
-	BuildContentFactories()
-	BuildCommandFactories()
-
-	//
-	//  Register command factories
-	//
-}
-
-/**
- *  Register All Content/Command Processors
- */
-func BuildAllProcessors()  {
-	//
-	//  Register content processors
-	//
-	BuildContentProcessors()
-
-	//
-	//  Register command processors
-	//
-	BuildCommandProcessors()
+//
+//  Register content processors
+//
+func BuildContentProcessors() {
+	
 }

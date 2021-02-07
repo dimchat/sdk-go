@@ -28,53 +28,39 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package cpu
 
 import (
+	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/protocol"
 )
 
-/**
- *  Message Transmitter
- *  ~~~~~~~~~~~~~~~~~~~
- */
-type Transmitter interface {
-
-	/**
-	 *  Send message content to receiver
-	 *
-	 * @param sender - sender ID
-	 * @param receiver - receiver ID
-	 * @param content - message content
-	 * @param callback - if needs callback, set it here
-	 * @return true on success
-	 */
-	SendContent(sender ID, receiver ID, content Content, callback MessengerCallback, priority int) bool
-
-	/**
-	 *  Send instant message (encrypt and sign) onto DIM network
-	 *
-	 * @param iMsg - instant message
-	 * @param callback - if needs callback, set it here
-	 * @return true on success
-	 */
-	SendInstantMessage(iMsg InstantMessage, callback MessengerCallback, priority int) bool
-
-	SendReliableMessage(rMsg ReliableMessage, callback MessengerCallback, priority int) bool
+type ForwardContentProcessor struct {
+	BaseContentProcessor
 }
 
-type MessengerTransmitter struct {
-	Transmitter
-
-	_messenger *Messenger
+func (cpu *ForwardContentProcessor) Init() *ForwardContentProcessor {
+	if cpu.BaseContentProcessor.Init() != nil {
+	}
+	return cpu
 }
 
-func (transmitter *MessengerTransmitter) Init(messenger *Messenger) *MessengerTransmitter {
-	transmitter._messenger = messenger
-	return transmitter
-}
+func (cpu *ForwardContentProcessor) Process(content Content, _ ReliableMessage) Content {
+	forward, _ := content.(*ForwardContent)
+	secret := forward.Message()
+	// call messenger to process it
+	secret = cpu.Messenger().ProcessReliableMessage(secret)
+	// check response
+	if secret != nil {
+		// Over The Top
+		return new(ForwardContent).InitWithMessage(secret)
+	}/* else {
+		receiver := forward.GetMessage().Receiver()
+		text := "Message forwarded: " + receiver.String()
+		return new(ReceiptCommand).InitWithText(text)
+	}*/
 
-func (transmitter *MessengerTransmitter) Messenger() *Messenger {
-	return transmitter._messenger
+	// NOTICE: decrypt failed, not for you?
+	//         it means you are asked to re-pack and forward this message
+	return nil
 }

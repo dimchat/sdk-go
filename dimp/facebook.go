@@ -75,7 +75,7 @@ type IFacebook interface {
  *      SaveDocument(doc Document) bool
  *      SaveMembers(members []ID, group ID) bool
  *      // IBarrack
- *      GetLocalUsers() []*User
+ *      GetLocalUsers() []User
  *      // EntityDataSource
  *      GetMeta(identifier ID) Meta
  *      GetDocument(identifier ID, docType string) Document
@@ -99,7 +99,7 @@ func (facebook *Facebook) Init() *Facebook {
  *
  * @return User
  */
-func (facebook *Facebook) GetCurrentUser() *User {
+func (facebook *Facebook) GetCurrentUser() User {
 	users := facebook.GetLocalUsers()
 	if users == nil || len(users) == 0 {
 		return nil
@@ -161,7 +161,7 @@ func (facebook *Facebook) IsOwner(member ID, group ID) bool {
 	return false
 }
 
-func (facebook *Facebook) CreateUser(identifier ID) *User {
+func (facebook *Facebook) CreateUser(identifier ID) User {
 	if identifier.IsBroadcast() {
 		// create user 'anyone@anywhere'
 		return NewUser(identifier)
@@ -173,16 +173,16 @@ func (facebook *Facebook) CreateUser(identifier ID) *User {
 	if network == MAIN || network == BTCMain {
 		return NewUser(identifier)
 	}
-	var user interface{}
 	if network == ROBOT {
-		user = NewRobot(identifier)
+		return NewRobot(identifier)
 	} else if network == STATION {
-		user = NewStation(identifier, "", 0)
+		return NewStation(identifier, "", 0)
+	} else {
+		return nil
 	}
-	return user.(*User)
 }
 
-func (facebook *Facebook) CreateGroup(identifier ID) *Group {
+func (facebook *Facebook) CreateGroup(identifier ID) Group {
 	if identifier.IsBroadcast() {
 		// create group 'everyone@everywhere'
 		return NewGroup(identifier)
@@ -190,13 +190,13 @@ func (facebook *Facebook) CreateGroup(identifier ID) *Group {
 	// make sure meta exists
 	// check group type
 	network := identifier.Type()
-	var group interface{}
 	if network == POLYLOGUE {
-		group = NewPolylogue(identifier)
+		return NewPolylogue(identifier)
 	} else if network == CHATROOM {
-		group = NewChatroom(identifier)
+		return NewChatroom(identifier)
 	} else if network == PROVIDER {
-		group = NewServiceProvider(identifier)
+		return NewServiceProvider(identifier)
+	} else {
+		return nil
 	}
-	return group.(*Group)
 }

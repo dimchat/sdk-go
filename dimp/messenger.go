@@ -30,11 +30,12 @@
  */
 package dimp
 
-import . "github.com/dimchat/core-go/core"
-
-type IMessenger interface {
-
-}
+import (
+	. "github.com/dimchat/core-go/core"
+	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/mkm-go/crypto"
+	. "github.com/dimchat/mkm-go/protocol"
+)
 
 type Messenger struct {
 	Transceiver
@@ -207,4 +208,91 @@ func (messenger *Messenger) NewTransmitter() *MessengerTransmitter {
 	return new(MessengerTransmitter).Init(messenger)
 }
 
+func (messenger *Messenger) getFileContentProcessor() *FileContentProcessor {
+
+}
+
 //-------- InstantMessageDelegate
+
+func (messenger *Messenger) SerializeContent(content Content, password SymmetricKey, iMsg InstantMessage) []byte {
+	// check attachment for File/Image/Audio/Video message content
+	file, ok := content.(*FileContent)
+	if ok {
+		fpu := messenger.getFileContentProcessor()
+		fpu.UploadFileContent(file, password, iMsg)
+	}
+	return messenger.Transceiver.SerializeContent(content, password, iMsg)
+}
+
+func (messenger *Messenger) EncryptKey(data []byte, receiver ID, iMsg InstantMessage) []byte {
+	key := messenger.Facebook().GetPublicKeyForEncryption(receiver)
+	if key == nil {
+		// save this message in a queue waiting receiver's meta/document response
+		messenger.SuspendInstantMessage(iMsg)
+	}
+	return messenger.Transceiver.EncryptKey(data, receiver, iMsg)
+}
+
+//-------- SecureMessageDelegate
+
+func (messenger *Messenger) DeserializeContent(data []byte, password SymmetricKey, sMsg SecureMessage) Content {
+	content := messenger.Transceiver.DeserializeContent(data, password, sMsg)
+	// check attachment for File/Image/Audio/Video message content
+	file, ok := content.(*FileContent)
+	if ok {
+		fpu := messenger.getFileContentProcessor()
+		fpu.DownloadFileContent(file, password, sMsg)
+	}
+	return content
+}
+
+//
+//  Interfaces for transmitting Message
+//
+func (messenger *Messenger) SendContent(sender ID, receiver ID, content Content, callback MessengerCallback, priority int) bool {
+	if sender == nil {
+		// Application Layer should make sure user is already login before it send message to server.
+		// Application layer should put message into queue so that it will send automatically after user login
+		user := messenger.Facebook().GetCurrentUser()
+		sender = user.ID()
+	}
+	return messenger.Transmitter().SendContent(sender, receiver, content, callback, priority)
+}
+
+func (messenger *Messenger) SendInstantMessage(iMsg InstantMessage, callback MessengerCallback, priority int) bool {
+	return messenger.Transmitter().SendInstantMessage(iMsg, callback, priority)
+}
+
+func (messenger *Messenger) SendReliableMessage(rMsg ReliableMessage, callback MessengerCallback, priority int) bool {
+	return messenger.SendReliableMessage(rMsg, callback, priority)
+}
+
+//
+//  Interfaces for Station
+//
+func (messenger *Messenger) UploadData(data []byte, iMsg InstantMessage) string {
+	return messenger.Delegate().UploadData(data, iMsg)
+}
+
+func (messenger *Messenger) DownloadData(url string, iMsg InstantMessage) []byte {
+	return messenger.Delegate().DownloadData(url, iMsg)
+}
+
+func (messenger *Messenger) SendPackage(data []byte, handler MessengerCompletionHandler, priority int) {
+	messenger.Delegate().SendPackage(data, handler, priority)
+}
+
+//
+//  Interfaces for Message Storage
+//
+func (messenger *Messenger) SaveMessage(iMsg InstantMessage) bool {
+	return messenger.DataSource().SaveMessage(iMsg)
+}
+
+func (messenger *Messenger) SuspendInstantMessage(iMsg InstantMessage) {
+	messenger.DataSource().SuspendInstantMessage(iMsg)
+}
+
+func (messenger *Messenger) SuspendReliableMessage(rMsg ReliableMessage) {
+	messenger.DataSource().SuspendReliableMessage(rMsg)
+}

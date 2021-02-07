@@ -39,15 +39,11 @@ import (
  *  Robot User
  */
 type Robot struct {
-	User
-}
-
-func NewRobot(identifier ID) *Robot {
-	return new(Robot).Init(identifier)
+	BaseUser
 }
 
 func (user *Robot) Init(identifier ID) *Robot {
-	if user.User.Init(identifier) != nil {
+	if user.BaseUser.Init(identifier) != nil {
 	}
 	return user
 }
@@ -56,18 +52,14 @@ func (user *Robot) Init(identifier ID) *Robot {
  *  DIM Server
  */
 type Station struct {
-	User
+	BaseUser
 
 	_host string
 	_port uint16
 }
 
-func NewStation(identifier ID, host string, port uint16) *Station {
-	return new(Station).Init(identifier, host, port)
-}
-
 func (server *Station) Init(identifier ID, host string, port uint16) *Station {
-	if server.User.Init(identifier) != nil {
+	if server.BaseUser.Init(identifier) != nil {
 		server._host = host
 		server._port = port
 	}
@@ -110,19 +102,102 @@ func (server *Station) Port() uint16 {
  *  DIM Station Owner
  */
 type ServiceProvider struct {
-	Group
+	BaseGroup
+}
+
+func (sp *ServiceProvider) Init(identifier ID) *ServiceProvider {
+	if sp.BaseGroup.Init(identifier) != nil {
+	}
+	return sp
+}
+
+func (sp *ServiceProvider) GetStations() []ID {
+	return sp.Members()
+}
+
+/**
+ *  Simple group chat
+ */
+type Polylogue struct {
+	BaseGroup
+}
+
+func (group *Polylogue) Init(identifier ID) *Polylogue {
+	if group.BaseGroup.Init(identifier) != nil {
+	}
+	return group
+}
+
+func (group *Polylogue) GetOwner() ID {
+	owner := group.BaseGroup.Owner()
+	if owner == nil {
+		// polylogue owner is its founder
+		owner = group.Founder()
+	}
+	return owner
+}
+
+/**
+ *  Big group with admins
+ */
+type Chatroom struct {
+	BaseGroup
+}
+
+func (group *Chatroom) Init(identifier ID) *Chatroom {
+	if group.BaseGroup.Init(identifier) != nil {
+	}
+	return group
+}
+
+func (group *Chatroom) GetAdmins() []ID {
+	delegate := group.DataSource().(ChatroomDataSource)
+	return delegate.GetAdmins(group.ID())
+}
+
+/**
+ *  This interface is for getting information for chatroom
+ *  Chatroom admins should be set complying with the consensus algorithm
+ */
+type ChatroomDataSource interface {
+	GroupDataSource
+
+	/**
+	 *  Get all admins in the chatroom
+	 *
+	 * @param chatroom - chatroom ID
+	 * @return admin ID list
+	 */
+	GetAdmins(group ID) []ID
+}
+
+//
+//  Creators
+//
+func NewUser(identifier ID) *BaseUser {
+	return new(BaseUser).Init(identifier)
+}
+
+func NewGroup(identifier ID) *BaseGroup {
+	return new(BaseGroup).Init(identifier)
+}
+
+func NewRobot(identifier ID) *Robot {
+	return new(Robot).Init(identifier)
+}
+
+func NewStation(identifier ID, host string, port uint16) *Station {
+	return new(Station).Init(identifier, host, port)
 }
 
 func NewServiceProvider(identifier ID) *ServiceProvider {
 	return new(ServiceProvider).Init(identifier)
 }
 
-func (sp *ServiceProvider) Init(identifier ID) *ServiceProvider {
-	if sp.Group.Init(identifier) != nil {
-	}
-	return sp
+func NewPolylogue(identifier ID) *Polylogue {
+	return new(Polylogue).Init(identifier)
 }
 
-func (sp ServiceProvider) GetStations() []ID {
-	return sp.GetMembers()
+func NewChatroom(identifier ID) *Chatroom {
+	return new(Chatroom).Init(identifier)
 }
