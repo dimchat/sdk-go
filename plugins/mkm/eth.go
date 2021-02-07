@@ -123,7 +123,8 @@ func eip55(hex string) string {
 	utf8 := UTF8Encode(hex)
 	hash := KECCAK256(utf8)
 	var ch byte
-	for i := 0; i < 40; i++ {
+	var i uint8
+	for i = 0; i < 40; i++ {
 		ch = utf8[i]
 		if ch > '9' {
 			// check for each 4 bits in the hash table

@@ -23,7 +23,7 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package main
+package plugins
 
 import (
 	. "github.com/dimchat/mkm-go/digest"
