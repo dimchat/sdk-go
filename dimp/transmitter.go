@@ -33,6 +33,7 @@ package dimp
 import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
+	"time"
 )
 
 /**
@@ -77,4 +78,68 @@ func (transmitter *MessengerTransmitter) Init(messenger *Messenger) *MessengerTr
 
 func (transmitter *MessengerTransmitter) Messenger() *Messenger {
 	return transmitter._messenger
+}
+
+func (transmitter *MessengerTransmitter) SendContent(sender ID, receiver ID, content Content, callback MessengerCallback, priority int) bool {
+	// Application Layer should make sure user is already login before it send message to server.
+	// Application layer should put message into queue so that it will send automatically after user login
+	env := EnvelopeCreate(sender, receiver, time.Time{})
+	iMsg := InstantMessageCreate(env, content)
+	return transmitter.Messenger().SendInstantMessage(iMsg, callback, priority)
+}
+
+func (transmitter *MessengerTransmitter) SendInstantMessage(iMsg InstantMessage, callback MessengerCallback, priority int) bool {
+	messenger := transmitter.Messenger()
+	// Send message (secured + certified) to target station
+	sMsg := messenger.EncryptMessage(iMsg)
+	if sMsg == nil {
+		// public key not found?
+		return false
+	}
+	rMsg := messenger.SignMessage(sMsg)
+	if rMsg == nil {
+		// TODO: set iMsg.state = error
+		panic("failed to sign message")
+		return false
+	}
+	ok := messenger.SendReliableMessage(rMsg, callback, priority)
+	// TODO: if OK, set iMsg.state = sending; else set iMsg.state = waiting
+
+	return messenger.SaveMessage(iMsg) && ok
+}
+
+func (transmitter *MessengerTransmitter) SendReliableMessage(rMsg ReliableMessage, callback MessengerCallback, priority int) bool {
+	var handler MessengerCompletionHandler
+	if callback == nil {
+		handler = nil
+	} else {
+		handler = new(completionHandler).Init(callback, rMsg)
+	}
+	messenger := transmitter.Messenger()
+	data := messenger.SerializeMessage(rMsg)
+	return messenger.SendPackage(data, handler, priority)
+}
+
+/**
+ *  Default handler
+ */
+type completionHandler struct {
+	MessengerCompletionHandler
+
+	_callback MessengerCallback
+	_msg ReliableMessage
+}
+
+func (handler *completionHandler) Init(callback MessengerCallback, rMsg ReliableMessage) *completionHandler {
+	handler._callback = callback
+	handler._msg = rMsg
+	return handler
+}
+
+func (handler *completionHandler) OnSuccess() {
+	handler._callback.OnFinished(handler._msg, nil)
+}
+
+func (handler *completionHandler) OnFailed(err error) {
+	handler._callback.OnFinished(handler._msg, err)
 }

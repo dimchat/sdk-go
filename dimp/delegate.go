@@ -64,7 +64,7 @@ type MessengerDelegate interface {
 	 * @param priority - task priority
 	 * @return true on success
 	 */
-	SendPackage(data []byte, handler MessengerCompletionHandler, priority int)
+	SendPackage(data []byte, handler MessengerCompletionHandler, priority int) bool
 }
 
 /**

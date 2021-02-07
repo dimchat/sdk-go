@@ -32,9 +32,11 @@ package dimp
 
 import (
 	. "github.com/dimchat/core-go/core"
+	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/cpu"
 )
 
 type Messenger struct {
@@ -209,7 +211,9 @@ func (messenger *Messenger) NewTransmitter() *MessengerTransmitter {
 }
 
 func (messenger *Messenger) getFileContentProcessor() *FileContentProcessor {
-
+	processor := ContentProcessorGetByType(FILE)
+	processor.SetMessenger(messenger)
+	return processor.(*FileContentProcessor)
 }
 
 //-------- InstantMessageDelegate
@@ -229,6 +233,7 @@ func (messenger *Messenger) EncryptKey(data []byte, receiver ID, iMsg InstantMes
 	if key == nil {
 		// save this message in a queue waiting receiver's meta/document response
 		messenger.SuspendInstantMessage(iMsg)
+		return nil
 	}
 	return messenger.Transceiver.EncryptKey(data, receiver, iMsg)
 }
@@ -278,8 +283,8 @@ func (messenger *Messenger) DownloadData(url string, iMsg InstantMessage) []byte
 	return messenger.Delegate().DownloadData(url, iMsg)
 }
 
-func (messenger *Messenger) SendPackage(data []byte, handler MessengerCompletionHandler, priority int) {
-	messenger.Delegate().SendPackage(data, handler, priority)
+func (messenger *Messenger) SendPackage(data []byte, handler MessengerCompletionHandler, priority int) bool {
+	return messenger.Delegate().SendPackage(data, handler, priority)
 }
 
 //

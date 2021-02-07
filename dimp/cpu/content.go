@@ -72,6 +72,7 @@ type BaseContentProcessor struct {
 }
 
 func (cpu *BaseContentProcessor) Init() *BaseContentProcessor {
+	cpu._messenger = nil
 	return cpu
 }
 
@@ -102,5 +103,16 @@ func (cpu *BaseContentProcessor) Process(content Content, _ ReliableMessage) Con
 //  Register content processors
 //
 func BuildContentProcessors() {
-	
+	ContentProcessorRegister(FORWARD, new(ForwardContentProcessor).Init())
+
+	fpu := new(FileContentProcessor).Init()
+	ContentProcessorRegister(FILE, fpu)
+	ContentProcessorRegister(IMAGE, fpu)
+	ContentProcessorRegister(AUDIO, fpu)
+	ContentProcessorRegister(VIDEO, fpu)
+
+	ContentProcessorRegister(COMMAND, new(BaseCommandProcessor).Init())
+	ContentProcessorRegister(HISTORY, new(HistoryCommandProcessor).Init())
+
+	ContentProcessorRegister(0, new(BaseContentProcessor).Init())
 }

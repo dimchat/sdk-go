@@ -66,27 +66,13 @@ func (processor *MessengerProcessor) ProcessInstantMessage(iMsg InstantMessage, 
 
 func (processor *MessengerProcessor) ProcessContent(content Content, rMsg ReliableMessage) Content {
 	// TODO: override to check group
-	cpu := ContentProcessor.GetProcessor(content)
+	cpu := ContentProcessorGet(content)
 	if cpu == nil {
-		cpu = ContentProcessor.GetProcessorByType(0)  // unknown
+		cpu = ContentProcessorGetByType(0)  // unknown
 	}
 	cpu.SetMessenger(processor.Messenger())
-	return cpu.Processor(content, rMsg)
-}
-
-/**
- *  Register All Content/Command Factories
- */
-func BuildAllFactories() {
-	//
-	//  Register core factories
-	//
-	BuildContentFactories()
-	BuildCommandFactories()
-
-	//
-	//  Register command factories
-	//
+	return cpu.Process(content, rMsg)
+	// TODO: override to filter the response
 }
 
 /**
