@@ -31,7 +31,7 @@ import (
 	"crypto/cipher"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/format"
-	. "github.com/dimchat/mkm-go/types"
+	. "github.com/dimchat/sdk-go/plugins"
 )
 
 /**
@@ -114,8 +114,8 @@ func (key *AESKey) Data() []byte {
 			//
 			// key data empty? generate new key info
 			//
-			pw := RandomArray(key.keySize())
-			iv := RandomArray(key.blockSize())
+			pw := RandomBytes(key.keySize())
+			iv := RandomBytes(key.blockSize())
 			key.Set("data", Base64Encode(pw))
 			key.Set("iv", Base64Encode(iv))
 			// other parameters

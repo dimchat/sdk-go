@@ -35,6 +35,7 @@ import (
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/mkm-go/types"
+	. "github.com/dimchat/sdk-go/plugins"
 )
 
 /**
@@ -106,13 +107,13 @@ func BTCAddressGenerate(fingerprint []byte, network uint8) *BTCAddress {
 	// 2. head = network + digest
 	head := make([]byte, 21)
 	head[0] = network
-	ArrayCopy(digest, 0, head, 1, 20)
+	BytesCopy(digest, 0, head, 1, 20)
 	// 3. cc = sha256(sha256(head)).prefix(4)
 	cc := checkCode(head)
 	// 4. data = base58_encode(head + cc)
 	data := make([]byte, 25)
-	ArrayCopy(head, 0, data, 0, 21)
-	ArrayCopy(cc, 0, data, 21, 24)
+	BytesCopy(head, 0, data, 0, 21)
+	BytesCopy(cc, 0, data, 21, 24)
 	base58 := Base58Encode(data)
 	return NewBTCAddress(base58, network)
 }
@@ -133,10 +134,10 @@ func BTCAddressParse(base58 string) *BTCAddress {
 	// CheckCode
 	prefix := make([]byte, 21)
 	suffix := make([]byte, 4)
-	ArrayCopy(data, 0, prefix, 0, 21)
-	ArrayCopy(data, 21, suffix, 0, 4)
+	BytesCopy(data, 0, prefix, 0, 21)
+	BytesCopy(data, 21, suffix, 0, 4)
 	cc := checkCode(prefix)
-	if !ArraysEqual(cc, suffix) {
+	if !BytesEqual(cc, suffix) {
 		panic("address check code error")
 		return nil
 	}
@@ -147,6 +148,6 @@ func BTCAddressParse(base58 string) *BTCAddress {
 func checkCode(data []byte) []byte {
 	sha256d := SHA256(SHA256(data))
 	cc := make([]byte, 4)
-	ArrayCopy(sha256d, 0, cc, 0, 4)
+	BytesCopy(sha256d, 0, cc, 0, 4)
 	return cc
 }

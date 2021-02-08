@@ -74,7 +74,7 @@ func (cmd *MuteCommand) List() []ID {
 	if cmd._list == nil {
 		list := cmd.Get("list")
 		if list != nil {
-			cmd._list = IDConvert(list.([]interface{}))
+			cmd._list = IDConvert(list)
 		}
 	}
 	return cmd._list

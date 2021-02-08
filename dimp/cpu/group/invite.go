@@ -3,6 +3,7 @@ package cpu
 import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp"
 	. "github.com/dimchat/sdk-go/dimp/cpu"
 )
 
@@ -46,7 +47,7 @@ func (gpu *InviteCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Co
 	}
 
 	// 2. inviting members
-	inviteList := gpu.getMembers(cmd.(*GroupCommand))
+	inviteList := gpu.GetMembers(cmd.(*GroupCommand))
 	if inviteList == nil || len(inviteList) == 0 {
 		panic("invite command error")
 		return nil

@@ -28,48 +28,41 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package cpu
 
 import (
-	. "github.com/dimchat/core-go/core"
+	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
+	. "github.com/dimchat/sdk-go/dimp"
 )
 
-type MessengerProcessor struct {
-	TransceiverProcessor
+//
+//  Register content processors
+//
+func BuildContentProcessors() {
+	ContentProcessorRegister(FORWARD, new(ForwardContentProcessor).Init())
 
-	_messenger *Messenger
+	fpu := new(FileContentProcessor).Init()
+	ContentProcessorRegister(FILE, fpu)
+	ContentProcessorRegister(IMAGE, fpu)
+	ContentProcessorRegister(AUDIO, fpu)
+	ContentProcessorRegister(VIDEO, fpu)
+
+	ContentProcessorRegister(COMMAND, new(BaseCommandProcessor).Init())
+	ContentProcessorRegister(HISTORY, new(HistoryCommandProcessor).Init())
+
+	ContentProcessorRegister(0, new(BaseContentProcessor).Init())
 }
 
-func (processor *MessengerProcessor) Init(messenger *Messenger) *MessengerProcessor {
-	transceiver := ObjectPointer(messenger).(*Transceiver)
-	if processor.TransceiverProcessor.Init(transceiver) != nil {
-		processor._messenger = messenger
-	}
-	return processor
+//
+//  Register command processors
+//
+func BuildCommandProcessors() {
+	CommandProcessorRegister(META, new(MetaCommandProcessor).Init())
+	CommandProcessorRegister(DOCUMENT, new(DocumentCommandProcessor).Init())
 }
 
-func (processor *MessengerProcessor) Messenger() *Messenger {
-	return processor._messenger
-}
-
-func (processor *MessengerProcessor) ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) InstantMessage {
-	res := processor.TransceiverProcessor.ProcessInstantMessage(iMsg, rMsg)
-	if processor.Messenger().SaveMessage(iMsg) {
-		return res
-	}
-	// error
-	return nil
-}
-
-func (processor *MessengerProcessor) ProcessContent(content Content, rMsg ReliableMessage) Content {
-	// TODO: override to check group
-	cpu := ContentProcessorGet(content)
-	if cpu == nil {
-		cpu = ContentProcessorGetByType(0)  // unknown
-	}
-	cpu.SetMessenger(processor.Messenger())
-	return cpu.Process(content, rMsg)
-	// TODO: override to filter the response
+func init() {
+	BuildContentProcessors()
+	BuildCommandProcessors()
 }

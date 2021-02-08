@@ -1,9 +1,4 @@
 /* license: https://mit-license.org
- *
- *  DIM-SDK : Decentralized Instant Messaging Software Development Kit
- *
- *                                Written in 2021 by Moky <albert.moky@gmail.com>
- *
  * ==============================================================================
  * The MIT License (MIT)
  *
@@ -28,48 +23,41 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package plugins
 
 import (
-	. "github.com/dimchat/core-go/core"
-	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
+	"math/rand"
+	"time"
 )
 
-type MessengerProcessor struct {
-	TransceiverProcessor
-
-	_messenger *Messenger
-}
-
-func (processor *MessengerProcessor) Init(messenger *Messenger) *MessengerProcessor {
-	transceiver := ObjectPointer(messenger).(*Transceiver)
-	if processor.TransceiverProcessor.Init(transceiver) != nil {
-		processor._messenger = messenger
+func BytesEqual(array1, array2 []byte) bool {
+	len1 := len(array1)
+	len2 := len(array2)
+	if len1 != len2 {
+		return false
 	}
-	return processor
-}
-
-func (processor *MessengerProcessor) Messenger() *Messenger {
-	return processor._messenger
-}
-
-func (processor *MessengerProcessor) ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) InstantMessage {
-	res := processor.TransceiverProcessor.ProcessInstantMessage(iMsg, rMsg)
-	if processor.Messenger().SaveMessage(iMsg) {
-		return res
+	for index := 0; index < len1; index++ {
+		if array1[index] != array2[index] {
+			return false
+		}
 	}
-	// error
-	return nil
+	return true
 }
 
-func (processor *MessengerProcessor) ProcessContent(content Content, rMsg ReliableMessage) Content {
-	// TODO: override to check group
-	cpu := ContentProcessorGet(content)
-	if cpu == nil {
-		cpu = ContentProcessorGetByType(0)  // unknown
+func BytesCopy(src []byte, srcPos uint, dest []byte, destPos uint, length uint) {
+	var index uint
+	for index = 0; index < length; index++ {
+		dest[destPos + index] = src[srcPos + index]
 	}
-	cpu.SetMessenger(processor.Messenger())
-	return cpu.Process(content, rMsg)
-	// TODO: override to filter the response
+}
+
+func RandomBytes(size uint) []byte {
+	now := time.Now().UnixNano()
+	random := rand.New(rand.NewSource(now))
+	array := make([]byte, size)
+	var index uint
+	for index = 0; index < size; index++ {
+		array[index] = uint8(random.Intn(256))
+	}
+	return array
 }

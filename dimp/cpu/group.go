@@ -28,48 +28,54 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package cpu
 
 import (
-	. "github.com/dimchat/core-go/core"
+	"fmt"
+	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
+	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp"
 )
 
-type MessengerProcessor struct {
-	TransceiverProcessor
-
-	_messenger *Messenger
+type GroupCommandProcessor struct {
+	HistoryCommandProcessor
 }
 
-func (processor *MessengerProcessor) Init(messenger *Messenger) *MessengerProcessor {
-	transceiver := ObjectPointer(messenger).(*Transceiver)
-	if processor.TransceiverProcessor.Init(transceiver) != nil {
-		processor._messenger = messenger
+func (gpu *GroupCommandProcessor) Init() *GroupCommandProcessor {
+	if gpu.HistoryCommandProcessor.Init() != nil {
 	}
-	return processor
+	return gpu
 }
 
-func (processor *MessengerProcessor) Messenger() *Messenger {
-	return processor._messenger
-}
-
-func (processor *MessengerProcessor) ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) InstantMessage {
-	res := processor.TransceiverProcessor.ProcessInstantMessage(iMsg, rMsg)
-	if processor.Messenger().SaveMessage(iMsg) {
-		return res
+func (gpu *GroupCommandProcessor) Process(content Content, rMsg ReliableMessage) Content {
+	cmd, _ := content.(Command)
+	// get CPU by command name
+	processor := CommandProcessorGet(cmd)
+	if processor == nil {
+		processor = gpu
+	} else {
+		processor.SetMessenger(gpu.Messenger())
 	}
-	// error
-	return nil
+	return processor.Execute(cmd, rMsg)
 }
 
-func (processor *MessengerProcessor) ProcessContent(content Content, rMsg ReliableMessage) Content {
-	// TODO: override to check group
-	cpu := ContentProcessorGet(content)
-	if cpu == nil {
-		cpu = ContentProcessorGetByType(0)  // unknown
+func (gpu *GroupCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
+	text := fmt.Sprintf("Group command (name: %s) not support yet!", cmd.CommandName())
+	res := NewTextContent(text)
+	res.SetGroup(cmd.Group())
+	return res
+}
+
+func (gpu *GroupCommandProcessor) GetMembers(cmd *GroupCommand) []ID {
+	// get from members
+	members := cmd.Members()
+	if members == nil {
+		// get from 'member'
+		member := cmd.Member()
+		if member != nil {
+			members = []ID{member}
+		}
 	}
-	cpu.SetMessenger(processor.Messenger())
-	return cpu.Process(content, rMsg)
-	// TODO: override to filter the response
+	return members
 }

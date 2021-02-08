@@ -34,6 +34,7 @@ import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/cpu"
 )
 
 /**
@@ -47,7 +48,7 @@ func (gpu *ResetCommandProcessor) temporarySave(cmd *GroupCommand, sender ID) Co
 	facebook := gpu.Facebook()
 	group := cmd.Group()
 	// check whether the owner contained in the new members
-	newMembers := gpu.getMembers(cmd)
+	newMembers := gpu.GetMembers(cmd)
 	for _, item := range newMembers {
 		if facebook.IsOwner(item, group) {
 			// it's a full list, save it now
@@ -95,7 +96,7 @@ func (gpu *ResetCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Con
 	}
 
 	// 2. resetting members
-	newMembers := gpu.getMembers(cmd.(*GroupCommand))
+	newMembers := gpu.GetMembers(cmd.(*GroupCommand))
 	if newMembers == nil || len(newMembers) == 0 {
 		panic("group command error")
 		return nil

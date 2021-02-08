@@ -28,18 +28,17 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package cpu
+package dimp
 
 import (
 	"fmt"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp"
 )
 
-//
-//  CPU
-//
+/**
+ *  CPU: Content Processing Unit
+ */
 type ContentProcessor interface {
 
 	SetMessenger(messenger *Messenger)
@@ -97,22 +96,4 @@ func (cpu *BaseContentProcessor) Process(content Content, _ ReliableMessage) Con
 		res.SetGroup(group)
 	}
 	return res
-}
-
-//
-//  Register content processors
-//
-func BuildContentProcessors() {
-	ContentProcessorRegister(FORWARD, new(ForwardContentProcessor).Init())
-
-	fpu := new(FileContentProcessor).Init()
-	ContentProcessorRegister(FILE, fpu)
-	ContentProcessorRegister(IMAGE, fpu)
-	ContentProcessorRegister(AUDIO, fpu)
-	ContentProcessorRegister(VIDEO, fpu)
-
-	ContentProcessorRegister(COMMAND, new(BaseCommandProcessor).Init())
-	ContentProcessorRegister(HISTORY, new(HistoryCommandProcessor).Init())
-
-	ContentProcessorRegister(0, new(BaseContentProcessor).Init())
 }

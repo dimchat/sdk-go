@@ -33,6 +33,7 @@ package cpu
 import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/cpu"
 )
 
 /**
@@ -68,7 +69,7 @@ func (gpu *ExpelCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Con
 	}
 
 	// 2. expelling members
-	expelList := gpu.getMembers(cmd.(*GroupCommand))
+	expelList := gpu.GetMembers(cmd.(*GroupCommand))
 	if expelList == nil || len(expelList) == 0 {
 		panic("expel command error")
 		return nil

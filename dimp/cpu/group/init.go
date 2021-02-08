@@ -31,54 +31,11 @@
 package cpu
 
 import (
-	"fmt"
 	. "github.com/dimchat/core-go/protocol"
-	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp"
 	. "github.com/dimchat/sdk-go/dimp/cpu"
 )
-
-type GroupCommandProcessor struct {
-	HistoryCommandProcessor
-}
-
-func (gpu *GroupCommandProcessor) Init() *GroupCommandProcessor {
-	if gpu.HistoryCommandProcessor.Init() != nil {
-	}
-	return gpu
-}
-
-func (gpu *GroupCommandProcessor) Process(content Content, rMsg ReliableMessage) Content {
-	cmd, _ := content.(Command)
-	// get CPU by command name
-	processor := CommandProcessorGet(cmd)
-	if processor == nil {
-		processor = gpu
-	} else {
-		processor.SetMessenger(gpu.Messenger())
-	}
-	return processor.Execute(cmd, rMsg)
-}
-
-func (gpu *GroupCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
-	text := fmt.Sprintf("Group command (name: %s) not support yet!", cmd.CommandName())
-	res := NewTextContent(text)
-	res.SetGroup(cmd.Group())
-	return res
-}
-
-func (gpu *GroupCommandProcessor) getMembers(cmd *GroupCommand) []ID {
-	// get from members
-	members := cmd.Members()
-	if members == nil {
-		// get from 'member'
-		member := cmd.Member()
-		if member != nil {
-			members = []ID{member}
-		}
-	}
-	return members
-}
 
 //
 //  Utils
@@ -117,4 +74,17 @@ func remove(list []ID, item ID) []ID {
 		out[index] = list[index+1]
 	}
 	return out
+}
+
+func BuildGroupCommandProcessors() {
+	CommandProcessorRegister("group", new(GroupCommandProcessor).Init())
+	CommandProcessorRegister(INVITE, new(InviteCommandProcessor).Init())
+	CommandProcessorRegister(EXPEL, new(ExpelCommandProcessor).Init())
+	CommandProcessorRegister(QUIT, new(QuitCommandProcessor).Init())
+	CommandProcessorRegister(QUERY, new(QueryCommandProcessor).Init())
+	CommandProcessorRegister(RESET, new(ResetCommandProcessor).Init())
+}
+
+func init() {
+	BuildGroupCommandProcessors()
 }

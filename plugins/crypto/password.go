@@ -30,6 +30,7 @@ import (
 	. "github.com/dimchat/mkm-go/digest"
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/types"
+	. "github.com/dimchat/sdk-go/plugins"
 )
 
 var KeySize = 32
@@ -47,8 +48,8 @@ func GeneratePassword(password string) SymmetricKey {
 	if length > 0 {
 		// format: {digest_prefix}+{pwd_data}
 		merged := make([]byte, KeySize)
-		ArrayCopy(digest, 0, merged, 0, uint(length))
-		ArrayCopy(data, 0, merged, uint(length), uint(dataLen))
+		BytesCopy(digest, 0, merged, 0, uint(length))
+		BytesCopy(data, 0, merged, uint(length), uint(dataLen))
 		data = merged
 	} else if length < 0 {
 		data = digest

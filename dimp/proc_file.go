@@ -28,7 +28,7 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package cpu
+package dimp
 
 import (
 	. "github.com/dimchat/core-go/protocol"

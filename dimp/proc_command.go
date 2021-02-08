@@ -28,19 +28,17 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package cpu
+package dimp
 
 import (
 	"fmt"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp"
-	. "github.com/dimchat/sdk-go/dimp/cpu/group"
 )
 
-//
-//  CPU
-//
+/**
+ *  CPU: Command Processing Unit
+ */
 type CommandProcessor interface {
 	ContentProcessor
 
@@ -108,19 +106,4 @@ func (cpu *BaseCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content
 		res.SetGroup(group)
 	}
 	return res
-}
-
-//
-//  Register command processors
-//
-func BuildCommandProcessors() {
-	CommandProcessorRegister(META, new(MetaCommandProcessor).Init())
-	CommandProcessorRegister(DOCUMENT, new(DocumentCommandProcessor).Init())
-
-	CommandProcessorRegister("group", new(GroupCommandProcessor).Init())
-	CommandProcessorRegister(INVITE, new(InviteCommandProcessor).Init())
-	CommandProcessorRegister(EXPEL, new(ExpelCommandProcessor).Init())
-	CommandProcessorRegister(QUIT, new(QuitCommandProcessor).Init())
-	CommandProcessorRegister(QUERY, new(QueryCommandProcessor).Init())
-	CommandProcessorRegister(RESET, new(ResetCommandProcessor).Init())
 }

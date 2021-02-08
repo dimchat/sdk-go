@@ -34,7 +34,7 @@ import (
 	. "github.com/dimchat/core-go/core"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
+	"unsafe"
 )
 
 type MessengerPacker struct {
@@ -44,8 +44,8 @@ type MessengerPacker struct {
 }
 
 func (packer *MessengerPacker) Init(messenger *Messenger) *MessengerPacker {
-	transceiver := ObjectPointer(messenger).(*Transceiver)
-	if packer.TransceiverPacker.Init(transceiver) != nil {
+	ptr := unsafe.Pointer(messenger)
+	if packer.TransceiverPacker.Init((*Transceiver)(ptr)) != nil {
 		packer._messenger = messenger
 	}
 	return packer
