@@ -77,9 +77,9 @@ func (cpu *DocumentCommandProcessor) putDocument(identifier ID, meta Meta, doc D
 		return NewTextContent(text)
 	}
 	// response
-	//text := "Document received: " + identifier.String()
+	text := "Document received: " + identifier.String()
 	//return new(ReceiptCommand).InitWithText(text)
-	return nil
+	return receipt(text)
 }
 
 func (cpu *DocumentCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
