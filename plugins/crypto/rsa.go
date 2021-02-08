@@ -26,7 +26,16 @@
 package crypto
 
 import (
+	"bytes"
+	"crypto"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/asn1"
+	"encoding/pem"
 	. "github.com/dimchat/mkm-go/crypto"
+	. "github.com/dimchat/mkm-go/format"
+	. "github.com/dimchat/sdk-go/plugins/types"
 )
 
 /**
@@ -40,6 +49,8 @@ import (
 type RSAPublicKey struct {
 	BasePublicKey
 	EncryptKey
+
+	_publicKey *rsa.PublicKey
 }
 
 func NewRSAPublicKey(dict map[string]interface{}) *RSAPublicKey {
@@ -48,9 +59,36 @@ func NewRSAPublicKey(dict map[string]interface{}) *RSAPublicKey {
 
 func (key *RSAPublicKey) Init(dict map[string]interface{}) *RSAPublicKey {
 	if key.BasePublicKey.Init(dict) != nil {
-		// init
+		// lazy load
+		key._publicKey = nil
 	}
 	return key
+}
+
+func (key *RSAPublicKey) getPublicKey() *rsa.PublicKey {
+	if key._publicKey == nil {
+		data := key.Get("data")
+		if data == nil {
+			//panic(key)
+			return nil
+		}
+		block, _ := pem.Decode(UTF8Encode(data.(string)))
+		if block == nil {
+			panic(data)
+			return nil
+		}
+		pub, err := x509.ParsePKIXPublicKey(block.Bytes)
+		if err !=  nil {
+			panic(err)
+			return nil
+		}
+		key._publicKey, _ = pub.(*rsa.PublicKey)
+	}
+	return key._publicKey
+}
+
+func (key *RSAPublicKey) getHash() crypto.Hash {
+	return crypto.SHA256
 }
 
 func (key *RSAPublicKey) Data() []byte {
@@ -59,13 +97,32 @@ func (key *RSAPublicKey) Data() []byte {
 }
 
 func (key *RSAPublicKey) Verify(data []byte, signature []byte) bool {
-	// TODO:
-	return false
+	pub := key.getPublicKey()
+	h := key.getHash().New()
+	h.Write(data)
+	sum := h.Sum(nil)
+	err := rsa.VerifyPKCS1v15(pub, key.getHash(), sum, signature)
+	return err == nil
 }
 
 func (key *RSAPublicKey) Encrypt(plaintext []byte) []byte {
-	// TODO:
-	return nil
+	pub := key.getPublicKey()
+	if pub == nil {
+		//panic(key)
+		return nil
+	}
+	part := pub.N.BitLen() / 8 - 11
+	chunks := BytesSplit(plaintext, part)
+	buffer := bytes.NewBufferString("")
+	for _, line := range chunks {
+		data, err := rsa.EncryptPKCS1v15(rand.Reader, pub, line)
+		if err != nil {
+			panic(err)
+			return nil
+		}
+		buffer.Write(data)
+	}
+	return buffer.Bytes()
 }
 
 /**
@@ -80,6 +137,10 @@ func (key *RSAPublicKey) Encrypt(plaintext []byte) []byte {
 type RSAPrivateKey struct {
 	BasePrivateKey
 	DecryptKey
+
+	_privateKey *rsa.PrivateKey
+
+	_publicKey PublicKey
 }
 
 func NewRSAPrivateKey(dict map[string]interface{}) *RSAPrivateKey {
@@ -88,9 +149,71 @@ func NewRSAPrivateKey(dict map[string]interface{}) *RSAPrivateKey {
 
 func (key *RSAPrivateKey) Init(dict map[string]interface{}) *RSAPrivateKey {
 	if key.BasePrivateKey.Init(dict) != nil {
-		// init
+		// lazy load
+		key._privateKey = nil
+		key._publicKey = nil
 	}
 	return key
+}
+
+func (key *RSAPrivateKey) getPrivateKey() *rsa.PrivateKey {
+	if key._privateKey == nil {
+		data := key.Get("data")
+		if data == nil {
+			// generate new key with size
+			key._privateKey = key.generate(1024)
+		} else {
+			block, _ := pem.Decode(UTF8Encode(data.(string)))
+			if block == nil {
+				panic(data)
+				return nil
+			}
+			pri, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+			if err !=  nil {
+				panic(err)
+				return nil
+			}
+			key._privateKey, _ = pri.(*rsa.PrivateKey)
+		}
+	}
+	return key._privateKey
+}
+
+func MarshalPKCS8PrivateKey(key *rsa.PrivateKey) []byte {
+	info := struct {
+		Version             int
+		PrivateKeyAlgorithm []asn1.ObjectIdentifier
+		PrivateKey          []byte
+	}{}
+	info.Version = 0
+	info.PrivateKeyAlgorithm = make([]asn1.ObjectIdentifier, 1)
+	info.PrivateKeyAlgorithm[0] = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
+	info.PrivateKey = x509.MarshalPKCS1PrivateKey(key)
+	k, _ := asn1.Marshal(info)
+	return k
+}
+
+func (key *RSAPrivateKey) generate(bits int) *rsa.PrivateKey {
+	pri, err := rsa.GenerateKey(rand.Reader, bits)
+	if err != nil {
+		panic(err)
+		return nil
+	}
+	der := MarshalPKCS8PrivateKey(pri)
+	block := &pem.Block{
+		Type: "PRIVATE KEY",
+		Bytes: der,
+	}
+	data := pem.EncodeToMemory(block)
+	key.Set("data", UTF8Decode(data))
+	key.Set("mode", "ECB")
+	key.Set("padding", "PKCS1")
+	key.Set("digest", "SHA256")
+	return pri
+}
+
+func (key *RSAPrivateKey) getHash() crypto.Hash {
+	return crypto.SHA256
 }
 
 func (key *RSAPrivateKey) Data() []byte {
@@ -99,16 +222,54 @@ func (key *RSAPrivateKey) Data() []byte {
 }
 
 func (key *RSAPrivateKey) Sign(data []byte) []byte {
-	// TODO:
-	return nil
+	pri := key.getPrivateKey()
+	h := key.getHash().New()
+	h.Write(data)
+	sum := h.Sum(nil)
+	sig, err := rsa.SignPKCS1v15(rand.Reader, pri, key.getHash(), sum)
+	if err != nil {
+		panic(err)
+		return nil
+	}
+	return sig
 }
 
 func (key *RSAPrivateKey) Decrypt(ciphertext []byte) []byte {
-	// TODO:
-	return nil
+	pri := key.getPrivateKey()
+	part := pri.N.BitLen() / 8
+	chunks := BytesSplit(ciphertext, part)
+	buffer := bytes.NewBufferString("")
+	for _, line := range chunks {
+		data, err := rsa.DecryptPKCS1v15(rand.Reader, pri, line)
+		if err != nil {
+			panic(err)
+			return nil
+		}
+		buffer.Write(data)
+	}
+	return buffer.Bytes()
 }
 
 func (key *RSAPrivateKey) PublicKey() PublicKey {
-	// TODO:
-	return nil
+	if key._publicKey == nil {
+		sKey := key.getPrivateKey()
+		pKey := &sKey.PublicKey
+		der, err := x509.MarshalPKIXPublicKey(pKey)
+		if err != nil {
+			return nil
+		}
+		block := &pem.Block{
+			Type: "PUBLIC KEY",
+			Bytes: der,
+		}
+		data := pem.EncodeToMemory(block)
+		key._publicKey = PublicKeyParse(map[string]interface{}{
+			"algorithm": RSA,
+			"data": UTF8Decode(data),
+			"mode": "ECB",
+			"padding": "PKCS1",
+			"digest": "SHA256",
+		})
+	}
+	return key._publicKey
 }

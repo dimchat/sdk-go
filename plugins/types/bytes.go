@@ -51,6 +51,29 @@ func BytesCopy(src []byte, srcPos uint, dest []byte, destPos uint, length uint) 
 	}
 }
 
+func BytesSplit(data []byte, width int) [][]byte {
+	dataLen := len(data)
+	platoons := dataLen / width
+	// prepare space
+	var chunks [][]byte
+	if dataLen - width * platoons > 0 {
+		chunks = make([][]byte, 0, platoons + 1)
+	} else {
+		chunks = make([][]byte, 0, platoons)
+	}
+	// get platoons
+	pos := 0
+	for index := 0; index < platoons; index++ {
+		chunks = append(chunks, data[pos:pos+width])
+		pos += width
+	}
+	// get tail
+	if pos < dataLen {
+		chunks = append(chunks, data[pos:])
+	}
+	return chunks
+}
+
 func RandomBytes(size uint) []byte {
 	now := time.Now().UnixNano()
 	random := rand.New(rand.NewSource(now))
