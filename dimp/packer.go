@@ -44,8 +44,8 @@ type MessengerPacker struct {
 }
 
 func (packer *MessengerPacker) Init(messenger *Messenger) *MessengerPacker {
-	ptr := unsafe.Pointer(messenger)
-	if packer.TransceiverPacker.Init((*Transceiver)(ptr)) != nil {
+	transceiver := (*Transceiver)(unsafe.Pointer(messenger))
+	if packer.TransceiverPacker.Init(transceiver) != nil {
 		packer._messenger = messenger
 	}
 	return packer

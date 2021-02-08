@@ -38,7 +38,7 @@ import (
 )
 
 //
-//  Utils
+//  Utils for Group command Processing Units
 //
 
 func find(id ID, list []ID) int {

@@ -33,7 +33,7 @@ package dimp
 import (
 	. "github.com/dimchat/core-go/core"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
+	"unsafe"
 )
 
 type MessengerProcessor struct {
@@ -43,7 +43,7 @@ type MessengerProcessor struct {
 }
 
 func (processor *MessengerProcessor) Init(messenger *Messenger) *MessengerProcessor {
-	transceiver := ObjectPointer(messenger).(*Transceiver)
+	transceiver := (*Transceiver)(unsafe.Pointer(messenger))
 	if processor.TransceiverProcessor.Init(transceiver) != nil {
 		processor._messenger = messenger
 	}

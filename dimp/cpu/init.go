@@ -36,6 +36,26 @@ import (
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
+/**
+ *  Command message: {
+ *      type : 0x88,
+ *      sn   : 123,  // the same serial number with the original message
+ *
+ *      command   : "receipt",
+ *      message   : "...",
+ *      // -- extra info
+ *      sender    : "...",
+ *      receiver  : "...",
+ *      time      : 0,
+ *      signature : "..." // the same signature with the original message
+ *  }
+ */
+func receipt(message string) Command {
+	cmd := new(BaseCommand).InitWithCommand(RECEIPT)
+	cmd.Set("message", message)
+	return cmd
+}
+
 //
 //  Register content processors
 //
