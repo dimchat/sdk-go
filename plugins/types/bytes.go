@@ -23,7 +23,7 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package plugins
+package types
 
 import (
 	"math/rand"

@@ -29,7 +29,7 @@ import (
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/digest"
 	. "github.com/dimchat/mkm-go/format"
-	. "github.com/dimchat/sdk-go/plugins"
+	. "github.com/dimchat/sdk-go/plugins/types"
 )
 
 var KeySize = 32
