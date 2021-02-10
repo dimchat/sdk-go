@@ -105,6 +105,18 @@ func (facebook *Facebook) Init() *Facebook {
 	return facebook
 }
 
+func (facebook *Facebook) SetDelegate(delegate EntityDelegate) {
+	facebook.Barrack.SetDelegate(delegate)
+	handler, ok := delegate.(EntityHandler)
+	if ok {
+		facebook.Barrack.SetHandler(handler)
+	}
+	manager, ok := delegate.(EntityManager)
+	if ok {
+		facebook._manager = manager
+	}
+}
+
 func (facebook *Facebook) SetManager(manager EntityManager) {
 	facebook._manager = manager
 }

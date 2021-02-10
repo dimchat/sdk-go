@@ -36,6 +36,10 @@ import (
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
+func NewBaseMetaShadow(meta IMeta) *BaseMetaShadow {
+	return new(BaseMetaShadow).Init(meta)
+}
+
 /**
  *  Default Meta to build ID with 'name@address'
  *
@@ -56,7 +60,9 @@ type DefaultMeta struct {
 }
 
 func NewDefaultMeta(key VerifyKey, seed string, fingerprint []byte) *DefaultMeta {
-	return new(DefaultMeta).InitWithKey(key, seed, fingerprint)
+	meta := new(DefaultMeta).InitWithKey(key, seed, fingerprint)
+	meta.SetDelegate(NewBaseMetaShadow(meta))
+	return meta
 }
 
 func (meta *DefaultMeta) Init(dict map[string]interface{}) *DefaultMeta {
@@ -100,24 +106,26 @@ func (meta *DefaultMeta) GenerateAddress(network uint8) Address {
 type BTCMeta struct {
 	BaseMeta
 
-	// caches
-	_addresses map[uint8]Address
+	// cached
+	_address Address
 }
 
 func NewBTCMeta(version uint8, key VerifyKey, seed string, fingerprint []byte) *BTCMeta {
-	return new(BTCMeta).InitWithType(version, key, seed, fingerprint)
+	meta := new(BTCMeta).InitWithType(version, key, seed, fingerprint)
+	meta.SetDelegate(NewBaseMetaShadow(meta))
+	return meta
 }
 
 func (meta *BTCMeta) Init(dict map[string]interface{}) *BTCMeta {
 	if meta.BaseMeta.Init(dict) != nil {
-		meta._addresses = make(map[uint8]Address)
+		meta._address = nil
 	}
 	return meta
 }
 
 func (meta *BTCMeta) InitWithType(version uint8, key VerifyKey, seed string, fingerprint []byte) *BTCMeta {
 	if meta.BaseMeta.InitWithType(version, key, seed, fingerprint) != nil {
-		meta._addresses = make(map[uint8]Address)
+		meta._address = nil
 	}
 	return meta
 }
@@ -127,14 +135,14 @@ func (meta *BTCMeta) GenerateAddress(network uint8) Address {
 		return nil
 	}
 	// check caches
-	address := meta._addresses[network]
+	address := meta._address
 	if address == nil && meta.IsValid() {
 		// generate and cache it
 		key := meta.Key()
 		pKey, ok := key.(CryptographyKey)
 		if ok {
 			address = BTCAddressGenerate(pKey.Data(), network)
-			meta._addresses[network] = address
+			meta._address = address
 		}
 	}
 	return address
@@ -155,24 +163,26 @@ func (meta *BTCMeta) GenerateAddress(network uint8) Address {
 type ETHMeta struct {
 	BaseMeta
 
-	// caches
-	_addresses map[uint8]Address
+	// cached
+	_address Address
 }
 
 func NewETHMeta(version uint8, key VerifyKey, seed string, fingerprint []byte) *ETHMeta {
-	return new(ETHMeta).InitWithType(version, key, seed, fingerprint)
+	meta := new(ETHMeta).InitWithType(version, key, seed, fingerprint)
+	meta.SetDelegate(NewBaseMetaShadow(meta))
+	return meta
 }
 
 func (meta *ETHMeta) Init(dict map[string]interface{}) *ETHMeta {
 	if meta.BaseMeta.Init(dict) != nil {
-		meta._addresses = make(map[uint8]Address)
+		meta._address = nil
 	}
 	return meta
 }
 
 func (meta *ETHMeta) InitWithType(version uint8, key VerifyKey, seed string, fingerprint []byte) *ETHMeta {
 	if meta.BaseMeta.InitWithType(version, key, seed, fingerprint) != nil {
-		meta._addresses = make(map[uint8]Address)
+		meta._address = nil
 	}
 	return meta
 }
@@ -182,14 +192,14 @@ func (meta *ETHMeta) GenerateAddress(network uint8) Address {
 		return nil
 	}
 	// check caches
-	address := meta._addresses[network]
+	address := meta._address
 	if address == nil && meta.IsValid() {
 		// generate and cache it
 		key := meta.Key()
 		pKey, ok := key.(CryptographyKey)
 		if ok {
 			address = ETHAddressGenerate(pKey.Data())
-			meta._addresses[network] = address
+			meta._address = address
 		}
 	}
 	return address
