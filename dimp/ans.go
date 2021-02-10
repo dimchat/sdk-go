@@ -67,13 +67,93 @@ var KEYWORDS = [...]string {
 	"root", "supervisor",
 }
 
-type AddressNameService struct {
+type IAddressNameService interface {
 
-	_reserved map[string]bool
-	_caches map[string]ID
+	IsReserved(name string) bool
+
+	Cache(name string, identifier ID) bool
+
+	/**
+	 *  Get ID by short name
+	 *
+	 * @param name - sort name
+	 * @return user ID
+	 */
+	GetID(name string) ID
+
+	/**
+	 *  Get all short names with the same ID
+	 *
+	 * @param identifier - user ID
+	 * @return short name list
+	 */
+	GetNames(identifier ID) []string
+
+	/**
+	 *  Save ANS record
+	 *
+	 * @param name - username
+	 * @param identifier - user ID; if empty, means delete this name
+	 * @return true on success
+	 */
+	Save(name string, identifier ID) bool
+}
+
+/**
+ *  ANS
+ */
+type AddressNameService struct {
+	IAddressNameService
+
+	_shadow IAddressNameService
 }
 
 func (ans *AddressNameService) Init() *AddressNameService {
+	ans._shadow = nil
+	return ans
+}
+
+func (ans *AddressNameService) SetSource(shadow IAddressNameService) {
+	ans._shadow = shadow
+}
+func (ans *AddressNameService) Source() IAddressNameService {
+	return ans._shadow
+}
+
+func (ans *AddressNameService) IsReserved(name string) bool {
+	return ans.Source().IsReserved(name)
+}
+
+func (ans *AddressNameService) Cache(name string, identifier ID) bool {
+	return ans.Source().Cache(name, identifier)
+}
+
+func (ans *AddressNameService) GetID(name string) ID {
+	return ans.Source().GetID(name)
+}
+
+func (ans *AddressNameService) GetNames(identifier ID) []string {
+	return ans.Source().GetNames(identifier)
+}
+
+func (ans *AddressNameService) Save(name string, identifier ID) bool {
+	return ans.Source().Save(name, identifier)
+}
+
+/**
+ *  Shadow Data Source for ANS
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+type AddressNameSource struct {
+	IAddressNameService
+
+	_reserved map[string]bool
+	_caches map[string]ID
+
+	_service IAddressNameService
+}
+
+func (ans *AddressNameSource) Init(service IAddressNameService) *AddressNameSource {
 	ans._reserved = make(map[string]bool)
 	ans._caches = make(map[string]ID, len(KEYWORDS))
 	// constant ANS records
@@ -86,15 +166,20 @@ func (ans *AddressNameService) Init() *AddressNameService {
 	for _, item := range KEYWORDS {
 		ans._reserved[item] = true
 	}
+	ans._service = service
 	return ans
 }
 
-func (ans *AddressNameService) IsReserved(name string) bool {
+func (ans *AddressNameSource) Service() IAddressNameService {
+	return ans._service
+}
+
+func (ans *AddressNameSource) IsReserved(name string) bool {
 	return ans._reserved[name]
 }
 
-func (ans *AddressNameService) Cache(name string, identifier ID) bool {
-	if ans.IsReserved(name) {
+func (ans *AddressNameSource) Cache(name string, identifier ID) bool {
+	if ans.Service().IsReserved(name) {
 		// this name is reserved, cannot register
 		return false
 	}
@@ -106,23 +191,11 @@ func (ans *AddressNameService) Cache(name string, identifier ID) bool {
 	return true
 }
 
-/**
- *  Get ID by short name
- *
- * @param name - sort name
- * @return user ID
- */
-func (ans *AddressNameService) GetID(name string) ID {
+func (ans *AddressNameSource) GetID(name string) ID {
 	return ans._caches[name]
 }
 
-/**
- *  Get all short names with the same ID
- *
- * @param identifier - user ID
- * @return short name list
- */
-func (ans *AddressNameService) GetNames(identifier ID) []string {
+func (ans *AddressNameSource) GetNames(identifier ID) []string {
 	array := make([]string, 1)
 	for key, value := range ans._caches {
 		if identifier.Equal(value) {
@@ -132,14 +205,7 @@ func (ans *AddressNameService) GetNames(identifier ID) []string {
 	return array
 }
 
-/**
- *  Save ANS record
- *
- * @param name - username
- * @param identifier - user ID; if empty, means delete this name
- * @return true on success
- */
-func (ans *AddressNameService) Save(name string, identifier ID) bool {
+func (ans *AddressNameSource) Save(name string, identifier ID) bool {
 	// override to save this record into local storage
-	return ans.Cache(name, identifier)
+	return ans.Service().Cache(name, identifier)
 }

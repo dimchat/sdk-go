@@ -36,7 +36,34 @@ import (
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
-type IFacebook interface {
+/**
+ *  Entity Manager
+ *  ~~~~~~~~~~~~~~
+ */
+type EntityManager interface {
+
+	/**
+	 *  Get current user (for signing and sending message)
+	 *
+	 * @return User
+	 */
+	GetCurrentUser() User
+
+	/**
+	 *  Document checking
+	 *
+	 * @param doc - entity document
+	 * @return true on accepted
+	 */
+	CheckDocument(doc Document) bool
+
+	/**
+	 *  Save entity document with ID (must verify first)
+	 *
+	 * @param doc - entity document
+	 * @return true on success
+	 */
+	SaveDocument(doc Document) bool
 
 	/**
 	 *  Save meta for entity ID (must verify first)
@@ -48,14 +75,6 @@ type IFacebook interface {
 	SaveMeta(meta Meta, identifier ID) bool
 
 	/**
-	 *  Save entity document with ID (must verify first)
-	 *
-	 * @param doc - entity document
-	 * @return true on success
-	 */
-	SaveDocument(doc Document) bool
-
-	/**
 	 *  Save members of group
 	 *
 	 * @param members - member ID list
@@ -63,140 +82,62 @@ type IFacebook interface {
 	 * @return true on success
 	 */
 	SaveMembers(members []ID, group ID) bool
+
+	IsFounder(member ID, group ID) bool
+	IsOwner(member ID, group ID) bool
 }
 
 /**
- *  Delegate for entity
+ *  Delegate for Entity
  *  ~~~~~~~~~~~~~~~~~~~
- *
- *  Abstract methods:
- *      // IFacebook
- *      SaveMeta(meta Meta, identifier ID) bool
- *      SaveDocument(doc Document) bool
- *      SaveMembers(members []ID, group ID) bool
- *      // IBarrack
- *      GetLocalUsers() []User
- *      // EntityDataSource
- *      GetMeta(identifier ID) Meta
- *      GetDocument(identifier ID, docType string) Document
- *      // UserDataSource
- *      GetContacts(user ID) []ID
- *      GetPrivateKeysForDecryption(user ID) []DecryptKey
- *      GetPrivateKeyForSignature(user ID) SignKey
- *      GetPrivateKeyForVisaSignature(user ID) SignKey
  */
 type Facebook struct {
 	Barrack
-	IFacebook
+	EntityManager
+
+	_manager EntityManager
 }
 
 func (facebook *Facebook) Init() *Facebook {
+	if facebook.Barrack.Init() != nil {
+		facebook._manager = nil
+	}
 	return facebook
 }
 
-/**
- *  Get current user (for signing and sending message)
- *
- * @return User
- */
+func (facebook *Facebook) SetManager(manager EntityManager) {
+	facebook._manager = manager
+}
+func (facebook *Facebook) Manager() EntityManager {
+	return facebook._manager
+}
+
+//-------- EntityManager
+
 func (facebook *Facebook) GetCurrentUser() User {
-	users := facebook.GetLocalUsers()
-	if users == nil || len(users) == 0 {
-		return nil
-	}
-	return users[0]
+	return facebook.Manager().GetCurrentUser()
 }
 
-/**
- *  Document checking
- *
- * @param doc - entity document
- * @return true on accepted
- */
 func (facebook *Facebook) CheckDocument(doc Document) bool {
-	identifier := doc.ID()
-	if identifier == nil {
-		return false
-	}
-	// NOTICE: if this is a bulletin document for group,
-	//             verify it with the group owner's meta.key
-	//         else (this is a visa document for user)
-	//             verify it with the user's meta.key
-	var meta Meta
-	if identifier.IsGroup() {
-		// check by owner
-		owner := facebook.GetOwner(identifier)
-		if owner == nil {
-			if identifier.Type() == POLYLOGUE {
-				// NOTICE: if this is a polylogue document,
-				//             verify it with the founder's meta.key
-				//             (which equals to the group's meta.key)
-				meta = facebook.GetMeta(identifier)
-			} else {
-				// FIXME: owner not found for this group
-				return false
-			}
-		} else {
-			meta = facebook.GetMeta(owner)
-		}
-	} else {
-		meta = facebook.GetMeta(identifier)
-	}
-	return meta != nil && doc.Verify(meta.Key())
+	return facebook.Manager().CheckDocument(doc)
 }
 
-//-------- group membership
+func (facebook *Facebook) SaveDocument(doc Document) bool {
+	return facebook.Manager().SaveDocument(doc)
+}
+
+func (facebook *Facebook) SaveMeta(meta Meta, identifier ID) bool {
+	return facebook.Manager().SaveMeta(meta, identifier)
+}
+
+func (facebook *Facebook) SaveMembers(members []ID, group ID) bool {
+	return facebook.Manager().SaveMembers(members, group)
+}
 
 func (facebook *Facebook) IsFounder(member ID, group ID) bool {
-	gMeta := facebook.GetMeta(group)
-	mMeta := facebook.GetMeta(member)
-	return gMeta.MatchKey(mMeta.Key())
+	return facebook.Manager().IsFounder(member, group)
 }
 
 func (facebook *Facebook) IsOwner(member ID, group ID) bool {
-	if group.Type() == POLYLOGUE {
-		return facebook.IsFounder(member, group)
-	}
-	panic("only Polylogue so far")
-	return false
-}
-
-func (facebook *Facebook) CreateUser(identifier ID) User {
-	if identifier.IsBroadcast() {
-		// create user 'anyone@anywhere'
-		return NewUser(identifier)
-	}
-	// make sure meta exists
-	// TODO: make sure visa key exists before calling this
-	// check user type
-	network := identifier.Type()
-	if network == MAIN || network == BTCMain {
-		return NewUser(identifier)
-	}
-	if network == ROBOT {
-		return NewRobot(identifier)
-	} else if network == STATION {
-		return NewStation(identifier, "", 0)
-	} else {
-		return nil
-	}
-}
-
-func (facebook *Facebook) CreateGroup(identifier ID) Group {
-	if identifier.IsBroadcast() {
-		// create group 'everyone@everywhere'
-		return NewGroup(identifier)
-	}
-	// make sure meta exists
-	// check group type
-	network := identifier.Type()
-	if network == POLYLOGUE {
-		return NewPolylogue(identifier)
-	} else if network == CHATROOM {
-		return NewChatroom(identifier)
-	} else if network == PROVIDER {
-		return NewServiceProvider(identifier)
-	} else {
-		return nil
-	}
+	return facebook.Manager().IsOwner(member, group)
 }
