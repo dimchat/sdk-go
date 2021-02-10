@@ -31,6 +31,7 @@
 package dimp
 
 import (
+	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
 	"time"
@@ -68,21 +69,34 @@ type Transmitter interface {
 type MessengerTransmitter struct {
 	Transmitter
 
-	_messenger *Messenger
+	_messenger Transceiver
 }
 
-func (transmitter *MessengerTransmitter) Init(messenger *Messenger) *MessengerTransmitter {
+func (transmitter *MessengerTransmitter) Init(messenger Transceiver) *MessengerTransmitter {
 	transmitter._messenger = messenger
 	return transmitter
 }
 
 func (transmitter *MessengerTransmitter) Messenger() *Messenger {
-	return transmitter._messenger
+	messenger, ok := transmitter._messenger.(*Messenger)
+	if ok {
+		return messenger
+	} else {
+		panic(transmitter._messenger)
+	}
+}
+
+func (transmitter *MessengerTransmitter) Facebook() *Facebook {
+	return transmitter.Messenger().Facebook()
 }
 
 func (transmitter *MessengerTransmitter) SendContent(sender ID, receiver ID, content Content, callback MessengerCallback, priority int) bool {
-	// Application Layer should make sure user is already login before it send message to server.
-	// Application layer should put message into queue so that it will send automatically after user login
+	if sender == nil {
+		// Application Layer should make sure user is already login before it send message to server.
+		// Application layer should put message into queue so that it will send automatically after user login
+		user := transmitter.Facebook().GetCurrentUser()
+		sender = user.ID()
+	}
 	env := EnvelopeCreate(sender, receiver, time.Time{})
 	iMsg := InstantMessageCreate(env, content)
 	return transmitter.Messenger().SendInstantMessage(iMsg, callback, priority)

@@ -32,39 +32,37 @@ package dimp
 
 import (
 	. "github.com/dimchat/core-go/core"
-	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
 type Messenger struct {
-	Transceiver
+	MessageTransceiver
 
 	_delegate MessengerDelegate
 	_dataSource MessengerDataSource
 
 	_transmitter Transmitter
-
-	facebook *Facebook
-	packer *MessengerPacker
-	processor *MessengerProcessor
-	transmitter *MessengerTransmitter
 }
 
 func (messenger *Messenger) Init() *Messenger {
-	if messenger.Transceiver.Init() != nil {
+	if messenger.MessageTransceiver.Init() != nil {
 		messenger._delegate = nil
 		messenger._dataSource = nil
 
 		messenger._transmitter = nil
-
-		messenger.facebook = nil
-		messenger.packer = nil
-		messenger.processor = nil
-		messenger.transmitter = nil
 	}
 	return messenger
+}
+
+func (messenger *Messenger) Facebook() *Facebook {
+	barrack := messenger.EntityDelegate()
+	facebook, ok := barrack.(*Facebook)
+	if ok {
+		return facebook
+	} else {
+		panic(facebook)
+	}
 }
 
 /**
@@ -92,174 +90,21 @@ func (messenger *Messenger) DataSource() MessengerDataSource {
 }
 
 /**
- *  Delegate for getting entity
- *
- * @param barrack - facebook
- */
-func (messenger *Messenger) SetEntityDelegate(barrack EntityDelegate) {
-	messenger.Transceiver.SetEntityDelegate(barrack)
-	facebook, ok := barrack.(*Facebook)
-	if ok {
-		messenger.facebook = facebook
-	}
-}
-func (messenger *Messenger) EntityDelegate() EntityDelegate {
-	delegate := messenger.Transceiver.EntityDelegate()
-	if delegate == nil {
-		delegate = messenger.Facebook()
-		messenger.Transceiver.SetEntityDelegate(delegate)
-	}
-	return delegate
-}
-func (messenger *Messenger) Facebook() *Facebook {
-	if messenger.facebook == nil {
-		messenger.facebook = messenger.NewFacebook()
-	}
-	return messenger.facebook
-}
-func (messenger *Messenger) NewFacebook() *Facebook {
-	return new(Facebook).Init()
-}
-
-/**
- *  Delegate for packing message
- *
- * @param packer - message packer
- */
-func (messenger *Messenger) SetPacker(packer Packer) {
-	messenger.Transceiver.SetPacker(packer)
-	mp, ok := packer.(*MessengerPacker)
-	if ok {
-		messenger.packer = mp
-	}
-}
-func (messenger *Messenger) Packer() Packer {
-	packer := messenger.Transceiver.Packer()
-	if packer == nil {
-		packer = messenger.MessengerPacker()
-		messenger.Transceiver.SetPacker(packer)
-	}
-	return packer
-}
-func (messenger *Messenger) MessengerPacker() *MessengerPacker {
-	if messenger.packer == nil {
-		messenger.packer = messenger.NewPacker()
-	}
-	return messenger.packer
-}
-func (messenger *Messenger) NewPacker() *MessengerPacker {
-	return new(MessengerPacker).Init(messenger)
-}
-
-/**
- *  Delegate for processing message
- *
- * @param processor - message processor
- */
-func (messenger *Messenger) SetProcessor(processor Processor) {
-	messenger.Transceiver.SetProcessor(processor)
-	mp, ok := processor.(*MessengerProcessor)
-	if ok {
-		messenger.processor = mp
-	}
-}
-func (messenger *Messenger) Processor() Processor {
-	processor := messenger.Transceiver.Processor()
-	if processor == nil {
-		processor = messenger.MessengerProcessor()
-		messenger.Transceiver.SetProcessor(processor)
-	}
-	return processor
-}
-func (messenger *Messenger) MessengerProcessor() *MessengerProcessor {
-	if messenger.processor == nil {
-		messenger.processor = messenger.NewProcessor()
-	}
-	return messenger.processor
-}
-func (messenger *Messenger) NewProcessor() *MessengerProcessor {
-	return new(MessengerProcessor).Init(messenger)
-}
-
-/**
  *  Delegate for transmitting message
  *
  * @param transmitter - message transmitter
  */
 func (messenger *Messenger) SetTransmitter(transmitter Transmitter) {
 	messenger._transmitter = transmitter
-	mt, ok := transmitter.(*MessengerTransmitter)
-	if ok {
-		messenger._transmitter = mt
-	}
 }
 func (messenger *Messenger) Transmitter() Transmitter {
-	if messenger._transmitter == nil {
-		messenger._transmitter = messenger.MessengerTransmitter()
-	}
 	return messenger._transmitter
-}
-func (messenger *Messenger) MessengerTransmitter() *MessengerTransmitter {
-	if messenger.transmitter == nil {
-		messenger.transmitter = messenger.NewTransmitter()
-	}
-	return messenger.transmitter
-}
-func (messenger *Messenger) NewTransmitter() *MessengerTransmitter {
-	return new(MessengerTransmitter).Init(messenger)
-}
-
-func (messenger *Messenger) getFileContentProcessor() *FileContentProcessor {
-	processor := ContentProcessorGetByType(FILE)
-	processor.SetMessenger(messenger)
-	return processor.(*FileContentProcessor)
-}
-
-//-------- InstantMessageDelegate
-
-func (messenger *Messenger) SerializeContent(content Content, password SymmetricKey, iMsg InstantMessage) []byte {
-	// check attachment for File/Image/Audio/Video message content
-	file, ok := content.(*FileContent)
-	if ok {
-		fpu := messenger.getFileContentProcessor()
-		fpu.UploadFileContent(file, password, iMsg)
-	}
-	return messenger.Transceiver.SerializeContent(content, password, iMsg)
-}
-
-func (messenger *Messenger) EncryptKey(data []byte, receiver ID, iMsg InstantMessage) []byte {
-	key := messenger.Facebook().GetPublicKeyForEncryption(receiver)
-	if key == nil {
-		// save this message in a queue waiting receiver's meta/document response
-		messenger.SuspendInstantMessage(iMsg)
-		return nil
-	}
-	return messenger.Transceiver.EncryptKey(data, receiver, iMsg)
-}
-
-//-------- SecureMessageDelegate
-
-func (messenger *Messenger) DeserializeContent(data []byte, password SymmetricKey, sMsg SecureMessage) Content {
-	content := messenger.Transceiver.DeserializeContent(data, password, sMsg)
-	// check attachment for File/Image/Audio/Video message content
-	file, ok := content.(*FileContent)
-	if ok {
-		fpu := messenger.getFileContentProcessor()
-		fpu.DownloadFileContent(file, password, sMsg)
-	}
-	return content
 }
 
 //
 //  Interfaces for transmitting Message
 //
 func (messenger *Messenger) SendContent(sender ID, receiver ID, content Content, callback MessengerCallback, priority int) bool {
-	if sender == nil {
-		// Application Layer should make sure user is already login before it send message to server.
-		// Application layer should put message into queue so that it will send automatically after user login
-		user := messenger.Facebook().GetCurrentUser()
-		sender = user.ID()
-	}
 	return messenger.Transmitter().SendContent(sender, receiver, content, callback, priority)
 }
 

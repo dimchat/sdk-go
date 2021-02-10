@@ -32,31 +32,33 @@ package dimp
 
 import (
 	. "github.com/dimchat/core-go/core"
+	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
-	"unsafe"
 )
 
 type MessengerPacker struct {
-	TransceiverPacker
-
-	_messenger *Messenger
+	MessagePacker
 }
 
-func (packer *MessengerPacker) Init(messenger *Messenger) *MessengerPacker {
-	transceiver := (*Transceiver)(unsafe.Pointer(messenger))
-	if packer.TransceiverPacker.Init(transceiver) != nil {
-		packer._messenger = messenger
+func (packer *MessengerPacker) Init(messenger Transceiver) *MessengerPacker {
+	if packer.MessagePacker.Init(messenger) != nil {
 	}
 	return packer
 }
 
 func (packer *MessengerPacker) Messenger() *Messenger {
-	return packer._messenger
+	transceiver := packer.Transceiver()
+	messenger, ok := transceiver.(*Messenger)
+	if ok {
+		return messenger
+	} else {
+		panic(messenger)
+	}
 }
 
 func (packer *MessengerPacker) Facebook() *Facebook {
-	return packer._messenger.Facebook()
+	return packer.Messenger().Facebook()
 }
 
 func (packer *MessengerPacker) isWaiting(identifier ID) bool {
@@ -82,7 +84,7 @@ func (packer *MessengerPacker) EncryptMessage(iMsg InstantMessage) SecureMessage
 		return nil
 	}
 	// make sure visa.key exists before encrypting message
-	return packer.TransceiverPacker.EncryptMessage(iMsg)
+	return packer.MessagePacker.EncryptMessage(iMsg)
 }
 
 func (packer *MessengerPacker) VerifyMessage(rMsg ReliableMessage) SecureMessage {
@@ -113,7 +115,7 @@ func (packer *MessengerPacker) VerifyMessage(rMsg ReliableMessage) SecureMessage
 		}
 	}
 	// make sure meta exists before verifying message
-	return packer.TransceiverPacker.VerifyMessage(rMsg)
+	return packer.MessagePacker.VerifyMessage(rMsg)
 }
 
 func (packer *MessengerPacker) DecryptMessage(sMsg SecureMessage) InstantMessage {
@@ -139,5 +141,5 @@ func (packer *MessengerPacker) DecryptMessage(sMsg SecureMessage) InstantMessage
 		return nil
 	}
 	// make sure private key (decrypt key) exists before decrypting message
-	return packer.TransceiverPacker.DecryptMessage(sMsg)
+	return packer.MessagePacker.DecryptMessage(sMsg)
 }

@@ -60,6 +60,8 @@ func (shadow *FacebookDelegate) Init(facebook IBarrack) *FacebookDelegate {
 	return shadow
 }
 
+//-------- EntityHandler
+
 func (shadow *FacebookDelegate) CreateUser(identifier ID) User {
 	if identifier.IsBroadcast() {
 		// create user 'anyone@anywhere'
@@ -99,6 +101,8 @@ func (shadow *FacebookDelegate) CreateGroup(identifier ID) Group {
 		return nil
 	}
 }
+
+//-------- EntityManager
 
 func (shadow *FacebookDelegate) GetCurrentUser() User {
 	users := shadow.Barrack().GetLocalUsers()

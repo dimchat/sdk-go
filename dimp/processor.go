@@ -32,30 +32,32 @@ package dimp
 
 import (
 	. "github.com/dimchat/core-go/core"
+	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/dkd-go/protocol"
-	"unsafe"
 )
 
 type MessengerProcessor struct {
-	TransceiverProcessor
-
-	_messenger *Messenger
+	MessageProcessor
 }
 
-func (processor *MessengerProcessor) Init(messenger *Messenger) *MessengerProcessor {
-	transceiver := (*Transceiver)(unsafe.Pointer(messenger))
-	if processor.TransceiverProcessor.Init(transceiver) != nil {
-		processor._messenger = messenger
+func (processor *MessengerProcessor) Init(messenger Transceiver) *MessengerProcessor {
+	if processor.MessageProcessor.Init(messenger) != nil {
 	}
 	return processor
 }
 
 func (processor *MessengerProcessor) Messenger() *Messenger {
-	return processor._messenger
+	transceiver := processor.Transceiver()
+	messenger, ok := transceiver.(*Messenger)
+	if ok {
+		return messenger
+	} else {
+		panic(messenger)
+	}
 }
 
 func (processor *MessengerProcessor) ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) InstantMessage {
-	res := processor.TransceiverProcessor.ProcessInstantMessage(iMsg, rMsg)
+	res := processor.MessageProcessor.ProcessInstantMessage(iMsg, rMsg)
 	if processor.Messenger().SaveMessage(iMsg) {
 		return res
 	}
