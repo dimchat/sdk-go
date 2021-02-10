@@ -48,7 +48,13 @@ func RegisterDataDigesters()  {
 func BuildAddressFactory() AddressFactory {
 	factory := AddressGetFactory()
 	if factory == nil {
-		factory = new(GeneralAddressFactory).Init()
+		factory = new(GeneralAddressFactory).Init(func(address string) Address {
+			if len(address) == 42 {
+				return ETHAddressParse(address)
+			} else {
+				return BTCAddressParse(address)
+			}
+		})
 		AddressSetFactory(factory)
 	}
 	return factory
@@ -83,7 +89,7 @@ func init() {
 	BuildPublicKeyFactories()
 
 	BuildAddressFactory()
-	BuildIDFactory()
+
 	BuildMetaFactories()
 	BuildDocumentFactories()
 }
