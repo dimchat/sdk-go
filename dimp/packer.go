@@ -119,7 +119,7 @@ func (packer *MessengerPacker) DecryptMessage(sMsg SecureMessage) InstantMessage
 	}
 	var trimmed SecureMessage
 	receiver := sMsg.Receiver()
-	user := packer.Messenger().SelectLocalUser(receiver)
+	user := packer.Facebook().SelectLocalUser(receiver)
 	if user == nil {
 		// current users not match
 		trimmed = nil
