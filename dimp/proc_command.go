@@ -74,7 +74,7 @@ func (cpu *BaseCommandProcessor) Init() *BaseCommandProcessor {
 	return cpu
 }
 
-func (cpu *BaseCommandProcessor) SetMessenger(messenger *Messenger) {
+func (cpu *BaseCommandProcessor) SetMessenger(messenger IMessenger) {
 	cpu.BaseContentProcessor.SetMessenger(messenger)
 }
 

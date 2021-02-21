@@ -41,23 +41,17 @@ type MessengerPacker struct {
 	MessagePacker
 }
 
-func (packer *MessengerPacker) Init(messenger Transceiver) *MessengerPacker {
+func (packer *MessengerPacker) Init(messenger IMessenger) *MessengerPacker {
 	if packer.MessagePacker.Init(messenger) != nil {
 	}
 	return packer
 }
 
-func (packer *MessengerPacker) Messenger() *Messenger {
-	transceiver := packer.Transceiver()
-	messenger, ok := transceiver.(*Messenger)
-	if ok {
-		return messenger
-	} else {
-		panic(messenger)
-	}
+func (packer *MessengerPacker) Messenger() IMessenger {
+	return packer.Transceiver().(IMessenger)
 }
 
-func (packer *MessengerPacker) Facebook() *Facebook {
+func (packer *MessengerPacker) Facebook() IFacebook {
 	return packer.Messenger().Facebook()
 }
 

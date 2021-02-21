@@ -43,23 +43,17 @@ type MessengerTransformer struct {
 	MessageTransformer
 }
 
-func (transformer *MessengerTransformer) Init(messenger Transceiver) *MessengerTransformer {
+func (transformer *MessengerTransformer) Init(messenger IMessenger) *MessengerTransformer {
 	if transformer.MessageTransformer.Init(messenger) != nil {
 	}
 	return transformer
 }
 
-func (transformer *MessengerTransformer) Messenger() *Messenger {
-	transceiver := transformer.Transceiver()
-	messenger, ok := transceiver.(*Messenger)
-	if ok {
-		return messenger
-	} else {
-		panic(messenger)
-	}
+func (transformer *MessengerTransformer) Messenger() IMessenger {
+	return transformer.Transceiver().(IMessenger)
 }
 
-func (transformer *MessengerTransformer) Facebook() *Facebook {
+func (transformer *MessengerTransformer) Facebook() IFacebook {
 	return transformer.Messenger().Facebook()
 }
 

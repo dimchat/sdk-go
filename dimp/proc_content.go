@@ -41,7 +41,7 @@ import (
  */
 type ContentProcessor interface {
 
-	SetMessenger(messenger *Messenger)
+	SetMessenger(messenger IMessenger)
 
 	Process(content Content, rMsg ReliableMessage) Content
 }
@@ -67,7 +67,7 @@ func ContentProcessorGetByType(msgType uint8) ContentProcessor {
 type BaseContentProcessor struct {
 	ContentProcessor
 
-	_messenger *Messenger
+	_messenger IMessenger
 }
 
 func (cpu *BaseContentProcessor) Init() *BaseContentProcessor {
@@ -75,15 +75,15 @@ func (cpu *BaseContentProcessor) Init() *BaseContentProcessor {
 	return cpu
 }
 
-func (cpu *BaseContentProcessor) SetMessenger(messenger *Messenger) {
+func (cpu *BaseContentProcessor) SetMessenger(messenger IMessenger) {
 	cpu._messenger = messenger
 }
 
-func (cpu *BaseContentProcessor) Messenger() *Messenger {
+func (cpu *BaseContentProcessor) Messenger() IMessenger {
 	return cpu._messenger
 }
 
-func (cpu *BaseContentProcessor) Facebook() *Facebook {
+func (cpu *BaseContentProcessor) Facebook() IFacebook {
 	return cpu.Messenger().Facebook()
 }
 

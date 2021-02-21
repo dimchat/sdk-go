@@ -32,7 +32,6 @@ package dimp
 
 import (
 	. "github.com/dimchat/core-go/core"
-	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/dkd-go/protocol"
 )
 
@@ -40,20 +39,18 @@ type MessengerProcessor struct {
 	MessageProcessor
 }
 
-func (processor *MessengerProcessor) Init(messenger Transceiver) *MessengerProcessor {
+func (processor *MessengerProcessor) Init(messenger IMessenger) *MessengerProcessor {
 	if processor.MessageProcessor.Init(messenger) != nil {
 	}
 	return processor
 }
 
-func (processor *MessengerProcessor) Messenger() *Messenger {
-	transceiver := processor.Transceiver()
-	messenger, ok := transceiver.(*Messenger)
-	if ok {
-		return messenger
-	} else {
-		panic(messenger)
-	}
+func (processor *MessengerProcessor) Messenger() IMessenger {
+	return processor.Transceiver().(IMessenger)
+}
+
+func (processor *MessengerProcessor) Facebook() IFacebook {
+	return processor.Messenger().Facebook()
 }
 
 func (processor *MessengerProcessor) ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) InstantMessage {

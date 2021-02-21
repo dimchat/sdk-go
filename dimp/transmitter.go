@@ -69,24 +69,19 @@ type Transmitter interface {
 type MessengerTransmitter struct {
 	Transmitter
 
-	_messenger Transceiver
+	_messenger IMessenger
 }
 
-func (transmitter *MessengerTransmitter) Init(messenger Transceiver) *MessengerTransmitter {
+func (transmitter *MessengerTransmitter) Init(messenger IMessenger) *MessengerTransmitter {
 	transmitter._messenger = messenger
 	return transmitter
 }
 
-func (transmitter *MessengerTransmitter) Messenger() *Messenger {
-	messenger, ok := transmitter._messenger.(*Messenger)
-	if ok {
-		return messenger
-	} else {
-		panic(transmitter._messenger)
-	}
+func (transmitter *MessengerTransmitter) Messenger() IMessenger {
+	return transmitter._messenger
 }
 
-func (transmitter *MessengerTransmitter) Facebook() *Facebook {
+func (transmitter *MessengerTransmitter) Facebook() IFacebook {
 	return transmitter.Messenger().Facebook()
 }
 

@@ -87,6 +87,11 @@ type EntityManager interface {
 	IsOwner(member ID, group ID) bool
 }
 
+type IFacebook interface {
+	IBarrack
+	EntityManager
+}
+
 /**
  *  Delegate for Entity
  *  ~~~~~~~~~~~~~~~~~~~

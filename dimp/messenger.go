@@ -32,9 +32,20 @@ package dimp
 
 import (
 	. "github.com/dimchat/core-go/core"
+	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
 )
+
+type IMessenger interface {
+	Transceiver
+
+	Transmitter
+	MessengerDelegate
+	MessengerDataSource
+
+	Facebook() IFacebook
+}
 
 type Messenger struct {
 	MessageTransceiver
@@ -55,14 +66,8 @@ func (messenger *Messenger) Init() *Messenger {
 	return messenger
 }
 
-func (messenger *Messenger) Facebook() *Facebook {
-	barrack := messenger.EntityDelegate()
-	facebook, ok := barrack.(*Facebook)
-	if ok {
-		return facebook
-	} else {
-		panic(facebook)
-	}
+func (messenger *Messenger) Facebook() IFacebook {
+	return messenger.EntityDelegate().(IFacebook)
 }
 
 /**

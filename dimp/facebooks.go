@@ -54,7 +54,7 @@ type FacebookDelegate struct {
 	EntityManager
 }
 
-func (shadow *FacebookDelegate) Init(facebook IBarrack) *FacebookDelegate {
+func (shadow *FacebookDelegate) Init(facebook IFacebook) *FacebookDelegate {
 	if shadow.BarrackDelegate.Init(facebook) != nil {
 	}
 	return shadow
