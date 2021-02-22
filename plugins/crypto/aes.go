@@ -133,8 +133,7 @@ func (key *AESKey) Data() []byte {
 func (key *AESKey) Encrypt(plaintext []byte) []byte {
 	block, err := aes.NewCipher(key.Data())
 	if err != nil {
-		//panic("failed to create cipher")
-		return nil
+		panic(err)
 	}
 	blockMode := cipher.NewCBCEncrypter(block, key.initVector())
 	padded := PKCS5Padding(plaintext, key.blockSize())
@@ -146,8 +145,7 @@ func (key *AESKey) Encrypt(plaintext []byte) []byte {
 func (key *AESKey) Decrypt(ciphertext []byte) []byte {
 	block, err := aes.NewCipher(key.Data())
 	if err != nil {
-		//panic("failed to create cipher")
-		return nil
+		panic(err)
 	}
 	blockMode := cipher.NewCBCDecrypter(block, key.initVector())
 	plaintext := make([]byte, len(ciphertext))

@@ -66,29 +66,20 @@ func (key *ECCPublicKey) Init(dict map[string]interface{}) *ECCPublicKey {
 func (key *ECCPublicKey) Data() []byte {
 	if key._data == nil {
 		data := key.Get("data")
-		if data == nil {
-			return nil
+		str := data.(string)
+		// check for raw data (33/65 bytes)
+		length := len(str)
+		if length == 66 || length == 130 {
+			// Hex format
+			key._data = HexDecode(str)
 		}
-		str, ok := data.(string)
-		if ok {
-			// check for raw data (33/65 bytes)
-			length := len(str)
-			if length == 66 || length == 130 {
-				// Hex format
-				key._data = HexDecode(str)
-			}
-			// TODO: PEM format
-		}
+		// TODO: PEM format
 	}
 	return key._data
 }
 
 func (key *ECCPublicKey) Verify(data []byte, signature []byte) bool {
-	pub := key.Data()
-	if pub == nil {
-		return false
-	}
-	return secp256k1.VerifySignature(pub, SHA256(data), signature)
+	return secp256k1.VerifySignature(key.Data(), SHA256(data), signature)
 }
 
 /**
@@ -159,27 +150,21 @@ func (key *ECCPrivateKey) Data() []byte {
 			key._data = key.generate()
 		} else {
 			// parse PEM file content
-			str, ok := data.(string)
-			if ok {
-				// check for raw data (32 bytes)
-				length := len(str)
-				if length == 64 {
-					// Hex format
-					key._data = HexDecode(str)
-				}
-				// TODO: PEM format
+			str := data.(string)
+			// check for raw data (32 bytes)
+			length := len(str)
+			if length == 64 {
+				// Hex format
+				key._data = HexDecode(str)
 			}
+			// TODO: PEM format
 		}
 	}
 	return key._data
 }
 
 func (key *ECCPrivateKey) Sign(data []byte) []byte {
-	pub := key.Data()
-	if pub == nil {
-		return nil
-	}
-	sig, err := secp256k1.Sign(SHA256(data), pub)
+	sig, err := secp256k1.Sign(SHA256(data), key.Data())
 	if err !=  nil {
 		panic(err)
 	}
@@ -189,9 +174,6 @@ func (key *ECCPrivateKey) Sign(data []byte) []byte {
 func (key *ECCPrivateKey) PublicKey() PublicKey {
 	if key._publicKey == nil {
 		pri := key.getPrivateKey()
-		if pri == nil {
-			return nil
-		}
 		pub := elliptic.Marshal(key.getCurve(), pri.X, pri.Y)
 		key._publicKey = PublicKeyParse(map[string]interface{}{
 			"algorithm": ECC,

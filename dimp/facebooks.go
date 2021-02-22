@@ -36,6 +36,11 @@ import (
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
+type IFacebookHandler interface {
+	EntityHandler
+	EntityManager
+}
+
 /**
  *  Delegate for Facebook
  *  ~~~~~~~~~~~~~~~~~~~~~

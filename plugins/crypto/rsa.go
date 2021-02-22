@@ -68,21 +68,12 @@ func (key *RSAPublicKey) Init(dict map[string]interface{}) *RSAPublicKey {
 func (key *RSAPublicKey) getPublicKey() *rsa.PublicKey {
 	if key._publicKey == nil {
 		data := key.Get("data")
-		if data == nil {
-			//panic(key)
-			return nil
-		}
 		block, _ := pem.Decode(UTF8Encode(data.(string)))
-		if block == nil {
-			panic(data)
-			return nil
-		}
 		pub, err := x509.ParsePKIXPublicKey(block.Bytes)
 		if err !=  nil {
 			panic(err)
-			return nil
 		}
-		key._publicKey, _ = pub.(*rsa.PublicKey)
+		key._publicKey = pub.(*rsa.PublicKey)
 	}
 	return key._publicKey
 }
@@ -107,10 +98,6 @@ func (key *RSAPublicKey) Verify(data []byte, signature []byte) bool {
 
 func (key *RSAPublicKey) Encrypt(plaintext []byte) []byte {
 	pub := key.getPublicKey()
-	if pub == nil {
-		//panic(key)
-		return nil
-	}
 	part := pub.N.BitLen() / 8 - 11
 	chunks := BytesSplit(plaintext, part)
 	buffer := bytes.NewBufferString("")
@@ -118,7 +105,6 @@ func (key *RSAPublicKey) Encrypt(plaintext []byte) []byte {
 		data, err := rsa.EncryptPKCS1v15(rand.Reader, pub, line)
 		if err != nil {
 			panic(err)
-			return nil
 		}
 		buffer.Write(data)
 	}
@@ -164,16 +150,11 @@ func (key *RSAPrivateKey) getPrivateKey() *rsa.PrivateKey {
 			key._privateKey = key.generate(1024)
 		} else {
 			block, _ := pem.Decode(UTF8Encode(data.(string)))
-			if block == nil {
-				panic(data)
-				return nil
-			}
 			pri, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 			if err !=  nil {
 				panic(err)
-				return nil
 			}
-			key._privateKey, _ = pri.(*rsa.PrivateKey)
+			key._privateKey = pri.(*rsa.PrivateKey)
 		}
 	}
 	return key._privateKey
@@ -197,7 +178,6 @@ func (key *RSAPrivateKey) generate(bits int) *rsa.PrivateKey {
 	pri, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
 		panic(err)
-		return nil
 	}
 	der := MarshalPKCS8PrivateKey(pri)
 	block := &pem.Block{
@@ -229,7 +209,6 @@ func (key *RSAPrivateKey) Sign(data []byte) []byte {
 	sig, err := rsa.SignPKCS1v15(rand.Reader, pri, key.getHash(), sum)
 	if err != nil {
 		panic(err)
-		return nil
 	}
 	return sig
 }
@@ -243,7 +222,6 @@ func (key *RSAPrivateKey) Decrypt(ciphertext []byte) []byte {
 		data, err := rsa.DecryptPKCS1v15(rand.Reader, pri, line)
 		if err != nil {
 			panic(err)
-			return nil
 		}
 		buffer.Write(data)
 	}
@@ -256,7 +234,7 @@ func (key *RSAPrivateKey) PublicKey() PublicKey {
 		pKey := &sKey.PublicKey
 		der, err := x509.MarshalPKIXPublicKey(pKey)
 		if err != nil {
-			return nil
+			panic(err)
 		}
 		block := &pem.Block{
 			Type: "PUBLIC KEY",
