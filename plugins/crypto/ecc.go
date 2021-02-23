@@ -26,14 +26,10 @@
 package crypto
 
 import (
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/digest"
 	. "github.com/dimchat/mkm-go/format"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/crypto/secp256k1"
+	"github.com/dimchat/sdk-go/plugins/crypto/secp256k1"
 )
 
 /**
@@ -79,7 +75,10 @@ func (key *ECCPublicKey) Data() []byte {
 }
 
 func (key *ECCPublicKey) Verify(data []byte, signature []byte) bool {
-	return secp256k1.VerifySignature(key.Data(), SHA256(data), signature)
+	if len(signature) > 64 {
+		signature = secp256k1.SignatureFromDER(signature)
+	}
+	return secp256k1.Verify(key.Data(), SHA256(data), signature)
 }
 
 /**
@@ -96,7 +95,6 @@ type ECCPrivateKey struct {
 
 	_data []byte
 
-	_pri *ecdsa.PrivateKey
 	_publicKey PublicKey
 }
 
@@ -108,38 +106,9 @@ func (key *ECCPrivateKey) Init(dict map[string]interface{}) *ECCPrivateKey {
 	if key.BasePrivateKey.Init(dict) != nil {
 		// lazy load
 		key._data = nil
-		key._pri = nil
 		key._publicKey = nil
 	}
 	return key
-}
-
-func (key *ECCPrivateKey) getCurve() *secp256k1.BitCurve {
-	return secp256k1.S256()
-}
-
-func (key *ECCPrivateKey) generate() []byte {
-	pri, err := ecdsa.GenerateKey(key.getCurve(), rand.Reader)
-	if err != nil {
-		panic(err)
-	}
-	key._pri = pri
-	data := make([]byte, 32)
-	blob := pri.D.Bytes()
-	copy(data[32-len(blob):], blob)
-	return data
-}
-
-func (key *ECCPrivateKey) getPrivateKey() *ecdsa.PrivateKey {
-	if key._pri == nil {
-		data := key.Data()
-		pri, err := crypto.ToECDSA(data)
-		if err != nil {
-			panic(err)
-		}
-		key._pri = pri
-	}
-	return key._pri
 }
 
 func (key *ECCPrivateKey) Data() []byte {
@@ -147,7 +116,8 @@ func (key *ECCPrivateKey) Data() []byte {
 		data := key.Get("data")
 		if data == nil {
 			// generate key
-			key._data = key.generate()
+			_, pri := secp256k1.Generate()
+			key._data = pri
 		} else {
 			// parse PEM file content
 			str := data.(string)
@@ -164,20 +134,18 @@ func (key *ECCPrivateKey) Data() []byte {
 }
 
 func (key *ECCPrivateKey) Sign(data []byte) []byte {
-	sig, err := secp256k1.Sign(SHA256(data), key.Data())
-	if err !=  nil {
-		panic(err)
-	}
-	return sig
+	sig := secp256k1.Sign(key.Data(), SHA256(data))
+	return secp256k1.SignatureToDER(sig)
 }
 
 func (key *ECCPrivateKey) PublicKey() PublicKey {
 	if key._publicKey == nil {
-		pri := key.getPrivateKey()
-		pub := elliptic.Marshal(key.getCurve(), pri.X, pri.Y)
+		pri := key.Data()
+		pub := secp256k1.GetPublicKey(pri)
+		data := "04" + HexEncode(pub)
 		key._publicKey = PublicKeyParse(map[string]interface{}{
 			"algorithm": ECC,
-			"data": UTF8Decode(pub),
+			"data": data,
 			"curve": "secp256k1",
 			"digest": "SHA256",
 		})
