@@ -98,7 +98,7 @@ func Verify(pub, digest, signature []byte) bool {
 	keyPtr := (*C.uchar)(unsafe.Pointer(&pub[0]))
 	digPtr := (*C.uchar)(unsafe.Pointer(&digest[0]))
 	sigPtr := (*C.uchar)(unsafe.Pointer(&signature[0]))
-	return C.uECC_verify(keyPtr, digPtr, C.unsigned(len(digest)), sigPtr, C.uECC_secp256k1())
+	return C.uECC_verify(keyPtr, digPtr, C.unsigned(len(digest)), sigPtr, C.uECC_secp256k1()) == 1
 }
 
 func SignatureToDER(signature []byte) []byte {
