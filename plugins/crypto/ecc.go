@@ -80,7 +80,7 @@ func (key *ECCPublicKey) Verify(data []byte, signature []byte) bool {
 	}
 	pub := key.Data()
 	if len(pub) == 65 {
-		pub = pub[:64]
+		pub = pub[1:]
 	}
 	return secp256k1.Verify(pub, SHA256(data), signature)
 }
