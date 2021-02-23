@@ -78,7 +78,11 @@ func (key *ECCPublicKey) Verify(data []byte, signature []byte) bool {
 	if len(signature) > 64 {
 		signature = secp256k1.SignatureFromDER(signature)
 	}
-	return secp256k1.Verify(key.Data(), SHA256(data), signature)
+	pub := key.Data()
+	if len(pub) == 65 {
+		pub = pub[:64]
+	}
+	return secp256k1.Verify(pub, SHA256(data), signature)
 }
 
 /**
