@@ -27,6 +27,7 @@ package secp256k1
 
 /*
 #include "ecc.h"
+#include "micro-ecc/uECC.c"
 */
 import "C"
 
@@ -81,7 +82,7 @@ func Sign(pri, digest []byte) []byte {
 	keyPtr := (*C.uchar)(unsafe.Pointer(&pri[0]))
 	digPtr := (*C.uchar)(unsafe.Pointer(&digest[0]))
 	sigPtr := (*C.uchar)(unsafe.Pointer(&sig[0]))
-	C.uECC_sign(keyPtr, digPtr, C.int(len(digest)), sigPtr, C.uECC_secp256k1())
+	C.uECC_sign(keyPtr, digPtr, C.unsigned(len(digest)), sigPtr, C.uECC_secp256k1())
 	return sig
 }
 
@@ -97,7 +98,7 @@ func Verify(pub, digest, signature []byte) bool {
 	keyPtr := (*C.uchar)(unsafe.Pointer(&pub[0]))
 	digPtr := (*C.uchar)(unsafe.Pointer(&digest[0]))
 	sigPtr := (*C.uchar)(unsafe.Pointer(&signature[0]))
-	return C.uECC_verify(keyPtr, digPtr, C.int(len(digest)), sigPtr, C.uECC_secp256k1())
+	return C.uECC_verify(keyPtr, digPtr, C.unsigned(len(digest)), sigPtr, C.uECC_secp256k1())
 }
 
 func SignatureToDER(signature []byte) []byte {

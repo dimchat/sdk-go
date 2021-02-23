@@ -8,6 +8,7 @@
 #ifndef DIM_ECC_H
 #define DIM_ECC_H
 
+#include <string.h>
 #include "micro-ecc/uECC.h"
 
 static int trim_to_32_bytes(const uint8_t *src, int src_len, uint8_t *dst)
