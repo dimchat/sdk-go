@@ -32,6 +32,7 @@ package cpu
 
 import (
 	"fmt"
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
@@ -67,7 +68,7 @@ func (gpu *GroupCommandProcessor) Execute(cmd Command, _ ReliableMessage) Conten
 	return res
 }
 
-func (gpu *GroupCommandProcessor) GetMembers(cmd *GroupCommand) []ID {
+func (gpu *GroupCommandProcessor) GetMembers(cmd GroupCommand) []ID {
 	// get from members
 	members := cmd.Members()
 	if members == nil {

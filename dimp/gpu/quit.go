@@ -44,7 +44,6 @@ type QuitCommandProcessor struct {
 }
 
 func (gpu *QuitCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Content {
-	//gCmd := cmd.(*GroupCommand)
 	facebook := gpu.Facebook()
 
 	// 0. check group

@@ -31,6 +31,7 @@
 package protocol
 
 import (
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/format"
@@ -50,14 +51,46 @@ import (
  *      signature : "..." // the same signature with the original message
  *  }
  */
-type ReceiptCommand struct {
+type ReceiptCommand interface {
+	Command
+	IReceiptCommand
+}
+type IReceiptCommand interface {
+
+	Message() string
+
+	Envelope() Envelope
+	SetEnvelope(env Envelope)
+
+	Signature() []byte
+	SetSignature(signature []byte)
+}
+
+//
+//  Receipt command implementation
+//
+type BaseReceiptCommand struct {
 	BaseCommand
+	IReceiptCommand
 
 	// original message info
 	_envelope Envelope
 }
 
-func (cmd *ReceiptCommand) Init(dict map[string]interface{}) *ReceiptCommand {
+func NewReceiptCommand(text string, env Envelope, sn uint32, signature []byte) ReceiptCommand {
+	var cmd ReceiptCommand
+	if env == nil {
+		cmd = new(BaseReceiptCommand).InitWithMessage(text)
+	} else {
+		cmd = new(BaseReceiptCommand).InitWithEnvelope(env, sn, text)
+	}
+	if signature != nil {
+		cmd.SetSignature(signature)
+	}
+	return cmd
+}
+
+func (cmd *BaseReceiptCommand) Init(dict map[string]interface{}) *BaseReceiptCommand {
 	if cmd.BaseCommand.Init(dict) != nil {
 		// lazy load
 		cmd._envelope = nil
@@ -65,7 +98,7 @@ func (cmd *ReceiptCommand) Init(dict map[string]interface{}) *ReceiptCommand {
 	return cmd
 }
 
-func (cmd *ReceiptCommand) InitWithMessage(text string) *ReceiptCommand {
+func (cmd *BaseReceiptCommand) InitWithMessage(text string) *BaseReceiptCommand {
 	if cmd.BaseCommand.InitWithCommand(RECEIPT) != nil {
 		cmd.Set("message", text)
 		cmd._envelope = nil
@@ -73,7 +106,7 @@ func (cmd *ReceiptCommand) InitWithMessage(text string) *ReceiptCommand {
 	return cmd
 }
 
-func (cmd *ReceiptCommand) InitWithEnvelope(env Envelope, sn uint32, text string) *ReceiptCommand {
+func (cmd *BaseReceiptCommand) InitWithEnvelope(env Envelope, sn uint32, text string) *BaseReceiptCommand {
 	if cmd.BaseCommand.InitWithCommand(RECEIPT) != nil {
 		// envelope of the message responding to
 		cmd.SetEnvelope(env)
@@ -89,7 +122,9 @@ func (cmd *ReceiptCommand) InitWithEnvelope(env Envelope, sn uint32, text string
 	return cmd
 }
 
-func (cmd *ReceiptCommand) Message() string {
+//-------- IReceiptCommand
+
+func (cmd *BaseReceiptCommand) Message() string {
 	text := cmd.Get("message")
 	if text == nil {
 		return ""
@@ -97,7 +132,7 @@ func (cmd *ReceiptCommand) Message() string {
 	return text.(string)
 }
 
-func (cmd *ReceiptCommand) Envelope() Envelope {
+func (cmd *BaseReceiptCommand) Envelope() Envelope {
 	if cmd._envelope == nil {
 		env := cmd.Get("envelope")
 		if env == nil {
@@ -111,7 +146,7 @@ func (cmd *ReceiptCommand) Envelope() Envelope {
 	}
 	return cmd._envelope
 }
-func (cmd *ReceiptCommand) SetEnvelope(env Envelope) {
+func (cmd *BaseReceiptCommand) SetEnvelope(env Envelope) {
 	if env == nil {
 		cmd.Set("sender", nil)
 		cmd.Set("receiver", nil)
@@ -126,14 +161,14 @@ func (cmd *ReceiptCommand) SetEnvelope(env Envelope) {
 	}
 }
 
-func (cmd *ReceiptCommand) Signature() []byte {
+func (cmd *BaseReceiptCommand) Signature() []byte {
 	signature := cmd.Get("signature")
 	if signature == nil {
 		return nil
 	}
 	return Base64Decode(signature.(string))
 }
-func (cmd *ReceiptCommand) SetSignature(signature []byte) {
+func (cmd *BaseReceiptCommand) SetSignature(signature []byte) {
 	if signature == nil {
 		cmd.Set("signature", nil)
 	} else {

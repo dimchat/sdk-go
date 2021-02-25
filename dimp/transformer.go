@@ -56,17 +56,17 @@ func (transformer *MessengerTransformer) Facebook() IFacebook {
 	return transformer.Messenger().Facebook()
 }
 
-func (transformer *MessengerTransformer) getFileContentProcessor() *FileContentProcessor {
+func (transformer *MessengerTransformer) getFileContentProcessor() FileContentProcessor {
 	processor := ContentProcessorGetByType(FILE)
 	processor.SetMessenger(transformer.Messenger())
-	return processor.(*FileContentProcessor)
+	return processor.(FileContentProcessor)
 }
 
 //-------- InstantMessageDelegate
 
 func (transformer *MessengerTransformer) SerializeContent(content Content, password SymmetricKey, iMsg InstantMessage) []byte {
 	// check attachment for File/Image/Audio/Video message content
-	file, ok := content.(*FileContent)
+	file, ok := content.(FileContent)
 	if ok {
 		fpu := transformer.getFileContentProcessor()
 		fpu.UploadFileContent(file, password, iMsg)
@@ -89,7 +89,7 @@ func (transformer *MessengerTransformer) EncryptKey(data []byte, receiver ID, iM
 func (transformer *MessengerTransformer) DeserializeContent(data []byte, password SymmetricKey, sMsg SecureMessage) Content {
 	content := transformer.MessageTransformer.DeserializeContent(data, password, sMsg)
 	// check attachment for File/Image/Audio/Video message content
-	file, ok := content.(*FileContent)
+	file, ok := content.(FileContent)
 	if ok {
 		fpu := transformer.getFileContentProcessor()
 		fpu.DownloadFileContent(file, password, sMsg)

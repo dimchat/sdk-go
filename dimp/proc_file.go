@@ -37,17 +37,30 @@ import (
 	"strings"
 )
 
-type FileContentProcessor struct {
+type FileContentProcessor interface {
+	ContentProcessor
+	IFileContentProcessor
+}
+type IFileContentProcessor interface {
+
+	UploadFileContent(content FileContent, pwd SymmetricKey, iMsg InstantMessage) bool
+	DownloadFileContent(content FileContent, pwd SymmetricKey, sMsg SecureMessage) bool
+}
+
+//
+//  File content processor implementation
+//
+type BaseFileContentProcessor struct {
 	BaseContentProcessor
 }
 
-func (cpu *FileContentProcessor) Init() *FileContentProcessor {
+func (cpu *BaseFileContentProcessor) Init() *BaseFileContentProcessor {
 	if cpu.BaseContentProcessor.Init() != nil {
 	}
 	return cpu
 }
 
-func (cpu *FileContentProcessor) UploadFileContent(content *FileContent, pwd SymmetricKey, iMsg InstantMessage) bool {
+func (cpu *BaseFileContentProcessor) UploadFileContent(content FileContent, pwd SymmetricKey, iMsg InstantMessage) bool {
 	data := content.Data()
 	if data == nil || len(data) == 0 {
 		panic("failed to get file data")
@@ -70,7 +83,7 @@ func (cpu *FileContentProcessor) UploadFileContent(content *FileContent, pwd Sym
 	}
 }
 
-func (cpu *FileContentProcessor) DownloadFileContent(content *FileContent, pwd SymmetricKey, sMsg SecureMessage) bool {
+func (cpu *BaseFileContentProcessor) DownloadFileContent(content FileContent, pwd SymmetricKey, sMsg SecureMessage) bool {
 	url := content.URL()
 	if !strings.Contains(url, "://") {
 		// download URL not found
@@ -96,7 +109,7 @@ func (cpu *FileContentProcessor) DownloadFileContent(content *FileContent, pwd S
 	}
 }
 
-func (cpu *FileContentProcessor) Process(_ Content, _ ReliableMessage) Content {
+func (cpu *BaseFileContentProcessor) Process(_ Content, _ ReliableMessage) Content {
 	// TODO: process file content
 
 	return nil

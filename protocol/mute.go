@@ -31,7 +31,7 @@
 package protocol
 
 import (
-	. "github.com/dimchat/core-go/protocol"
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
@@ -62,7 +62,7 @@ func (cmd *MuteCommand) Init(dict map[string]interface{}) *MuteCommand {
 }
 
 func (cmd *MuteCommand) InitWithList(list []ID) *MuteCommand {
-	if cmd.BaseCommand.InitWithCommand(BLOCK) != nil {
+	if cmd.BaseCommand.InitWithCommand(MUTE) != nil {
 		if list != nil {
 			cmd.SetList(list)
 		}

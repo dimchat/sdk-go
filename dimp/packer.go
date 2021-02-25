@@ -102,10 +102,7 @@ func (packer *MessengerPacker) VerifyMessage(rMsg ReliableMessage) SecureMessage
 	visa := rMsg.Visa()
 	if visa != nil {
 		// check & save visa attached to message
-		doc, ok := visa.(Document)
-		if ok {
-			facebook.SaveDocument(doc)
-		}
+		facebook.SaveDocument(visa)
 	}
 	// make sure meta exists before verifying message
 	return packer.MessagePacker.VerifyMessage(rMsg)

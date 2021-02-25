@@ -31,6 +31,7 @@
 package protocol
 
 import (
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 )
 
@@ -73,37 +74,40 @@ func getState(message string, session string) HandshakeState {
  *      session : "{SESSION_KEY}" // session key
  *  }
  */
-type HandshakeCommand struct {
+type HandshakeCommand interface {
+	Command
+	IHandshakeCommand
+}
+type IHandshakeCommand interface {
+
+	Message() string
+	Session() string
+	State() HandshakeState
+}
+
+//
+//  Handshake command implementation
+//
+type BaseHandshakeCommand struct {
 	BaseCommand
+	IHandshakeCommand
 
 	_message string
 	_session string
 	_state HandshakeState
 }
 
-func (cmd *HandshakeCommand) Init(dict map[string]interface{}) *HandshakeCommand {
+func (cmd *BaseHandshakeCommand) Init(dict map[string]interface{}) *BaseHandshakeCommand {
 	if cmd.BaseCommand.Init(dict) != nil {
-		// message text
-		text := dict["message"]
-		if text == nil {
-			cmd._message = ""
-		} else {
-			cmd._message = text.(string)
-		}
-		// session key
-		key := dict["session"]
-		if key == nil {
-			cmd._session = ""
-		} else {
-			cmd._session = key.(string)
-		}
-		// check state
-		cmd._state = getState(cmd._message, cmd._session)
+		// lazy load
+		cmd._message = ""
+		cmd._session = ""
+		cmd._state = HandshakeInit
 	}
 	return cmd
 }
 
-func (cmd *HandshakeCommand) InitWithMessage(message string, session string) *HandshakeCommand {
+func (cmd *BaseHandshakeCommand) InitWithMessage(message string, session string) *BaseHandshakeCommand {
 	if cmd.BaseCommand.InitWithCommand(HANDSHAKE) != nil {
 		// message text
 		if message == "" {
@@ -116,27 +120,58 @@ func (cmd *HandshakeCommand) InitWithMessage(message string, session string) *Ha
 			cmd.Set("session", session)
 		}
 		cmd._session = session
-		// check state
+		// handshake state
 		cmd._state = getState(message, session)
 	}
 	return cmd
 }
 
+//-------- IHandshakeCommand
+
+func (cmd *BaseHandshakeCommand) Message() string {
+	if cmd._message == "" {
+		message := cmd.Get("message")
+		if message != nil {
+			cmd._message = message.(string)
+		}
+	}
+	return cmd._message
+}
+
+func (cmd *BaseHandshakeCommand) Session() string {
+	if cmd._message == "" {
+		session := cmd.Get("session")
+		if session != nil {
+			cmd._session = session.(string)
+		}
+	}
+	return cmd._message
+}
+
+func (cmd *BaseHandshakeCommand) State() HandshakeState {
+	if cmd._state == HandshakeInit {
+		message := cmd.Message()
+		session := cmd.Session()
+		cmd._state = getState(message, session)
+	}
+	return cmd._state
+}
+
 //
-//  Factories
+//  Handshake command factories
 //
-func HandshakeCommandStart() *HandshakeCommand {
-	return new(HandshakeCommand).InitWithMessage("", "")
+func HandshakeCommandStart() HandshakeCommand {
+	return new(BaseHandshakeCommand).InitWithMessage("", "")
 }
 
-func HandshakeCommandRestart(session string) *HandshakeCommand {
-	return new(HandshakeCommand).InitWithMessage("", session)
+func HandshakeCommandRestart(session string) HandshakeCommand {
+	return new(BaseHandshakeCommand).InitWithMessage("", session)
 }
 
-func HandshakeCommandAgain(session string) *HandshakeCommand {
-	return new(HandshakeCommand).InitWithMessage("DIM?", session)
+func HandshakeCommandAgain(session string) HandshakeCommand {
+	return new(BaseHandshakeCommand).InitWithMessage("DIM?", session)
 }
 
-func HandshakeCommandSuccess(session string) *HandshakeCommand {
-	return new(HandshakeCommand).InitWithMessage("DIM!", session)
+func HandshakeCommandSuccess(session string) HandshakeCommand {
+	return new(BaseHandshakeCommand).InitWithMessage("DIM!", session)
 }

@@ -40,13 +40,13 @@ import (
  */
 func BuildExtraCommandFactories() {
 	CommandRegister(RECEIPT, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(ReceiptCommand).Init(dict)
+		return new(BaseReceiptCommand).Init(dict)
 	}))
 	CommandRegister(HANDSHAKE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(HandshakeCommand).Init(dict)
+		return new(BaseHandshakeCommand).Init(dict)
 	}))
 	CommandRegister(LOGIN, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(LoginCommand).Init(dict)
+		return new(BaseLoginCommand).Init(dict)
 	}))
 
 	CommandRegister(MUTE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
@@ -58,13 +58,13 @@ func BuildExtraCommandFactories() {
 
 	// storage (contacts, private_key)
 	CommandRegister(STORAGE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(StorageCommand).Init(dict)
+		return new(BaseStorageCommand).Init(dict)
 	}))
 	CommandRegister(CONTACTS, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(StorageCommand).Init(dict)
+		return new(BaseStorageCommand).Init(dict)
 	}))
 	CommandRegister(PRIVATE_KEY, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(StorageCommand).Init(dict)
+		return new(BaseStorageCommand).Init(dict)
 	}))
 }
 

@@ -31,6 +31,7 @@
 package protocol
 
 import (
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
 )
@@ -57,45 +58,77 @@ import (
  *      }
  *  }
  */
-type LoginCommand struct {
-	BaseCommand
+type LoginCommand interface {
+	Command
+	ILoginCommand
+}
+type ILoginCommand interface {
+
+	/**
+	 *  User ID
+	 */
+	ID() ID
+
+	/**
+	 *  Device ID
+	 */
+	Device() string
+	SetDevice(device string)
+
+	/**
+	 *  User Agent
+	 */
+	Agent() string
+	SetAgent(agent string)
+
+	/**
+	 *  DIM Network Station
+	 */
+	StationInfo() map[string]interface{}
+	SetStationInfo(station map[string]interface{})
+
+	/**
+	 *  DIM Network Service Provider
+	 */
+	ProviderInfo() map[string]interface{}
+	SetProviderInfo(sp map[string]interface{})
 }
 
-func (cmd *LoginCommand) Init(dict map[string]interface{}) *LoginCommand {
+//
+//  Login command implementation
+//
+type BaseLoginCommand struct {
+	BaseCommand
+	ILoginCommand
+}
+
+func (cmd *BaseLoginCommand) Init(dict map[string]interface{}) *BaseLoginCommand {
 	if cmd.BaseCommand.Init(dict) != nil {
 	}
 	return cmd
 }
 
-func (cmd *LoginCommand) InitWithID(identifier ID) *LoginCommand {
+func (cmd *BaseLoginCommand) InitWithID(identifier ID) *BaseLoginCommand {
 	if cmd.BaseCommand.InitWithCommand(LOGIN) != nil {
 		cmd.Set("ID", identifier.String())
 	}
 	return cmd
 }
 
-//
-//  Client Info
-//
+//-------- ILoginCommand
 
-/**
- *  User ID
- */
-func (cmd *LoginCommand) ID() ID {
+func (cmd *BaseLoginCommand) ID() ID {
 	return IDParse(cmd.Get("ID"))
 }
 
-/**
- *  Device ID
- */
-func (cmd *LoginCommand) Device() string {
+func (cmd *BaseLoginCommand) Device() string {
 	device := cmd.Get("device")
 	if device == nil {
 		return ""
 	}
 	return device.(string)
 }
-func (cmd *LoginCommand) SetDevice(device string) {
+func (cmd *BaseLoginCommand) SetDevice(device string) {
 	if device == "" {
 		cmd.Set("device", nil)
 	} else {
@@ -103,17 +136,14 @@ func (cmd *LoginCommand) SetDevice(device string) {
 	}
 }
 
-/**
- *  User Agent
- */
-func (cmd *LoginCommand) Agent() string {
+func (cmd *BaseLoginCommand) Agent() string {
 	agent := cmd.Get("agent")
 	if agent == nil {
 		return ""
 	}
 	return agent.(string)
 }
-func (cmd *LoginCommand) SetAgent(agent string) {
+func (cmd *BaseLoginCommand) SetAgent(agent string) {
 	if agent == "" {
 		cmd.Set("agent", nil)
 	} else {
@@ -125,17 +155,14 @@ func (cmd *LoginCommand) SetAgent(agent string) {
 //  Server Info
 //
 
-/**
- *  DIM Network Station
- */
-func (cmd *LoginCommand) StationInfo() map[string]interface{} {
+func (cmd *BaseLoginCommand) StationInfo() map[string]interface{} {
 	station := cmd.Get("station")
 	if station == nil {
 		return nil
 	}
 	return station.(map[string]interface{})
 }
-func (cmd *LoginCommand) SetStationInfo(station map[string]interface{}) {
+func (cmd *BaseLoginCommand) SetStationInfo(station map[string]interface{}) {
 	if station == nil {
 		cmd.Set("station", nil)
 	} else {
@@ -143,17 +170,14 @@ func (cmd *LoginCommand) SetStationInfo(station map[string]interface{}) {
 	}
 }
 
-/**
- *  DIM Network Service Provider
- */
-func (cmd *LoginCommand) ProviderInfo() map[string]interface{} {
+func (cmd *BaseLoginCommand) ProviderInfo() map[string]interface{} {
 	sp := cmd.Get("provider")
 	if sp == nil {
 		return nil
 	}
 	return sp.(map[string]interface{})
 }
-func (cmd *LoginCommand) SetProviderInfo(sp map[string]interface{}) {
+func (cmd *BaseLoginCommand) SetProviderInfo(sp map[string]interface{}) {
 	if sp == nil {
 		cmd.Set("provider", nil)
 	} else {

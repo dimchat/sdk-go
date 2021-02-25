@@ -96,15 +96,15 @@ func (factory *GeneralMetaFactory) ParseMeta(meta map[string]interface{}) Meta {
 	version := MetaGetType(meta)
 	switch version {
 	case MKM:
-		return new(DefaultMeta).Init(meta)
+		return ParseDefaultMeta(meta)
 	case BTC:
-		return new(BTCMeta).Init(meta)
+		return ParseBTCMeta(meta)
 	case ExBTC:
-		return new(BTCMeta).Init(meta)
+		return ParseBTCMeta(meta)
 	case ETH:
-		return new(ETHMeta).Init(meta)
+		return ParseETHMeta(meta)
 	case ExETH:
-		return new(ETHMeta).Init(meta)
+		return ParseETHMeta(meta)
 	default:
 		return nil
 	}
@@ -145,12 +145,12 @@ func (factory *GeneralDocumentFactory) getDocType(identifier ID) string {
 func (factory *GeneralDocumentFactory) CreateDocument(identifier ID, data []byte, signature []byte) Document {
 	docType := factory.getDocType(identifier)
 	if docType == VISA {
-		return new(BaseVisa).InitWithID(identifier, data, signature)
+		return NewVisa(identifier, data, signature)
 	}
 	if docType == BULLETIN {
-		return new(BaseBulletin).InitWithID(identifier, data, signature)
+		return NewBulletin(identifier, data, signature)
 	}
-	return new(BaseDocument).InitWithType(docType, identifier, data, signature)
+	return NewDocument(docType, identifier, data, signature)
 }
 
 func (factory *GeneralDocumentFactory) ParseDocument(doc map[string]interface{}) Document {
@@ -169,10 +169,50 @@ func (factory *GeneralDocumentFactory) ParseDocument(doc map[string]interface{})
 		}
 	}
 	if docType == VISA {
-		return new(BaseVisa).Init(doc)
+		return ParseVisa(doc)
 	}
 	if docType == BULLETIN {
-		return new(BaseBulletin).Init(doc)
+		return ParseBulletin(doc)
 	}
-	return new(BaseDocument).Init(doc)
+	return ParseDocument(doc)
+}
+
+//
+//  Factory methods for Document
+//
+
+func NewDocument(docType string, identifier ID, data []byte, signature []byte) Document {
+	doc := new(BaseDocument).InitWithType(docType, identifier, data, signature)
+	doc.SetShadow(new(BaseDocumentShadow).Init(doc))
+	return doc
+}
+
+func ParseDocument(dict map[string]interface{}) Document {
+	doc := new(BaseDocument).Init(dict)
+	doc.SetShadow(new(BaseDocumentShadow).Init(doc))
+	return doc
+}
+
+func NewVisa(identifier ID, data []byte, signature []byte) Visa {
+	doc := new(BaseVisa).InitWithID(identifier, data, signature)
+	doc.SetShadow(new(BaseDocumentShadow).Init(doc))
+	return doc
+}
+
+func ParseVisa(dict map[string]interface{}) Visa {
+	doc := new(BaseVisa).Init(dict)
+	doc.SetShadow(new(BaseDocumentShadow).Init(doc))
+	return doc
+}
+
+func NewBulletin(identifier ID, data []byte, signature []byte) Bulletin {
+	doc := new(BaseBulletin).InitWithID(identifier, data, signature)
+	doc.SetShadow(new(BaseDocumentShadow).Init(doc))
+	return doc
+}
+
+func ParseBulletin(dict map[string]interface{}) Bulletin {
+	doc := new(BaseBulletin).Init(dict)
+	doc.SetShadow(new(BaseDocumentShadow).Init(doc))
+	return doc
 }

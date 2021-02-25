@@ -32,6 +32,7 @@ package dimp
 
 import (
 	"fmt"
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 )
@@ -41,6 +42,9 @@ import (
  */
 type CommandProcessor interface {
 	ContentProcessor
+	ICommandProcessor
+}
+type ICommandProcessor interface {
 
 	Execute(cmd Command, rMsg ReliableMessage) Content
 }
@@ -65,7 +69,7 @@ func CommandProcessorGetByName(command string) CommandProcessor {
  */
 type BaseCommandProcessor struct {
 	BaseContentProcessor
-	CommandProcessor
+	ICommandProcessor
 }
 
 func (cpu *BaseCommandProcessor) Init() *BaseCommandProcessor {
@@ -74,17 +78,13 @@ func (cpu *BaseCommandProcessor) Init() *BaseCommandProcessor {
 	return cpu
 }
 
-func (cpu *BaseCommandProcessor) SetMessenger(messenger IMessenger) {
-	cpu.BaseContentProcessor.SetMessenger(messenger)
-}
-
 func (cpu *BaseCommandProcessor) Process(content Content, rMsg ReliableMessage) Content {
 	cmd, _ := content.(Command)
 	// get CPU by command name
 	processor := CommandProcessorGet(cmd)
 	if processor == nil {
 		// check for group command
-		_, ok := cmd.(*GroupCommand)
+		_, ok := cmd.(GroupCommand)
 		if ok {
 			processor = CommandProcessorGetByName("group")
 		}

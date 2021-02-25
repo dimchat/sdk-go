@@ -31,6 +31,7 @@
 package cpu
 
 import (
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
@@ -47,14 +48,14 @@ func (cpu *ForwardContentProcessor) Init() *ForwardContentProcessor {
 }
 
 func (cpu *ForwardContentProcessor) Process(content Content, _ ReliableMessage) Content {
-	forward, _ := content.(*ForwardContent)
-	secret := forward.Message()
+	forward, _ := content.(ForwardContent)
+	secret := forward.ForwardMessage()
 	// call messenger to process it
 	secret = cpu.Messenger().ProcessReliableMessage(secret)
 	// check response
 	if secret != nil {
 		// Over The Top
-		return new(ForwardContent).InitWithMessage(secret)
+		return NewForwardContent(secret)
 	}/* else {
 		receiver := forward.GetMessage().Receiver()
 		text := "Message forwarded: " + receiver.String()

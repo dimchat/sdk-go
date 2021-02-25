@@ -31,6 +31,7 @@
 package cpu
 
 import (
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp/cpu"
@@ -44,7 +45,6 @@ type QueryCommandProcessor struct {
 }
 
 func (gpu *QueryCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Content {
-	//gCmd := cmd.(*GroupCommand)
 	facebook := gpu.Facebook()
 
 	// 0. check group
@@ -71,8 +71,8 @@ func (gpu *QueryCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Con
 	// 2. respond
 	user := facebook.GetCurrentUser()
 	if user.ID().Equal(owner) {
-		return new(ResetCommand).InitWithMembers(group, members)
+		return NewResetCommand(group, members)
 	} else {
-		return new(InviteCommand).InitWithMembers(group, members)
+		return NewInviteCommand(group, members)
 	}
 }

@@ -67,7 +67,7 @@ func (messenger *Messenger) Init() *Messenger {
 }
 
 func (messenger *Messenger) Facebook() IFacebook {
-	return messenger.EntityDelegate().(IFacebook)
+	return messenger.EntityFactory().(IFacebook)
 }
 
 /**

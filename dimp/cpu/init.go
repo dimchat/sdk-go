@@ -31,6 +31,7 @@
 package cpu
 
 import (
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
@@ -62,7 +63,7 @@ func receipt(message string) Command {
 func BuildContentProcessors() {
 	ContentProcessorRegister(FORWARD, new(ForwardContentProcessor).Init())
 
-	fpu := new(FileContentProcessor).Init()
+	fpu := new(BaseFileContentProcessor).Init()
 	ContentProcessorRegister(FILE, fpu)
 	ContentProcessorRegister(IMAGE, fpu)
 	ContentProcessorRegister(AUDIO, fpu)

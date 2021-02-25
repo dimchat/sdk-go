@@ -99,50 +99,47 @@ type IFacebook interface {
 type Facebook struct {
 	Barrack
 	EntityManager
-
-	_manager EntityManager
 }
 
 func (facebook *Facebook) Init() *Facebook {
 	if facebook.Barrack.Init() != nil {
-		facebook._manager = nil
 	}
 	return facebook
 }
 
-func (facebook *Facebook) SetManager(manager EntityManager) {
-	facebook._manager = manager
+func (facebook *Facebook) SetShadow(shadow IFacebook) {
+	facebook.Barrack.SetShadow(shadow)
 }
-func (facebook *Facebook) Manager() EntityManager {
-	return facebook._manager
+func (facebook *Facebook) Shadow() IFacebook {
+	return facebook.Barrack.Shadow().(IFacebook)
 }
 
 //-------- EntityManager
 
 func (facebook *Facebook) GetCurrentUser() User {
-	return facebook.Manager().GetCurrentUser()
+	return facebook.Shadow().GetCurrentUser()
 }
 
 func (facebook *Facebook) CheckDocument(doc Document) bool {
-	return facebook.Manager().CheckDocument(doc)
+	return facebook.Shadow().CheckDocument(doc)
 }
 
 func (facebook *Facebook) SaveDocument(doc Document) bool {
-	return facebook.Manager().SaveDocument(doc)
+	return facebook.Shadow().SaveDocument(doc)
 }
 
 func (facebook *Facebook) SaveMeta(meta Meta, identifier ID) bool {
-	return facebook.Manager().SaveMeta(meta, identifier)
+	return facebook.Shadow().SaveMeta(meta, identifier)
 }
 
 func (facebook *Facebook) SaveMembers(members []ID, group ID) bool {
-	return facebook.Manager().SaveMembers(members, group)
+	return facebook.Shadow().SaveMembers(members, group)
 }
 
 func (facebook *Facebook) IsFounder(member ID, group ID) bool {
-	return facebook.Manager().IsFounder(member, group)
+	return facebook.Shadow().IsFounder(member, group)
 }
 
 func (facebook *Facebook) IsOwner(member ID, group ID) bool {
-	return facebook.Manager().IsOwner(member, group)
+	return facebook.Shadow().IsOwner(member, group)
 }

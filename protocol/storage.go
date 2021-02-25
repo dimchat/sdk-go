@@ -31,6 +31,7 @@
 package protocol
 
 import (
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/format"
@@ -60,7 +61,50 @@ const (
  *      //...
  *  }
  */
-type StorageCommand struct {
+type StorageCommand interface {
+	Command
+	IStorageCommand
+}
+type IStorageCommand interface {
+
+	ID() ID
+	SetID(identifier ID)
+
+	Title() string
+
+	/**
+	 *  Encrypted data
+	 *  ~~~~~~~~~~~~~~
+	 *  encrypted by a random password before upload
+	 */
+	Data() []byte
+	SetData(data []byte)
+
+	/**
+	 *  Symmetric key
+	 *  ~~~~~~~~~~~~~
+	 *  password to decrypt data
+	 *  encrypted by user's public key before upload.
+	 *  this should be empty when the storage data is "private_key".
+	 */
+	Key() []byte
+	SetKey(key []byte)
+
+	// Decrypt key data to password with private key.
+	DecryptKey(privateKey DecryptKey) SymmetricKey
+
+	// Decrypt data with password.
+	DecryptWithSymmetricKey(password SymmetricKey) []byte
+
+	// Decrypt key data to password with private key,
+	// after that, decrypt data with the password.
+	DecryptWithPrivateKey(privateKey DecryptKey) []byte
+}
+
+//
+//  Storage command implementation
+//
+type BaseStorageCommand struct {
 	BaseCommand
 
 	_title string
@@ -72,7 +116,7 @@ type StorageCommand struct {
 	_password SymmetricKey
 }
 
-func (cmd *StorageCommand) Init(dict map[string]interface{}) *StorageCommand {
+func (cmd *BaseStorageCommand) Init(dict map[string]interface{}) *BaseStorageCommand {
 	if cmd.BaseCommand.Init(dict) != nil {
 		// lazy load
 		cmd._title = ""
@@ -84,7 +128,7 @@ func (cmd *StorageCommand) Init(dict map[string]interface{}) *StorageCommand {
 	return cmd
 }
 
-func (cmd *StorageCommand) InitWithTitle(title string) *StorageCommand {
+func (cmd *BaseStorageCommand) InitWithTitle(title string) *BaseStorageCommand {
 	if cmd.BaseCommand.InitWithCommand(STORAGE) != nil {
 		cmd._title = title
 		cmd._data = nil
@@ -95,10 +139,12 @@ func (cmd *StorageCommand) InitWithTitle(title string) *StorageCommand {
 	return cmd
 }
 
-func (cmd *StorageCommand) ID() ID {
+//-------- IStorageCommand
+
+func (cmd *BaseStorageCommand) ID() ID {
 	return IDParse(cmd.Get("ID"))
 }
-func (cmd *StorageCommand) SetID(identifier ID) {
+func (cmd *BaseStorageCommand) SetID(identifier ID) {
 	if identifier == nil {
 		cmd.Set("ID", nil)
 	} else {
@@ -106,7 +152,7 @@ func (cmd *StorageCommand) SetID(identifier ID) {
 	}
 }
 
-func (cmd *StorageCommand) Title() string {
+func (cmd *BaseStorageCommand) Title() string {
 	if cmd._title == "" {
 		title := cmd.Get("title")
 		if title == nil {
@@ -125,11 +171,7 @@ func (cmd *StorageCommand) Title() string {
 	return cmd._title
 }
 
-//
-//  Encrypted data
-//      encrypted by a random password before upload
-//
-func (cmd *StorageCommand) Data() []byte {
+func (cmd *BaseStorageCommand) Data() []byte {
 	if cmd._data == nil {
 		data := cmd.Get("data")
 		if data != nil {
@@ -138,7 +180,7 @@ func (cmd *StorageCommand) Data() []byte {
 	}
 	return cmd._data
 }
-func (cmd *StorageCommand) SetData(data []byte) {
+func (cmd *BaseStorageCommand) SetData(data []byte) {
 	if data == nil {
 		cmd.Set("data", nil)
 	} else {
@@ -148,13 +190,7 @@ func (cmd *StorageCommand) SetData(data []byte) {
 	cmd._plaintext = nil
 }
 
-//
-//  Symmetric key
-//      password to decrypt data
-//      encrypted by user's public key before upload.
-//      this should be empty when the storage data is "private_key".
-//
-func (cmd *StorageCommand) Key() []byte {
+func (cmd *BaseStorageCommand) Key() []byte {
 	if cmd._key == nil {
 		key := cmd.Get("key")
 		if key != nil {
@@ -163,7 +199,7 @@ func (cmd *StorageCommand) Key() []byte {
 	}
 	return cmd._key
 }
-func (cmd *StorageCommand) SetKey(key []byte) {
+func (cmd *BaseStorageCommand) SetKey(key []byte) {
 	if key == nil {
 		cmd.Set("key", nil)
 	} else {
@@ -175,7 +211,20 @@ func (cmd *StorageCommand) SetKey(key []byte) {
 
 //-------- Decryption
 
-func (cmd *StorageCommand) DecryptWithSymmetricKey(password SymmetricKey) []byte {
+func (cmd *BaseStorageCommand) DecryptKey(privateKey DecryptKey) SymmetricKey {
+	data := cmd.Key()
+	if data == nil {
+		return nil
+	}
+	key := privateKey.Decrypt(data)
+	if key == nil {
+		//panic("failed to decrypt key")
+		return nil
+	}
+	return SymmetricKeyParse(JSONDecode(key))
+}
+
+func (cmd *BaseStorageCommand) DecryptWithSymmetricKey(password SymmetricKey) []byte {
 	if cmd._plaintext == nil {
 		if password == nil {
 			panic("symmetric key empty")
@@ -190,22 +239,9 @@ func (cmd *StorageCommand) DecryptWithSymmetricKey(password SymmetricKey) []byte
 	return cmd._plaintext
 }
 
-func (cmd *StorageCommand) DecryptWithPrivateKey(privateKey DecryptKey) []byte {
+func (cmd *BaseStorageCommand) DecryptWithPrivateKey(privateKey DecryptKey) []byte {
 	if cmd._password == nil {
 		cmd._password = cmd.DecryptKey(privateKey)
 	}
 	return cmd.DecryptWithSymmetricKey(cmd._password)
-}
-
-func (cmd *StorageCommand) DecryptKey(privateKey DecryptKey) SymmetricKey {
-	data := cmd.Key()
-	if data == nil {
-		return nil
-	}
-	key := privateKey.Decrypt(data)
-	if key == nil {
-		//panic("failed to decrypt key")
-		return nil
-	}
-	return SymmetricKeyParse(JSONDecode(key))
 }

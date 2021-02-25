@@ -31,6 +31,7 @@
 package cpu
 
 import (
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
@@ -44,7 +45,7 @@ type ResetCommandProcessor struct {
 	GroupCommandProcessor
 }
 
-func (gpu *ResetCommandProcessor) temporarySave(cmd *GroupCommand, sender ID) Content {
+func (gpu *ResetCommandProcessor) temporarySave(cmd GroupCommand, sender ID) Content {
 	facebook := gpu.Facebook()
 	group := cmd.Group()
 	// check whether the owner contained in the new members
@@ -56,7 +57,7 @@ func (gpu *ResetCommandProcessor) temporarySave(cmd *GroupCommand, sender ID) Co
 				if sender.Equal(item) == false {
 					// NOTICE: to prevent counterfeit,
 					//         query the owner for newest member-list
-					query := new(QueryCommand).InitWithGroup(group)
+					query := NewQueryCommand(group)
 					gpu.Messenger().SendContent(nil, item, query, nil, 1)
 				}
 			}
@@ -66,11 +67,10 @@ func (gpu *ResetCommandProcessor) temporarySave(cmd *GroupCommand, sender ID) Co
 	}
 	// NOTICE: this is a partial member-list
 	//         query the sender for full-list
-	return new(QueryCommand).InitWithGroup(group)
+	return NewQueryCommand(group)
 }
 
 func (gpu *ResetCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Content {
-	//gCmd := cmd.(*GroupCommand)
 	facebook := gpu.Facebook()
 
 	// 0. check group
@@ -80,7 +80,7 @@ func (gpu *ResetCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Con
 	if owner == nil || members == nil || len(members) == 0 {
 		// FIXME: group info lost?
 		// FIXME: how to avoid strangers impersonating group member?
-		return gpu.temporarySave(cmd.(*GroupCommand), rMsg.Sender())
+		return gpu.temporarySave(cmd.(GroupCommand), rMsg.Sender())
 	}
 
 	// 1. check permission
@@ -96,7 +96,7 @@ func (gpu *ResetCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Con
 	}
 
 	// 2. resetting members
-	newMembers := gpu.GetMembers(cmd.(*GroupCommand))
+	newMembers := gpu.GetMembers(cmd.(GroupCommand))
 	if newMembers == nil || len(newMembers) == 0 {
 		panic("group command error")
 		return nil

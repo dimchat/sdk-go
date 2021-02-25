@@ -31,6 +31,7 @@
 package cpu
 
 import (
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
@@ -83,7 +84,7 @@ func (cpu *DocumentCommandProcessor) putDocument(identifier ID, meta Meta, doc D
 }
 
 func (cpu *DocumentCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
-	mCmd, _ := cmd.(*DocumentCommand)
+	mCmd, _ := cmd.(DocumentCommand)
 	identifier := mCmd.ID()
 	doc := mCmd.Document()
 	if doc == nil {

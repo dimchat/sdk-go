@@ -36,37 +36,27 @@ import (
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
-type IFacebookHandler interface {
-	EntityHandler
-	EntityManager
-}
-
 /**
- *  Delegate for Facebook
- *  ~~~~~~~~~~~~~~~~~~~~~
+ *  Facebook shadow as EntityCreator
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
- *  Abstract methods:
- *      // EntityHandler
+ * @abstract:
  *      GetLocalUsers() []User
- *      // EntityManager
- *      SaveMeta(meta Meta, identifier ID) bool
- *      SaveDocument(doc Document) bool
- *      SaveMembers(members []ID, group ID) bool
  */
-type FacebookHandler struct {
-	BarrackHandler
-	EntityManager
+type FacebookCreator struct {
+	BarrackShadow
+	EntityCreator
 }
 
-func (shadow *FacebookHandler) Init(facebook IFacebook) *FacebookHandler {
-	if shadow.BarrackHandler.Init(facebook) != nil {
+func (shadow *FacebookCreator) Init(facebook IFacebook) *FacebookCreator {
+	if shadow.BarrackShadow.Init(facebook) != nil {
 	}
 	return shadow
 }
 
-//-------- EntityHandler
+//-------- EntityCreator
 
-func (shadow *FacebookHandler) CreateUser(identifier ID) User {
+func (shadow *FacebookCreator) CreateUser(identifier ID) User {
 	if identifier.IsBroadcast() {
 		// create user 'anyone@anywhere'
 		return NewUser(identifier)
@@ -87,7 +77,7 @@ func (shadow *FacebookHandler) CreateUser(identifier ID) User {
 	}
 }
 
-func (shadow *FacebookHandler) CreateGroup(identifier ID) Group {
+func (shadow *FacebookCreator) CreateGroup(identifier ID) Group {
 	if identifier.IsBroadcast() {
 		// create group 'everyone@everywhere'
 		return NewGroup(identifier)
@@ -106,9 +96,29 @@ func (shadow *FacebookHandler) CreateGroup(identifier ID) Group {
 	}
 }
 
+/**
+ *  Facebook shadow as EntityManager
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ * @abstract:
+ *      SaveMeta(meta Meta, identifier ID) bool
+ *      SaveDocument(doc Document) bool
+ *      SaveMembers(members []ID, group ID) bool
+ */
+type FacebookManager struct {
+	BarrackShadow
+	EntityManager
+}
+
+func (shadow *FacebookManager) Init(facebook IFacebook) *FacebookManager {
+	if shadow.BarrackShadow.Init(facebook) != nil {
+	}
+	return shadow
+}
+
 //-------- EntityManager
 
-func (shadow *FacebookHandler) GetCurrentUser() User {
+func (shadow *FacebookManager) GetCurrentUser() User {
 	users := shadow.Barrack().GetLocalUsers()
 	if users == nil || len(users) == 0 {
 		return nil
@@ -117,7 +127,7 @@ func (shadow *FacebookHandler) GetCurrentUser() User {
 	}
 }
 
-func (shadow *FacebookHandler) CheckDocument(doc Document) bool {
+func (shadow *FacebookManager) CheckDocument(doc Document) bool {
 	identifier := doc.ID()
 	if identifier == nil {
 		return false
@@ -151,14 +161,14 @@ func (shadow *FacebookHandler) CheckDocument(doc Document) bool {
 	return meta != nil && doc.Verify(meta.Key())
 }
 
-func (shadow *FacebookHandler) IsFounder(member ID, group ID) bool {
+func (shadow *FacebookManager) IsFounder(member ID, group ID) bool {
 	facebook := shadow.Barrack()
 	gMeta := facebook.GetMeta(group)
 	mMeta := facebook.GetMeta(member)
 	return gMeta.MatchKey(mMeta.Key())
 }
 
-func (shadow *FacebookHandler) IsOwner(member ID, group ID) bool {
+func (shadow *FacebookManager) IsOwner(member ID, group ID) bool {
 	if group.Type() == POLYLOGUE {
 		facebook := shadow.Barrack().(EntityManager)
 		return facebook.IsFounder(member, group)

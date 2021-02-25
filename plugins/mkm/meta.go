@@ -36,10 +36,6 @@ import (
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
-func NewBaseMetaShadow(meta IMeta) *BaseMetaShadow {
-	return new(BaseMetaShadow).Init(meta)
-}
-
 /**
  *  Default Meta to build ID with 'name@address'
  *
@@ -52,40 +48,28 @@ func NewBaseMetaShadow(meta IMeta) *BaseMetaShadow {
  *      code    = sha256(sha256(network + hash)).prefix(4);
  *      address = base58_encode(network + hash + code);
  */
-type DefaultMeta struct {
-	BaseMeta
+type DefaultMetaShadow struct {
+	BaseMetaShadow
 
 	// caches
 	_addresses map[uint8]Address
 }
 
-func NewDefaultMeta(key VerifyKey, seed string, fingerprint []byte) *DefaultMeta {
-	meta := new(DefaultMeta).InitWithKey(key, seed, fingerprint)
-	meta.SetDelegate(NewBaseMetaShadow(meta))
-	return meta
-}
-
-func (meta *DefaultMeta) Init(dict map[string]interface{}) *DefaultMeta {
-	if meta.BaseMeta.Init(dict) != nil {
-		meta._addresses = make(map[uint8]Address)
+func (shadow *DefaultMetaShadow) Init(meta IMetaExt) *DefaultMetaShadow {
+	if shadow.BaseMetaShadow.Init(meta) != nil {
+		shadow._addresses = make(map[uint8]Address)
 	}
-	return meta
+	return shadow
 }
 
-func (meta *DefaultMeta) InitWithKey(key VerifyKey, seed string, fingerprint []byte) *DefaultMeta {
-	if meta.BaseMeta.InitWithType(uint8(MKM), key, seed, fingerprint) != nil {
-		meta._addresses = make(map[uint8]Address)
-	}
-	return meta
-}
-
-func (meta *DefaultMeta) GenerateAddress(network uint8) Address {
+func (shadow *DefaultMetaShadow) GenerateAddress(network uint8) Address {
+	meta := shadow.Meta()
 	// check caches
-	address := meta._addresses[network]
+	address := shadow._addresses[network]
 	if address == nil && meta.IsValid() {
 		// generate and cache it
 		address = BTCAddressGenerate(meta.Fingerprint(), network)
-		meta._addresses[network] = address
+		shadow._addresses[network] = address
 	}
 	return address
 }
@@ -103,46 +87,34 @@ func (meta *DefaultMeta) GenerateAddress(network uint8) Address {
  *      code    = sha256(sha256(network + hash)).prefix(4);
  *      address = base58_encode(network + hash + code);
  */
-type BTCMeta struct {
-	BaseMeta
+type BTCMetaShadow struct {
+	BaseMetaShadow
 
 	// cached
 	_address Address
 }
 
-func NewBTCMeta(version uint8, key VerifyKey, seed string, fingerprint []byte) *BTCMeta {
-	meta := new(BTCMeta).InitWithType(version, key, seed, fingerprint)
-	meta.SetDelegate(NewBaseMetaShadow(meta))
-	return meta
-}
-
-func (meta *BTCMeta) Init(dict map[string]interface{}) *BTCMeta {
-	if meta.BaseMeta.Init(dict) != nil {
-		meta._address = nil
+func (shadow *BTCMetaShadow) Init(meta IMetaExt) *BTCMetaShadow {
+	if shadow.BaseMetaShadow.Init(meta) != nil {
+		shadow._address = nil
 	}
-	return meta
+	return shadow
 }
 
-func (meta *BTCMeta) InitWithType(version uint8, key VerifyKey, seed string, fingerprint []byte) *BTCMeta {
-	if meta.BaseMeta.InitWithType(version, key, seed, fingerprint) != nil {
-		meta._address = nil
-	}
-	return meta
-}
-
-func (meta *BTCMeta) GenerateAddress(network uint8) Address {
+func (shadow *BTCMetaShadow) GenerateAddress(network uint8) Address {
 	if network != BTCMain {
 		return nil
 	}
+	meta := shadow.Meta()
 	// check caches
-	address := meta._address
+	address := shadow._address
 	if address == nil && meta.IsValid() {
 		// generate and cache it
 		key := meta.Key()
 		pKey, ok := key.(CryptographyKey)
 		if ok {
 			address = BTCAddressGenerate(pKey.Data(), network)
-			meta._address = address
+			shadow._address = address
 		}
 	}
 	return address
@@ -160,47 +132,75 @@ func (meta *BTCMeta) GenerateAddress(network uint8) Address {
  *      digest  = keccak256(CT);
  *      address = hex_encode(digest.suffix(20));
  */
-type ETHMeta struct {
-	BaseMeta
+type ETHMetaShadow struct {
+	BaseMetaShadow
 
 	// cached
 	_address Address
 }
 
-func NewETHMeta(version uint8, key VerifyKey, seed string, fingerprint []byte) *ETHMeta {
-	meta := new(ETHMeta).InitWithType(version, key, seed, fingerprint)
-	meta.SetDelegate(NewBaseMetaShadow(meta))
-	return meta
-}
-
-func (meta *ETHMeta) Init(dict map[string]interface{}) *ETHMeta {
-	if meta.BaseMeta.Init(dict) != nil {
-		meta._address = nil
+func (shadow *ETHMetaShadow) Init(meta IMetaExt) *ETHMetaShadow {
+	if shadow.BaseMetaShadow.Init(meta) != nil {
+		shadow._address = nil
 	}
-	return meta
+	return shadow
 }
 
-func (meta *ETHMeta) InitWithType(version uint8, key VerifyKey, seed string, fingerprint []byte) *ETHMeta {
-	if meta.BaseMeta.InitWithType(version, key, seed, fingerprint) != nil {
-		meta._address = nil
-	}
-	return meta
-}
-
-func (meta *ETHMeta) GenerateAddress(network uint8) Address {
+func (shadow *ETHMetaShadow) GenerateAddress(network uint8) Address {
 	if network != MAIN {
 		return nil
 	}
+	meta := shadow.Meta()
 	// check caches
-	address := meta._address
+	address := shadow._address
 	if address == nil && meta.IsValid() {
 		// generate and cache it
 		key := meta.Key()
 		pKey, ok := key.(CryptographyKey)
 		if ok {
 			address = ETHAddressGenerate(pKey.Data())
-			meta._address = address
+			shadow._address = address
 		}
 	}
 	return address
+}
+
+//
+//  Factory methods for Meta
+//
+
+func NewDefaultMeta(key VerifyKey, seed string, fingerprint []byte) Meta {
+	meta := new(BaseMeta).InitWithType(MKM, key, seed, fingerprint)
+	meta.SetShadow(new(DefaultMetaShadow).Init(meta))
+	return meta
+}
+
+func ParseDefaultMeta(dict map[string]interface{}) Meta {
+	meta := new(BaseMeta).Init(dict)
+	meta.SetShadow(new(DefaultMetaShadow).Init(meta))
+	return meta
+}
+
+func NewBTCMeta(version uint8, key VerifyKey, seed string, fingerprint []byte) Meta {
+	meta := new(BaseMeta).InitWithType(version, key, seed, fingerprint)
+	meta.SetShadow(new(BTCMetaShadow).Init(meta))
+	return meta
+}
+
+func ParseBTCMeta(dict map[string]interface{}) Meta {
+	meta := new(BaseMeta).Init(dict)
+	meta.SetShadow(new(BTCMetaShadow).Init(meta))
+	return meta
+}
+
+func NewETHMeta(version uint8, key VerifyKey, seed string, fingerprint []byte) Meta {
+	meta := new(BaseMeta).InitWithType(version, key, seed, fingerprint)
+	meta.SetShadow(new(ETHMetaShadow).Init(meta))
+	return meta
+}
+
+func ParseETHMeta(dict map[string]interface{}) Meta {
+	meta := new(BaseMeta).Init(dict)
+	meta.SetShadow(new(ETHMetaShadow).Init(meta))
+	return meta
 }

@@ -49,10 +49,6 @@ func (processor *MessengerProcessor) Messenger() IMessenger {
 	return processor.Transceiver().(IMessenger)
 }
 
-func (processor *MessengerProcessor) Facebook() IFacebook {
-	return processor.Messenger().Facebook()
-}
-
 func (processor *MessengerProcessor) ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) InstantMessage {
 	res := processor.MessageProcessor.ProcessInstantMessage(iMsg, rMsg)
 	if processor.Messenger().SaveMessage(iMsg) {

@@ -21,7 +21,6 @@ func (gpu *InviteCommandProcessor) callReset(cmd Command, rMsg ReliableMessage) 
 }
 
 func (gpu *InviteCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Content {
-	//gCmd := cmd.(*GroupCommand)
 	facebook := gpu.Facebook()
 
 	// 0. check group
@@ -47,7 +46,7 @@ func (gpu *InviteCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Co
 	}
 
 	// 2. inviting members
-	inviteList := gpu.GetMembers(cmd.(*GroupCommand))
+	inviteList := gpu.GetMembers(cmd.(GroupCommand))
 	if inviteList == nil || len(inviteList) == 0 {
 		panic("invite command error")
 		return nil

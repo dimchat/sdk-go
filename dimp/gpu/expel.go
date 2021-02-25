@@ -44,7 +44,6 @@ type ExpelCommandProcessor struct {
 }
 
 func (gpu *ExpelCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Content {
-	//gCmd := cmd.(*GroupCommand)
 	facebook := gpu.Facebook()
 
 	// 0. check group
@@ -69,7 +68,7 @@ func (gpu *ExpelCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Con
 	}
 
 	// 2. expelling members
-	expelList := gpu.GetMembers(cmd.(*GroupCommand))
+	expelList := gpu.GetMembers(cmd.(GroupCommand))
 	if expelList == nil || len(expelList) == 0 {
 		panic("expel command error")
 		return nil
