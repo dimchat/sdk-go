@@ -33,99 +33,86 @@ package dimp
 import (
 	. "github.com/dimchat/core-go/core"
 	. "github.com/dimchat/core-go/dimp"
-	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
 /**
- *  Entity Delegate
- *  ~~~~~~~~~~~~~~~
- *
- *  Manage entity profiles and relationship
- */
-type EntityManager interface {
-
-	/**
-	 *  Get current user (for signing and sending message)
-	 *
-	 * @return User
-	 */
-	GetCurrentUser() User
-
-	/**
-	 *  Document checking
-	 *
-	 * @param doc - entity document
-	 * @return true on accepted
-	 */
-	CheckDocument(doc Document) bool
-
-	/**
-	 *  Save entity document with ID (must verify first)
-	 *
-	 * @param doc - entity document
-	 * @return true on success
-	 */
-	SaveDocument(doc Document) bool
-
-	/**
-	 *  Save meta for entity ID (must verify first)
-	 *
-	 * @param meta - entity meta
-	 * @param identifier - entity ID
-	 * @return true on success
-	 */
-	SaveMeta(meta Meta, identifier ID) bool
-
-	/**
-	 *  Save members of group
-	 *
-	 * @param members - member ID list
-	 * @param group - group ID
-	 * @return true on success
-	 */
-	SaveMembers(members []ID, group ID) bool
-
-	IsFounder(member ID, group ID) bool
-	IsOwner(member ID, group ID) bool
-}
-
-/**
- *  Shadow delegate for Facebook
- *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *  Facebook shadow as EntityManager
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  *
  * @abstract:
- *      // EntityDataSource
- *      GetMeta(identifier ID) Meta
- *      GetDocument(identifier ID, docType string) Document
- *      // UserDataSource
- *      GetContacts(user ID) []ID
- *      GetPrivateKeysForDecryption(user ID) []DecryptKey
- *      GetPrivateKeyForSignature(user ID) SignKey
- *      GetPrivateKeyForVisaSignature(user ID) SignKey
- *
- *      // EntityCreator
- *      GetLocalUsers() []User
- *      // EntityManager
  *      SaveMeta(meta Meta, identifier ID) bool
  *      SaveDocument(doc Document) bool
  *      SaveMembers(members []ID, group ID) bool
  */
-type FacebookShadow struct {
+type FacebookManager struct {
 	BarrackShadow
-
-	FacebookCreator
-	FacebookManager
+	EntityManager
 }
 
-func (shadow *FacebookShadow) Init(facebook IFacebook) *FacebookShadow {
+func (shadow *FacebookManager) Init(facebook IFacebook) *FacebookManager {
 	if shadow.BarrackShadow.Init(facebook) != nil {
-		shadow.FacebookCreator.Init(facebook)
-		shadow.FacebookManager.Init(facebook)
 	}
 	return shadow
 }
 
-func (shadow *FacebookShadow) Barrack() IBarrack {
-	return shadow.BarrackShadow.Barrack()
+//-------- EntityManager
+
+func (shadow *FacebookManager) GetCurrentUser() User {
+	users := shadow.Barrack().GetLocalUsers()
+	if users == nil || len(users) == 0 {
+		return nil
+	} else {
+		return users[0]
+	}
+}
+
+func (shadow *FacebookManager) CheckDocument(doc Document) bool {
+	identifier := doc.ID()
+	if identifier == nil {
+		return false
+	}
+	// NOTICE: if this is a bulletin document for group,
+	//             verify it with the group owner's meta.key
+	//         else (this is a visa document for user)
+	//             verify it with the user's meta.key
+	facebook := shadow.Barrack()
+
+	var meta Meta
+	if identifier.IsGroup() {
+		// check by owner
+		owner := facebook.GetOwner(identifier)
+		if owner == nil {
+			if identifier.Type() == POLYLOGUE {
+				// NOTICE: if this is a polylogue document,
+				//             verify it with the founder's meta.key
+				//             (which equals to the group's meta.key)
+				meta = facebook.GetMeta(identifier)
+			} else {
+				// FIXME: owner not found for this group
+				return false
+			}
+		} else {
+			meta = facebook.GetMeta(owner)
+		}
+	} else {
+		meta = facebook.GetMeta(identifier)
+	}
+	return meta != nil && doc.Verify(meta.Key())
+}
+
+func (shadow *FacebookManager) IsFounder(member ID, group ID) bool {
+	facebook := shadow.Barrack()
+	gMeta := facebook.GetMeta(group)
+	mMeta := facebook.GetMeta(member)
+	return gMeta.MatchKey(mMeta.Key())
+}
+
+func (shadow *FacebookManager) IsOwner(member ID, group ID) bool {
+	if group.Type() == POLYLOGUE {
+		facebook := shadow.Barrack().(EntityManager)
+		return facebook.IsFounder(member, group)
+	}
+	panic("only Polylogue so far")
+	return false
 }

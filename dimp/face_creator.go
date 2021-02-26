@@ -36,59 +36,62 @@ import (
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
-type IFacebook interface {
-	IBarrack
-	EntityManager
-}
-
 /**
- *  Delegate for Entity
- *  ~~~~~~~~~~~~~~~~~~~
+ *  Facebook shadow as EntityCreator
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ *
+ * @abstract:
+ *      GetLocalUsers() []User
  */
-type Facebook struct {
-	Barrack
-	EntityManager
+type FacebookCreator struct {
+	BarrackShadow
+	EntityCreator
 }
 
-func (facebook *Facebook) Init() *Facebook {
-	if facebook.Barrack.Init() != nil {
+func (shadow *FacebookCreator) Init(facebook IFacebook) *FacebookCreator {
+	if shadow.BarrackShadow.Init(facebook) != nil {
 	}
-	return facebook
+	return shadow
 }
 
-func (facebook *Facebook) SetShadow(shadow IFacebook) {
-	facebook.Barrack.SetShadow(shadow)
-}
-func (facebook *Facebook) Shadow() IFacebook {
-	return facebook.Barrack.Shadow().(IFacebook)
-}
+//-------- EntityCreator
 
-//-------- EntityManager
-
-func (facebook *Facebook) GetCurrentUser() User {
-	return facebook.Shadow().GetCurrentUser()
-}
-
-func (facebook *Facebook) CheckDocument(doc Document) bool {
-	return facebook.Shadow().CheckDocument(doc)
-}
-
-func (facebook *Facebook) SaveDocument(doc Document) bool {
-	return facebook.Shadow().SaveDocument(doc)
-}
-
-func (facebook *Facebook) SaveMeta(meta Meta, identifier ID) bool {
-	return facebook.Shadow().SaveMeta(meta, identifier)
+func (shadow *FacebookCreator) CreateUser(identifier ID) User {
+	if identifier.IsBroadcast() {
+		// create user 'anyone@anywhere'
+		return NewUser(identifier)
+	}
+	// make sure meta exists
+	// TODO: make sure visa key exists before calling this
+	// check user type
+	network := identifier.Type()
+	if network == MAIN || network == BTCMain {
+		return NewUser(identifier)
+	}
+	if network == ROBOT {
+		return NewRobot(identifier)
+	} else if network == STATION {
+		return NewStation(identifier, "", 0)
+	} else {
+		return nil
+	}
 }
 
-func (facebook *Facebook) SaveMembers(members []ID, group ID) bool {
-	return facebook.Shadow().SaveMembers(members, group)
-}
-
-func (facebook *Facebook) IsFounder(member ID, group ID) bool {
-	return facebook.Shadow().IsFounder(member, group)
-}
-
-func (facebook *Facebook) IsOwner(member ID, group ID) bool {
-	return facebook.Shadow().IsOwner(member, group)
+func (shadow *FacebookCreator) CreateGroup(identifier ID) Group {
+	if identifier.IsBroadcast() {
+		// create group 'everyone@everywhere'
+		return NewGroup(identifier)
+	}
+	// make sure meta exists
+	// check group type
+	network := identifier.Type()
+	if network == POLYLOGUE {
+		return NewPolylogue(identifier)
+	} else if network == CHATROOM {
+		return NewChatroom(identifier)
+	} else if network == PROVIDER {
+		return NewServiceProvider(identifier)
+	} else {
+		return nil
+	}
 }
