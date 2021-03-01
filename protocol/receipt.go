@@ -35,6 +35,7 @@ import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/format"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -78,22 +79,23 @@ type BaseReceiptCommand struct {
 }
 
 func NewReceiptCommand(text string, env Envelope, sn uint32, signature []byte) ReceiptCommand {
-	var cmd ReceiptCommand
+	cmd := new(BaseReceiptCommand)
 	if env == nil {
-		cmd = new(BaseReceiptCommand).InitWithMessage(text)
+		cmd.InitWithMessage(text)
 	} else {
-		cmd = new(BaseReceiptCommand).InitWithEnvelope(env, sn, text)
+		cmd.InitWithEnvelope(env, sn, text)
 	}
 	if signature != nil {
 		cmd.SetSignature(signature)
 	}
+	ObjectRetain(cmd)
 	return cmd
 }
 
 func (cmd *BaseReceiptCommand) Init(dict map[string]interface{}) *BaseReceiptCommand {
 	if cmd.BaseCommand.Init(dict) != nil {
 		// lazy load
-		cmd._envelope = nil
+		cmd.setEnvelope(nil)
 	}
 	return cmd
 }
@@ -101,7 +103,7 @@ func (cmd *BaseReceiptCommand) Init(dict map[string]interface{}) *BaseReceiptCom
 func (cmd *BaseReceiptCommand) InitWithMessage(text string) *BaseReceiptCommand {
 	if cmd.BaseCommand.InitWithCommand(RECEIPT) != nil {
 		cmd.Set("message", text)
-		cmd._envelope = nil
+		cmd.setEnvelope(nil)
 	}
 	return cmd
 }
@@ -110,7 +112,6 @@ func (cmd *BaseReceiptCommand) InitWithEnvelope(env Envelope, sn uint32, text st
 	if cmd.BaseCommand.InitWithCommand(RECEIPT) != nil {
 		// envelope of the message responding to
 		cmd.SetEnvelope(env)
-		cmd._envelope = env
 		// SerialNumber of the message responding to
 		if sn > 0 {
 			cmd.Set("sn", sn)
@@ -120,6 +121,24 @@ func (cmd *BaseReceiptCommand) InitWithEnvelope(env Envelope, sn uint32, text st
 		}
 	}
 	return cmd
+}
+
+func (cmd *BaseReceiptCommand) Release() int {
+	cnt := cmd.BaseCommand.Release()
+	if cnt == 0 {
+		// this object is going to be destroyed,
+		// release children
+		cmd.setEnvelope(nil)
+	}
+	return cnt
+}
+
+func (cmd *BaseReceiptCommand) setEnvelope(env Envelope) {
+	if env != cmd._envelope {
+		ObjectRetain(env)
+		ObjectRelease(cmd._envelope)
+		cmd._envelope = env
+	}
 }
 
 //-------- IReceiptCommand
@@ -142,15 +161,15 @@ func (cmd *BaseReceiptCommand) Envelope() Envelope {
 				env = cmd.GetMap(false)
 			}
 		}
-		cmd._envelope = EnvelopeParse(env)
+		cmd.setEnvelope(EnvelopeParse(env))
 	}
 	return cmd._envelope
 }
 func (cmd *BaseReceiptCommand) SetEnvelope(env Envelope) {
 	if env == nil {
-		cmd.Set("sender", nil)
-		cmd.Set("receiver", nil)
-		//cmd.Set("time", nil)
+		cmd.Remove("sender")
+		cmd.Remove("receiver")
+		//cmd.Remove("time")
 	} else {
 		cmd.Set("sender", env.Sender().String())
 		cmd.Set("receiver", env.Receiver().String())
@@ -159,6 +178,7 @@ func (cmd *BaseReceiptCommand) SetEnvelope(env Envelope) {
 			cmd.Set("time", when.Unix())
 		}
 	}
+	cmd.setEnvelope(env)
 }
 
 func (cmd *BaseReceiptCommand) Signature() []byte {
@@ -170,7 +190,7 @@ func (cmd *BaseReceiptCommand) Signature() []byte {
 }
 func (cmd *BaseReceiptCommand) SetSignature(signature []byte) {
 	if signature == nil {
-		cmd.Set("signature", nil)
+		cmd.Remove("signature")
 	} else {
 		cmd.Set("signature", Base64Encode(signature))
 	}

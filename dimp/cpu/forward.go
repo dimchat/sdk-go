@@ -34,6 +34,7 @@ import (
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
@@ -55,11 +56,15 @@ func (cpu *ForwardContentProcessor) Process(content Content, _ ReliableMessage) 
 	// check response
 	if secret != nil {
 		// Over The Top
-		return NewForwardContent(secret)
+		res := NewForwardContent(secret)
+		ObjectAutorelease(res)
+		return res
 	}/* else {
 		receiver := forward.GetMessage().Receiver()
 		text := "Message forwarded: " + receiver.String()
-		return new(ReceiptCommand).InitWithText(text)
+		res := NewReceiptCommand(text, nil, 0, nil)
+		ObjectAutorelease(res)
+		return res
 	}*/
 
 	// NOTICE: decrypt failed, not for you?

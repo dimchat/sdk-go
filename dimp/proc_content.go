@@ -34,6 +34,7 @@ import (
 	"fmt"
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -95,5 +96,6 @@ func (cpu *BaseContentProcessor) Process(content Content, _ ReliableMessage) Con
 	if group != nil {
 		res.SetGroup(group)
 	}
+	ObjectAutorelease(res)
 	return res
 }

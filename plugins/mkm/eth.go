@@ -50,11 +50,13 @@ import (
  */
 type ETHAddress struct {
 	ConstantString
-	Address
+	IAddress
 }
 
 func NewETHAddress(address string) *ETHAddress {
-	return new(ETHAddress).Init(address)
+	eth := new(ETHAddress).Init(address)
+	ObjectRetain(eth)
+	return eth
 }
 
 func (address *ETHAddress) Init(string string) *ETHAddress {
@@ -63,13 +65,7 @@ func (address *ETHAddress) Init(string string) *ETHAddress {
 	return address
 }
 
-func (address *ETHAddress) String() string {
-	return address.ConstantString.String()
-}
-
-func (address *ETHAddress) Equal(other interface{}) bool {
-	return address.ConstantString.Equal(other)
-}
+//-------- IAddress
 
 func (address *ETHAddress) Network() uint8 {
 	return MAIN
@@ -101,7 +97,9 @@ func ETHAddressGenerate(fingerprint []byte) *ETHAddress {
 	digest := KECCAK256(fingerprint)
 	// 2. address = hex_encode(digest.suffix(20));
 	address := "0x" + eip55(HexEncode(digest[32-20:]))
-	return NewETHAddress(address)
+	eth := NewETHAddress(address)
+	ObjectAutorelease(eth)
+	return eth
 }
 
 /**
@@ -112,9 +110,12 @@ func ETHAddressGenerate(fingerprint []byte) *ETHAddress {
  */
 func ETHAddressParse(address string) *ETHAddress {
 	if isETH(address) {
-		return NewETHAddress(address)
+		eth := NewETHAddress(address)
+		ObjectAutorelease(eth)
+		return eth
+	} else {
+		return nil
 	}
-	return nil
 }
 
 // https://eips.ethereum.org/EIPS/eip-55

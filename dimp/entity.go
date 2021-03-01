@@ -33,6 +33,7 @@ package dimp
 import (
 	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -175,29 +176,43 @@ type ChatroomDataSource interface {
 //  Creators
 //
 func NewUser(identifier ID) *BaseUser {
-	return new(BaseUser).Init(identifier)
+	user := new(BaseUser).Init(identifier)
+	ObjectRetain(user)
+	return user
 }
 
 func NewGroup(identifier ID) *BaseGroup {
-	return new(BaseGroup).Init(identifier)
+	group := new(BaseGroup).Init(identifier)
+	ObjectRetain(group)
+	return group
 }
 
 func NewRobot(identifier ID) *Robot {
-	return new(Robot).Init(identifier)
+	bot := new(Robot).Init(identifier)
+	ObjectRetain(bot)
+	return bot
 }
 
 func NewStation(identifier ID, host string, port uint16) *Station {
-	return new(Station).Init(identifier, host, port)
+	server := new(Station).Init(identifier, host, port)
+	ObjectRetain(server)
+	return server
 }
 
 func NewServiceProvider(identifier ID) *ServiceProvider {
-	return new(ServiceProvider).Init(identifier)
+	sp := new(ServiceProvider).Init(identifier)
+	ObjectRetain(sp)
+	return sp
 }
 
 func NewPolylogue(identifier ID) *Polylogue {
-	return new(Polylogue).Init(identifier)
+	group := new(Polylogue).Init(identifier)
+	ObjectRetain(group)
+	return group
 }
 
 func NewChatroom(identifier ID) *Chatroom {
-	return new(Chatroom).Init(identifier)
+	group := new(Chatroom).Init(identifier)
+	ObjectRetain(group)
+	return group
 }

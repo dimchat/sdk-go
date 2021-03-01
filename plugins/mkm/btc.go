@@ -54,13 +54,15 @@ import (
  */
 type BTCAddress struct {
 	ConstantString
-	Address
+	IAddress
 
 	_network uint8
 }
 
 func NewBTCAddress(address string, network uint8) *BTCAddress {
-	return new(BTCAddress).Init(address, network)
+	btc := new(BTCAddress).Init(address, network)
+	ObjectRetain(btc)
+	return btc
 }
 
 func (address *BTCAddress) Init(string string, network uint8) *BTCAddress {
@@ -70,24 +72,18 @@ func (address *BTCAddress) Init(string string, network uint8) *BTCAddress {
 	return address
 }
 
-func (address *BTCAddress) String() string {
-	return address.ConstantString.String()
-}
-
-func (address *BTCAddress) Equal(other interface{}) bool {
-	return address.ConstantString.Equal(other)
-}
+//-------- IAddress
 
 func (address *BTCAddress) Network() uint8 {
 	return address._network
 }
 
 func (address *BTCAddress) IsUser() bool {
-	return NetworkTypeIsUser(address._network)
+	return NetworkTypeIsUser(address.Network())
 }
 
 func (address *BTCAddress) IsGroup() bool {
-	return NetworkTypeIsGroup(address._network)
+	return NetworkTypeIsGroup(address.Network())
 }
 
 func (address *BTCAddress) IsBroadcast() bool {
@@ -115,7 +111,9 @@ func BTCAddressGenerate(fingerprint []byte, network uint8) *BTCAddress {
 	BytesCopy(head, 0, data, 0, 21)
 	BytesCopy(cc, 0, data, 21, 24)
 	base58 := Base58Encode(data)
-	return NewBTCAddress(base58, network)
+	btc := NewBTCAddress(base58, network)
+	ObjectAutorelease(btc)
+	return btc
 }
 
 /**
@@ -137,12 +135,15 @@ func BTCAddressParse(base58 string) *BTCAddress {
 	BytesCopy(data, 0, prefix, 0, 21)
 	BytesCopy(data, 21, suffix, 0, 4)
 	cc := checkCode(prefix)
-	if !BytesEqual(cc, suffix) {
-		panic("address check code error")
+	if BytesEqual(cc, suffix) {
+		network := data[0]
+		btc := NewBTCAddress(base58, network)
+		ObjectAutorelease(btc)
+		return btc
+	} else {
+		//panic("address check code error")
 		return nil
 	}
-	network := data[0]
-	return NewBTCAddress(base58, network)
 }
 
 func checkCode(data []byte) []byte {

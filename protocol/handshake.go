@@ -33,6 +33,7 @@ package protocol
 import (
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 type HandshakeState uint8
@@ -161,17 +162,29 @@ func (cmd *BaseHandshakeCommand) State() HandshakeState {
 //  Handshake command factories
 //
 func HandshakeCommandStart() HandshakeCommand {
-	return new(BaseHandshakeCommand).InitWithMessage("", "")
+	cmd := new(BaseHandshakeCommand).InitWithMessage("", "")
+	ObjectRetain(cmd)
+	ObjectAutorelease(cmd)
+	return cmd
 }
 
 func HandshakeCommandRestart(session string) HandshakeCommand {
-	return new(BaseHandshakeCommand).InitWithMessage("", session)
+	cmd := new(BaseHandshakeCommand).InitWithMessage("", session)
+	ObjectRetain(cmd)
+	ObjectAutorelease(cmd)
+	return cmd
 }
 
 func HandshakeCommandAgain(session string) HandshakeCommand {
-	return new(BaseHandshakeCommand).InitWithMessage("DIM?", session)
+	cmd := new(BaseHandshakeCommand).InitWithMessage("DIM?", session)
+	ObjectRetain(cmd)
+	ObjectAutorelease(cmd)
+	return cmd
 }
 
 func HandshakeCommandSuccess(session string) HandshakeCommand {
-	return new(BaseHandshakeCommand).InitWithMessage("DIM!", session)
+	cmd := new(BaseHandshakeCommand).InitWithMessage("DIM!", session)
+	ObjectRetain(cmd)
+	ObjectAutorelease(cmd)
+	return cmd
 }

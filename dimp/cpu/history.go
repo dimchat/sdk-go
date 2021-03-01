@@ -35,6 +35,7 @@ import (
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
@@ -56,5 +57,6 @@ func (cpu *HistoryCommandProcessor) Execute(cmd Command, _ ReliableMessage) Cont
 	if group != nil {
 		res.SetGroup(group)
 	}
+	ObjectAutorelease(res)
 	return res
 }

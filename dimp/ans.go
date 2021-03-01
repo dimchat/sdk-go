@@ -30,7 +30,10 @@
  */
 package dimp
 
-import . "github.com/dimchat/mkm-go/protocol"
+import (
+	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
+)
 
 var KEYWORDS = [...]string {
 	"all", "everyone", "anyone", "owner", "founder",
@@ -103,48 +106,7 @@ type IAddressNameService interface {
  *  ANS
  */
 type AddressNameService struct {
-	IAddressNameService
-
-	_shadow IAddressNameService
-}
-
-func (ans *AddressNameService) Init() *AddressNameService {
-	ans._shadow = nil
-	return ans
-}
-
-func (ans *AddressNameService) SetSource(shadow IAddressNameService) {
-	ans._shadow = shadow
-}
-func (ans *AddressNameService) Source() IAddressNameService {
-	return ans._shadow
-}
-
-func (ans *AddressNameService) IsReserved(name string) bool {
-	return ans.Source().IsReserved(name)
-}
-
-func (ans *AddressNameService) Cache(name string, identifier ID) bool {
-	return ans.Source().Cache(name, identifier)
-}
-
-func (ans *AddressNameService) GetID(name string) ID {
-	return ans.Source().GetID(name)
-}
-
-func (ans *AddressNameService) GetNames(identifier ID) []string {
-	return ans.Source().GetNames(identifier)
-}
-
-func (ans *AddressNameService) Save(name string, identifier ID) bool {
-	return ans.Source().Save(name, identifier)
-}
-
-/**
- *  Shadow Data Source for ANS
- *  ~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
-type AddressNameSource struct {
+	BaseObject
 	IAddressNameService
 
 	_reserved map[string]bool
@@ -153,49 +115,60 @@ type AddressNameSource struct {
 	_service IAddressNameService
 }
 
-func (ans *AddressNameSource) Init(service IAddressNameService) *AddressNameSource {
-	ans._reserved = make(map[string]bool)
-	ans._caches = make(map[string]ID, len(KEYWORDS))
-	// constant ANS records
-	ans._caches["all"] = EVERYONE
-	ans._caches["everyone"] = EVERYONE
-	ans._caches["anyone"] = ANYONE
-	ans._caches["owner"] = ANYONE
-	ans._caches["founder"] = FOUNDER
-	// reserved names
-	for _, item := range KEYWORDS {
-		ans._reserved[item] = true
+func (ans *AddressNameService) Init() *AddressNameService {
+	if ans.BaseObject.Init() != nil {
+		ans._reserved = make(map[string]bool, len(KEYWORDS))
+		// reserved names
+		for _, item := range KEYWORDS {
+			ans._reserved[item] = true
+		}
+
+		ans._caches = make(map[string]ID, 1024)
+		// constant ANS records
+		ans.setID("all", EVERYONE)
+		ans.setID("everyone", EVERYONE)
+		ans.setID("anyone", ANYONE)
+		ans.setID("owner", ANYONE)
+		ans.setID("founder", FOUNDER)
 	}
-	ans._service = service
 	return ans
 }
 
-func (ans *AddressNameSource) Service() IAddressNameService {
-	return ans._service
+func (ans *AddressNameService) setID(name string, identifier ID) {
+	old := ans._caches[name]
+	if old != identifier {
+		ObjectRetain(identifier)
+		ObjectRelease(old)
+		if identifier == nil {
+			delete(ans._caches, name)
+		} else {
+			ans._caches[name] = identifier
+		}
+	}
 }
 
-func (ans *AddressNameSource) IsReserved(name string) bool {
+func (ans *AddressNameService) self() IAddressNameService {
+	return ans.BaseObject.Self().(IAddressNameService)
+}
+
+func (ans *AddressNameService) IsReserved(name string) bool {
 	return ans._reserved[name]
 }
 
-func (ans *AddressNameSource) Cache(name string, identifier ID) bool {
-	if ans.Service().IsReserved(name) {
+func (ans *AddressNameService) Cache(name string, identifier ID) bool {
+	if ans.self().IsReserved(name) {
 		// this name is reserved, cannot register
 		return false
 	}
-	if identifier == nil {
-		delete(ans._caches, name)
-	} else {
-		ans._caches[name] = identifier
-	}
+	ans.setID(name, identifier)
 	return true
 }
 
-func (ans *AddressNameSource) GetID(name string) ID {
+func (ans *AddressNameService) GetID(name string) ID {
 	return ans._caches[name]
 }
 
-func (ans *AddressNameSource) GetNames(identifier ID) []string {
+func (ans *AddressNameService) GetNames(identifier ID) []string {
 	array := make([]string, 1)
 	for key, value := range ans._caches {
 		if identifier.Equal(value) {
@@ -205,7 +178,7 @@ func (ans *AddressNameSource) GetNames(identifier ID) []string {
 	return array
 }
 
-func (ans *AddressNameSource) Save(name string, identifier ID) bool {
+func (ans *AddressNameService) Save(name string, identifier ID) bool {
 	// override to save this record into local storage
-	return ans.Service().Cache(name, identifier)
+	return ans.self().Cache(name, identifier)
 }

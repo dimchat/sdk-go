@@ -31,6 +31,7 @@ import (
 	"crypto/cipher"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/format"
+	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/plugins/types"
 )
 
@@ -52,7 +53,9 @@ type AESKey struct {
 }
 
 func NewAESKey(dict map[string]interface{}) *AESKey {
-	return new(AESKey).Init(dict)
+	key := new(AESKey).Init(dict)
+	ObjectRetain(key)
+	return key
 }
 
 func (key *AESKey) Init(dict map[string]interface{}) *AESKey {

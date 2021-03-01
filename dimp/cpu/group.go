@@ -36,6 +36,7 @@ import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
@@ -65,6 +66,7 @@ func (gpu *GroupCommandProcessor) Execute(cmd Command, _ ReliableMessage) Conten
 	text := fmt.Sprintf("Group command (name: %s) not support yet!", cmd.CommandName())
 	res := NewTextContent(text)
 	res.SetGroup(cmd.Group())
+	ObjectAutorelease(res)
 	return res
 }
 

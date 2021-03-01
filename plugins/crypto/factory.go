@@ -25,7 +25,10 @@
  */
 package crypto
 
-import . "github.com/dimchat/mkm-go/crypto"
+import (
+	. "github.com/dimchat/mkm-go/crypto"
+	. "github.com/dimchat/mkm-go/types"
+)
 
 /**
  *  Symmetric Key
@@ -33,6 +36,7 @@ import . "github.com/dimchat/mkm-go/crypto"
 type SymmetricKeyGenerator func() SymmetricKey
 type SymmetricKeyParser func(map[string]interface{}) SymmetricKey
 
+// symmetric key factory
 type GeneralSymmetricKeyFactory struct {
 	SymmetricKeyFactory
 
@@ -61,11 +65,15 @@ func (factory *GeneralSymmetricKeyFactory) ParseSymmetricKey(key map[string]inte
 func BuildSymmetricKeyFactories() {
 	// AES
 	SymmetricKeyRegister(AES, NewSymmetricKeyFactory(func() SymmetricKey {
-		key := make(map[string]interface{})
-		key["algorithm"] = AES
-		return NewAESKey(key)
+		dict := make(map[string]interface{})
+		dict["algorithm"] = AES
+		key := NewAESKey(dict)
+		ObjectAutorelease(key)
+		return key
 	}, func(dict map[string]interface{}) SymmetricKey {
-		return NewAESKey(dict)
+		key := NewAESKey(dict)
+		ObjectAutorelease(key)
+		return key
 	}))
 	// PLAIN
 	SymmetricKeyRegister(PLAIN, NewSymmetricKeyFactory(func() SymmetricKey {
@@ -82,6 +90,7 @@ type PrivateKeyGenerator func() PrivateKey
 type PrivateKeyParser func(map[string]interface{}) PrivateKey
 type PublicKeyParser func(map[string]interface{}) PublicKey
 
+// private key factory
 type GeneralPrivateKeyFactory struct {
 	PrivateKeyFactory
 
@@ -107,6 +116,7 @@ func (factory *GeneralPrivateKeyFactory) ParsePrivateKey(key map[string]interfac
 	return factory._parser(key)
 }
 
+// public key factory
 type GeneralPublicKeyFactory struct {
 	PublicKeyFactory
 
@@ -129,29 +139,41 @@ func (factory *GeneralPublicKeyFactory) ParsePublicKey(key map[string]interface{
 func BuildPublicKeyFactories() {
 	// RSA
 	PublicKeyRegister(RSA, NewPublicKeyFactory(func(dict map[string]interface{}) PublicKey {
-		return NewRSAPublicKey(dict)
+		key := NewRSAPublicKey(dict)
+		ObjectAutorelease(key)
+		return key
 	}))
 	// ECC
 	PublicKeyRegister(ECC, NewPublicKeyFactory(func(dict map[string]interface{}) PublicKey {
-		return NewECCPublicKey(dict)
+		key := NewECCPublicKey(dict)
+		ObjectAutorelease(key)
+		return key
 	}))
 }
 
 func BuildPrivateKeyFactories() {
 	// RSA
 	PrivateKeyRegister(RSA, NewPrivateKeyFactory(func() PrivateKey {
-		key := make(map[string]interface{})
-		key["algorithm"] = RSA
-		return NewRSAPrivateKey(key)
+		dict := make(map[string]interface{})
+		dict["algorithm"] = RSA
+		key := NewRSAPrivateKey(dict)
+		ObjectAutorelease(key)
+		return key
 	}, func(dict map[string]interface{}) PrivateKey {
-		return NewRSAPrivateKey(dict)
+		key := NewRSAPrivateKey(dict)
+		ObjectAutorelease(key)
+		return key
 	}))
 	// ECC
 	PrivateKeyRegister(ECC, NewPrivateKeyFactory(func() PrivateKey {
-		key := make(map[string]interface{})
-		key["algorithm"] = ECC
-		return NewECCPrivateKey(key)
+		dict := make(map[string]interface{})
+		dict["algorithm"] = ECC
+		key := NewECCPrivateKey(dict)
+		ObjectAutorelease(key)
+		return key
 	}, func(dict map[string]interface{}) PrivateKey {
-		return NewECCPrivateKey(dict)
+		key := NewECCPrivateKey(dict)
+		ObjectAutorelease(key)
+		return key
 	}))
 }

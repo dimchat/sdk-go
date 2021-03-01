@@ -35,6 +35,7 @@ import (
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/mkm"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -57,20 +58,23 @@ func (factory *GeneralMetaFactory) Init(version uint8) *GeneralMetaFactory {
 }
 
 func (factory *GeneralMetaFactory) CreateMeta(key VerifyKey, seed string, fingerprint []byte) Meta {
+	var meta Meta
 	switch factory._type {
 	case MKM:
-		return NewDefaultMeta(key, seed, fingerprint)
+		meta = NewDefaultMeta(key, seed, fingerprint)
 	case BTC:
-		return NewBTCMeta(BTC, key, seed, fingerprint)
+		meta = NewBTCMeta(BTC, key, seed, fingerprint)
 	case ExBTC:
-		return NewBTCMeta(ExBTC, key, seed, fingerprint)
+		meta = NewBTCMeta(ExBTC, key, seed, fingerprint)
 	case ETH:
-		return NewETHMeta(ETH, key, seed, fingerprint)
+		meta = NewETHMeta(ETH, key, seed, fingerprint)
 	case ExETH:
-		return NewETHMeta(ExETH, key, seed, fingerprint)
+		meta = NewETHMeta(ExETH, key, seed, fingerprint)
 	default:
-		return nil
+		meta = nil
 	}
+	ObjectAutorelease(meta)
+	return meta
 }
 
 func (factory *GeneralMetaFactory) GenerateMeta(sKey SignKey, seed string) Meta {
@@ -144,13 +148,16 @@ func (factory *GeneralDocumentFactory) getDocType(identifier ID) string {
 
 func (factory *GeneralDocumentFactory) CreateDocument(identifier ID, data []byte, signature []byte) Document {
 	docType := factory.getDocType(identifier)
+	var doc Document
 	if docType == VISA {
-		return NewVisa(identifier, data, signature)
+		doc = NewVisa(identifier, data, signature)
+	} else if docType == BULLETIN {
+		doc = NewBulletin(identifier, data, signature)
+	} else {
+		doc = NewDocument(docType, identifier, data, signature)
 	}
-	if docType == BULLETIN {
-		return NewBulletin(identifier, data, signature)
-	}
-	return NewDocument(docType, identifier, data, signature)
+	ObjectAutorelease(doc)
+	return doc
 }
 
 func (factory *GeneralDocumentFactory) ParseDocument(doc map[string]interface{}) Document {
@@ -183,36 +190,39 @@ func (factory *GeneralDocumentFactory) ParseDocument(doc map[string]interface{})
 
 func NewDocument(docType string, identifier ID, data []byte, signature []byte) Document {
 	doc := new(BaseDocument).InitWithType(docType, identifier, data, signature)
-	doc.SetShadow(new(BaseDocumentShadow).Init(doc))
+	ObjectRetain(doc)
 	return doc
 }
 
 func ParseDocument(dict map[string]interface{}) Document {
 	doc := new(BaseDocument).Init(dict)
-	doc.SetShadow(new(BaseDocumentShadow).Init(doc))
+	ObjectRetain(doc)
+	ObjectAutorelease(doc)
 	return doc
 }
 
 func NewVisa(identifier ID, data []byte, signature []byte) Visa {
 	doc := new(BaseVisa).InitWithID(identifier, data, signature)
-	doc.SetShadow(new(BaseDocumentShadow).Init(doc))
+	ObjectRetain(doc)
 	return doc
 }
 
 func ParseVisa(dict map[string]interface{}) Visa {
 	doc := new(BaseVisa).Init(dict)
-	doc.SetShadow(new(BaseDocumentShadow).Init(doc))
+	ObjectRetain(doc)
+	ObjectAutorelease(doc)
 	return doc
 }
 
 func NewBulletin(identifier ID, data []byte, signature []byte) Bulletin {
 	doc := new(BaseBulletin).InitWithID(identifier, data, signature)
-	doc.SetShadow(new(BaseDocumentShadow).Init(doc))
+	ObjectRetain(doc)
 	return doc
 }
 
 func ParseBulletin(dict map[string]interface{}) Bulletin {
 	doc := new(BaseBulletin).Init(dict)
-	doc.SetShadow(new(BaseDocumentShadow).Init(doc))
+	ObjectRetain(doc)
+	ObjectAutorelease(doc)
 	return doc
 }

@@ -130,7 +130,7 @@ func (cmd *BaseLoginCommand) Device() string {
 }
 func (cmd *BaseLoginCommand) SetDevice(device string) {
 	if device == "" {
-		cmd.Set("device", nil)
+		cmd.Remove("device")
 	} else {
 		cmd.Set("device", device)
 	}
@@ -145,7 +145,7 @@ func (cmd *BaseLoginCommand) Agent() string {
 }
 func (cmd *BaseLoginCommand) SetAgent(agent string) {
 	if agent == "" {
-		cmd.Set("agent", nil)
+		cmd.Remove("agent")
 	} else {
 		cmd.Set("agent", agent)
 	}
@@ -164,7 +164,7 @@ func (cmd *BaseLoginCommand) StationInfo() map[string]interface{} {
 }
 func (cmd *BaseLoginCommand) SetStationInfo(station map[string]interface{}) {
 	if station == nil {
-		cmd.Set("station", nil)
+		cmd.Remove("station")
 	} else {
 		cmd.Set("station", station)
 	}
@@ -179,7 +179,7 @@ func (cmd *BaseLoginCommand) ProviderInfo() map[string]interface{} {
 }
 func (cmd *BaseLoginCommand) SetProviderInfo(sp map[string]interface{}) {
 	if sp == nil {
-		cmd.Set("provider", nil)
+		cmd.Remove("provider")
 	} else {
 		cmd.Set("provider", sp)
 	}

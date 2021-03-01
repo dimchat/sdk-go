@@ -35,6 +35,7 @@ import (
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -105,5 +106,6 @@ func (cpu *BaseCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content
 	if group != nil {
 		res.SetGroup(group)
 	}
+	ObjectAutorelease(res)
 	return res
 }

@@ -29,6 +29,7 @@ import (
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/digest"
 	. "github.com/dimchat/mkm-go/format"
+	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/plugins/types"
 )
 
@@ -75,6 +76,14 @@ type PlainKey struct {
 	_data []byte
 }
 
+func NewPlainKey() *PlainKey {
+	dict := make(map[string]interface{})
+	dict["algorithm"] = PLAIN
+	key := new(PlainKey).Init(dict)
+	ObjectRetain(key)
+	return key
+}
+
 func (key *PlainKey) Init(dict map[string]interface{}) *PlainKey {
 	if key.BaseSymmetricKey.Init(dict) != nil {
 		key._data = make([]byte, 0)
@@ -94,14 +103,15 @@ func (key *PlainKey) Decrypt(ciphertext []byte) []byte {
 	return ciphertext
 }
 
-var plainKey *PlainKey = nil
+//
+//  Singleton
+//
+var sharedPlainKey *PlainKey = nil
 
 func GetPlainKey() *PlainKey {
-	return plainKey
+	return sharedPlainKey
 }
 
 func init() {
-	dict := make(map[string]interface{})
-	dict["algorithm"] = PLAIN
-	plainKey = new(PlainKey).Init(dict)
+	sharedPlainKey = NewPlainKey()
 }

@@ -36,6 +36,7 @@ import (
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 const (
@@ -106,6 +107,7 @@ type IStorageCommand interface {
 //
 type BaseStorageCommand struct {
 	BaseCommand
+	IStorageCommand
 
 	_title string
 
@@ -123,7 +125,7 @@ func (cmd *BaseStorageCommand) Init(dict map[string]interface{}) *BaseStorageCom
 		cmd._data = nil
 		cmd._key = nil
 		cmd._plaintext = nil
-		cmd._password = nil
+		cmd.setPassword(nil)
 	}
 	return cmd
 }
@@ -134,9 +136,31 @@ func (cmd *BaseStorageCommand) InitWithTitle(title string) *BaseStorageCommand {
 		cmd._data = nil
 		cmd._key = nil
 		cmd._plaintext = nil
-		cmd._password = nil
+		cmd.setPassword(nil)
 	}
 	return cmd
+}
+
+func (cmd *BaseStorageCommand) self() StorageCommand {
+	return cmd.self().(StorageCommand)
+}
+
+func (cmd *BaseStorageCommand) Release() int {
+	cnt := cmd.BaseCommand.Release()
+	if cnt == 0 {
+		// this object is going to be destroyed,
+		// release children
+		cmd.setPassword(nil)
+	}
+	return cnt
+}
+
+func (cmd *BaseStorageCommand) setPassword(password SymmetricKey) {
+	if password != cmd._password {
+		ObjectRetain(password)
+		ObjectRelease(cmd._password)
+		cmd._password = password
+	}
 }
 
 //-------- IStorageCommand
@@ -146,7 +170,7 @@ func (cmd *BaseStorageCommand) ID() ID {
 }
 func (cmd *BaseStorageCommand) SetID(identifier ID) {
 	if identifier == nil {
-		cmd.Set("ID", nil)
+		cmd.Remove("ID")
 	} else {
 		cmd.Set("ID", identifier.String())
 	}
@@ -182,7 +206,7 @@ func (cmd *BaseStorageCommand) Data() []byte {
 }
 func (cmd *BaseStorageCommand) SetData(data []byte) {
 	if data == nil {
-		cmd.Set("data", nil)
+		cmd.Remove("data")
 	} else {
 		cmd.Set("data", Base64Encode(data))
 	}
@@ -201,18 +225,19 @@ func (cmd *BaseStorageCommand) Key() []byte {
 }
 func (cmd *BaseStorageCommand) SetKey(key []byte) {
 	if key == nil {
-		cmd.Set("key", nil)
+		cmd.Remove("key")
 	} else {
 		cmd.Set("key", Base64Encode(key))
 	}
 	cmd._key = key
-	cmd._password = nil
+	// reset password
+	cmd.setPassword(nil)
 }
 
 //-------- Decryption
 
 func (cmd *BaseStorageCommand) DecryptKey(privateKey DecryptKey) SymmetricKey {
-	data := cmd.Key()
+	data := cmd.self().Key()
 	if data == nil {
 		return nil
 	}
@@ -230,7 +255,7 @@ func (cmd *BaseStorageCommand) DecryptWithSymmetricKey(password SymmetricKey) []
 			panic("symmetric key empty")
 			return nil
 		}
-		data := cmd.Data()
+		data := cmd.self().Data()
 		if data == nil {
 			return nil
 		}
@@ -241,7 +266,7 @@ func (cmd *BaseStorageCommand) DecryptWithSymmetricKey(password SymmetricKey) []
 
 func (cmd *BaseStorageCommand) DecryptWithPrivateKey(privateKey DecryptKey) []byte {
 	if cmd._password == nil {
-		cmd._password = cmd.DecryptKey(privateKey)
+		cmd.setPassword(cmd.self().DecryptKey(privateKey))
 	}
-	return cmd.DecryptWithSymmetricKey(cmd._password)
+	return cmd.self().DecryptWithSymmetricKey(cmd._password)
 }

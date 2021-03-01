@@ -35,6 +35,7 @@ import (
 	"encoding/pem"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/format"
+	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/plugins/types"
 )
 
@@ -50,32 +51,34 @@ type RSAPublicKey struct {
 	BasePublicKey
 	EncryptKey
 
-	_publicKey *rsa.PublicKey
+	_rsaPublicKey *rsa.PublicKey
 }
 
 func NewRSAPublicKey(dict map[string]interface{}) *RSAPublicKey {
-	return new(RSAPublicKey).Init(dict)
+	key := new(RSAPublicKey).Init(dict)
+	ObjectRetain(key)
+	return key
 }
 
 func (key *RSAPublicKey) Init(dict map[string]interface{}) *RSAPublicKey {
 	if key.BasePublicKey.Init(dict) != nil {
 		// lazy load
-		key._publicKey = nil
+		key._rsaPublicKey = nil
 	}
 	return key
 }
 
 func (key *RSAPublicKey) getPublicKey() *rsa.PublicKey {
-	if key._publicKey == nil {
+	if key._rsaPublicKey == nil {
 		data := key.Get("data")
 		block, _ := pem.Decode(UTF8Encode(data.(string)))
 		pub, err := x509.ParsePKIXPublicKey(block.Bytes)
 		if err !=  nil {
 			panic(err)
 		}
-		key._publicKey = pub.(*rsa.PublicKey)
+		key._rsaPublicKey = pub.(*rsa.PublicKey)
 	}
-	return key._publicKey
+	return key._rsaPublicKey
 }
 
 func (key *RSAPublicKey) getHash() crypto.Hash {
@@ -124,40 +127,60 @@ type RSAPrivateKey struct {
 	BasePrivateKey
 	DecryptKey
 
-	_privateKey *rsa.PrivateKey
+	_rsaPrivateKey *rsa.PrivateKey
 
 	_publicKey PublicKey
 }
 
 func NewRSAPrivateKey(dict map[string]interface{}) *RSAPrivateKey {
-	return new(RSAPrivateKey).Init(dict)
+	key := new(RSAPrivateKey).Init(dict)
+	ObjectRetain(key)
+	return key
 }
 
 func (key *RSAPrivateKey) Init(dict map[string]interface{}) *RSAPrivateKey {
 	if key.BasePrivateKey.Init(dict) != nil {
 		// lazy load
-		key._privateKey = nil
-		key._publicKey = nil
+		key._rsaPrivateKey = nil
+		key.setPublicKey(nil)
 	}
 	return key
 }
 
+func (key *RSAPrivateKey) Release() int {
+	cnt := key.BasePrivateKey.Release()
+	if cnt == 0 {
+		// this object is going to be destroyed,
+		// release children
+		key.setPublicKey(nil)
+	}
+	return cnt
+}
+
+func (key *RSAPrivateKey) setPublicKey(pKey PublicKey) {
+	if pKey != key._publicKey {
+		ObjectRetain(pKey)
+		ObjectRelease(key._publicKey)
+		key._publicKey = pKey
+	}
+}
+
 func (key *RSAPrivateKey) getPrivateKey() *rsa.PrivateKey {
-	if key._privateKey == nil {
+	if key._rsaPrivateKey == nil {
 		data := key.Get("data")
 		if data == nil {
 			// generate new key with size
-			key._privateKey = key.generate(1024)
+			key._rsaPrivateKey = key.generate(1024)
 		} else {
 			block, _ := pem.Decode(UTF8Encode(data.(string)))
 			pri, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 			if err !=  nil {
 				panic(err)
 			}
-			key._privateKey = pri.(*rsa.PrivateKey)
+			key._rsaPrivateKey = pri.(*rsa.PrivateKey)
 		}
 	}
-	return key._privateKey
+	return key._rsaPrivateKey
 }
 
 func MarshalPKCS8PrivateKey(key *rsa.PrivateKey) []byte {
@@ -241,13 +264,13 @@ func (key *RSAPrivateKey) PublicKey() PublicKey {
 			Bytes: der,
 		}
 		data := pem.EncodeToMemory(block)
-		key._publicKey = PublicKeyParse(map[string]interface{}{
+		key.setPublicKey(PublicKeyParse(map[string]interface{}{
 			"algorithm": RSA,
 			"data": UTF8Decode(data),
 			"mode": "ECB",
 			"padding": "PKCS1",
 			"digest": "SHA256",
-		})
+		}))
 	}
 	return key._publicKey
 }

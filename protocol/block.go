@@ -33,6 +33,7 @@ package protocol
 import (
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 const BLOCK = "block"
@@ -56,7 +57,7 @@ type BlockCommand struct {
 func (cmd *BlockCommand) Init(dict map[string]interface{}) *BlockCommand {
 	if cmd.BaseCommand.Init(dict) != nil {
 		// lazy load
-		cmd._list = nil
+		cmd.setList(nil)
 	}
 	return cmd
 }
@@ -70,11 +71,35 @@ func (cmd *BlockCommand) InitWithList(list []ID) *BlockCommand {
 	return cmd
 }
 
+func (cmd *BlockCommand) Release() int {
+	cnt := cmd.BaseCommand.Release()
+	if cnt == 0 {
+		// this object is going to be destroyed,
+		// release children
+		cmd.setList(nil)
+	}
+	return cnt
+}
+
+func (cmd *BlockCommand) setList(list []ID) {
+	if list != nil {
+		for _, item := range list {
+			ObjectRetain(item)
+		}
+	}
+	if cmd._list != nil {
+		for _, item := range cmd._list {
+			ObjectRelease(item)
+		}
+	}
+	cmd._list = list
+}
+
 func (cmd *BlockCommand) List() []ID {
 	if cmd._list == nil {
 		list := cmd.Get("list")
 		if list != nil {
-			cmd._list = IDConvert(list)
+			cmd.setList(IDConvert(list))
 		}
 	}
 	return cmd._list
@@ -82,20 +107,26 @@ func (cmd *BlockCommand) List() []ID {
 
 func (cmd *BlockCommand) SetList(list []ID) {
 	if list == nil {
-		cmd.Set("list", nil)
+		cmd.Remove("list")
 	} else {
 		cmd.Set("list", IDRevert(list))
 	}
-	cmd._list = list
+	cmd.setList(list)
 }
 
 //
 //  Factories
 //
 func BlockCommandQuery() *BlockCommand {
-	return new(BlockCommand).InitWithList(nil)
+	cmd := new(BlockCommand).InitWithList(nil)
+	ObjectRetain(cmd)
+	ObjectAutorelease(cmd)
+	return cmd
 }
 
 func BlockCommandRespond(list []ID) *BlockCommand {
-	return new(BlockCommand).InitWithList(list)
+	cmd := new(BlockCommand).InitWithList(list)
+	ObjectRetain(cmd)
+	ObjectAutorelease(cmd)
+	return cmd
 }

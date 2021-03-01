@@ -35,6 +35,7 @@ import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
@@ -54,7 +55,9 @@ func (cpu *MetaCommandProcessor) getMeta(identifier ID) Content {
 	if meta == nil {
 		// meta not found
 		text := "Sorry, meta not found for ID: " + identifier.String()
-		return NewTextContent(text)
+		res := NewTextContent(text)
+		ObjectAutorelease(res)
+		return res
 	}
 	// response
 	return MetaCommandRespond(identifier, meta)
@@ -65,11 +68,15 @@ func (cpu *MetaCommandProcessor) putMeta(identifier ID, meta Meta) Content {
 	if cpu.Facebook().SaveMeta(meta, identifier) == false {
 		// save meta failed
 		text := "Meta not accepted: " + identifier.String()
-		return NewTextContent(text)
+		res := NewTextContent(text)
+		ObjectAutorelease(res)
+		return res
 	}
 	// response
 	text := "Meta received: " + identifier.String()
-	//return new(ReceiptCommand).InitWithText(text)
+	//res := NewReceiptCommand(text, nil, 0, nil)
+	//ObjectAutorelease(res)
+	//return res
 	return receipt(text)
 }
 
