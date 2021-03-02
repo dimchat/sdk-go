@@ -49,9 +49,11 @@ import (
  */
 type RSAPublicKey struct {
 	BasePublicKey
-	EncryptKey
+	IEncryptKey
 
 	_rsaPublicKey *rsa.PublicKey
+
+	_data []byte
 }
 
 func NewRSAPublicKey(dict map[string]interface{}) *RSAPublicKey {
@@ -64,6 +66,7 @@ func (key *RSAPublicKey) Init(dict map[string]interface{}) *RSAPublicKey {
 	if key.BasePublicKey.Init(dict) != nil {
 		// lazy load
 		key._rsaPublicKey = nil
+		key._data = nil
 	}
 	return key
 }
@@ -85,10 +88,18 @@ func (key *RSAPublicKey) getHash() crypto.Hash {
 	return crypto.SHA256
 }
 
+//-------- ICryptographyKey
+
 func (key *RSAPublicKey) Data() []byte {
-	// TODO:
-	return nil
+	if key._data == nil {
+		// TODO: encode public key data to PKCS1
+		pub := key.getPublicKey()
+		key._data = pub.N.Bytes()
+	}
+	return key._data
 }
+
+//-------- IPublicKey/IVerifyKey
 
 func (key *RSAPublicKey) Verify(data []byte, signature []byte) bool {
 	pub := key.getPublicKey()
@@ -98,6 +109,8 @@ func (key *RSAPublicKey) Verify(data []byte, signature []byte) bool {
 	err := rsa.VerifyPKCS1v15(pub, key.getHash(), sum, signature)
 	return err == nil
 }
+
+//-------- IEncryptKey
 
 func (key *RSAPublicKey) Encrypt(plaintext []byte) []byte {
 	pub := key.getPublicKey()
@@ -125,9 +138,11 @@ func (key *RSAPublicKey) Encrypt(plaintext []byte) []byte {
  */
 type RSAPrivateKey struct {
 	BasePrivateKey
-	DecryptKey
+	IDecryptKey
 
 	_rsaPrivateKey *rsa.PrivateKey
+
+	_data []byte
 
 	_publicKey PublicKey
 }
@@ -142,6 +157,7 @@ func (key *RSAPrivateKey) Init(dict map[string]interface{}) *RSAPrivateKey {
 	if key.BasePrivateKey.Init(dict) != nil {
 		// lazy load
 		key._rsaPrivateKey = nil
+		key._data = nil
 		key.setPublicKey(nil)
 	}
 	return key
@@ -170,7 +186,7 @@ func (key *RSAPrivateKey) getPrivateKey() *rsa.PrivateKey {
 		data := key.Get("data")
 		if data == nil {
 			// generate new key with size
-			key._rsaPrivateKey = key.generate(1024)
+			key._rsaPrivateKey, _ = key.generate(1024)
 		} else {
 			block, _ := pem.Decode(UTF8Encode(data.(string)))
 			pri, err := x509.ParsePKCS8PrivateKey(block.Bytes)
@@ -183,21 +199,7 @@ func (key *RSAPrivateKey) getPrivateKey() *rsa.PrivateKey {
 	return key._rsaPrivateKey
 }
 
-func MarshalPKCS8PrivateKey(key *rsa.PrivateKey) []byte {
-	info := struct {
-		Version             int
-		PrivateKeyAlgorithm []asn1.ObjectIdentifier
-		PrivateKey          []byte
-	}{}
-	info.Version = 0
-	info.PrivateKeyAlgorithm = make([]asn1.ObjectIdentifier, 1)
-	info.PrivateKeyAlgorithm[0] = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
-	info.PrivateKey = x509.MarshalPKCS1PrivateKey(key)
-	k, _ := asn1.Marshal(info)
-	return k
-}
-
-func (key *RSAPrivateKey) generate(bits int) *rsa.PrivateKey {
+func (key *RSAPrivateKey) generate(bits int) (*rsa.PrivateKey, []byte) {
 	pri, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
 		panic(err)
@@ -212,17 +214,25 @@ func (key *RSAPrivateKey) generate(bits int) *rsa.PrivateKey {
 	key.Set("mode", "ECB")
 	key.Set("padding", "PKCS1")
 	key.Set("digest", "SHA256")
-	return pri
+	return pri, der
 }
 
 func (key *RSAPrivateKey) getHash() crypto.Hash {
 	return crypto.SHA256
 }
 
+//-------- ICryptographyKey
+
 func (key *RSAPrivateKey) Data() []byte {
-	// TODO:
-	return nil
+	if key._data == nil {
+		// TODO: encode private key data to PKCS1
+		pri := key.getPrivateKey()
+		key._data = pri.D.Bytes()
+	}
+	return key._data
 }
+
+//-------- IPrivateKey(ISignKey)
 
 func (key *RSAPrivateKey) Sign(data []byte) []byte {
 	pri := key.getPrivateKey()
@@ -235,6 +245,8 @@ func (key *RSAPrivateKey) Sign(data []byte) []byte {
 	}
 	return sig
 }
+
+//-------- IDecryptKey
 
 func (key *RSAPrivateKey) Decrypt(ciphertext []byte) []byte {
 	pri := key.getPrivateKey()
@@ -250,6 +262,8 @@ func (key *RSAPrivateKey) Decrypt(ciphertext []byte) []byte {
 	}
 	return buffer.Bytes()
 }
+
+//-------- IPrivateKey
 
 func (key *RSAPrivateKey) PublicKey() PublicKey {
 	if key._publicKey == nil {
@@ -273,4 +287,22 @@ func (key *RSAPrivateKey) PublicKey() PublicKey {
 		}))
 	}
 	return key._publicKey
+}
+
+//
+//  PKCS8
+//
+
+func MarshalPKCS8PrivateKey(key *rsa.PrivateKey) []byte {
+	info := struct {
+		Version             int
+		PrivateKeyAlgorithm []asn1.ObjectIdentifier
+		PrivateKey          []byte
+	}{}
+	info.Version = 0
+	info.PrivateKeyAlgorithm = make([]asn1.ObjectIdentifier, 1)
+	info.PrivateKeyAlgorithm[0] = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
+	info.PrivateKey = x509.MarshalPKCS1PrivateKey(key)
+	k, _ := asn1.Marshal(info)
+	return k
 }

@@ -107,6 +107,8 @@ func (key *AESKey) initVector() []byte {
 	return key._iv
 }
 
+//-------- ICryptographyKey
+
 func (key *AESKey) Data() []byte {
 	if key._data == nil {
 		data := key.Get("data")
@@ -133,6 +135,8 @@ func (key *AESKey) Data() []byte {
 	return key._data
 }
 
+//-------- ISymmetricKey(IEncryptKey)
+
 func (key *AESKey) Encrypt(plaintext []byte) []byte {
 	block, err := aes.NewCipher(key.Data())
 	if err != nil {
@@ -145,6 +149,8 @@ func (key *AESKey) Encrypt(plaintext []byte) []byte {
 	return ciphertext
 }
 
+//-------- ISymmetricKey(IDecryptKey)
+
 func (key *AESKey) Decrypt(ciphertext []byte) []byte {
 	block, err := aes.NewCipher(key.Data())
 	if err != nil {
@@ -155,6 +161,10 @@ func (key *AESKey) Decrypt(ciphertext []byte) []byte {
 	blockMode.CryptBlocks(plaintext, ciphertext)
 	return PKCS5UnPadding(plaintext)
 }
+
+//
+//  PKCS5
+//
 
 func PKCS5Padding(src []byte, blockSize uint) []byte {
 	padding := int(blockSize) - len(src) % int(blockSize)

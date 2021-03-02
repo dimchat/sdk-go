@@ -62,6 +62,8 @@ func (key *ECCPublicKey) Init(dict map[string]interface{}) *ECCPublicKey {
 	return key
 }
 
+//-------- ICryptographyKey
+
 func (key *ECCPublicKey) Data() []byte {
 	if key._data == nil {
 		data := key.Get("data")
@@ -76,6 +78,8 @@ func (key *ECCPublicKey) Data() []byte {
 	}
 	return key._data
 }
+
+//-------- IPublicKey(IVerifyKey)
 
 func (key *ECCPublicKey) Verify(data []byte, signature []byte) bool {
 	if len(signature) > 64 {
@@ -138,6 +142,8 @@ func (key *ECCPrivateKey) setPublicKey(pKey PublicKey) {
 	}
 }
 
+//-------- ICryptographyKey
+
 func (key *ECCPrivateKey) Data() []byte {
 	if key._data == nil {
 		data := key.Get("data")
@@ -160,10 +166,14 @@ func (key *ECCPrivateKey) Data() []byte {
 	return key._data
 }
 
+//-------- IPrivateKey(ISignKey)
+
 func (key *ECCPrivateKey) Sign(data []byte) []byte {
 	sig := secp256k1.Sign(key.Data(), SHA256(data))
 	return secp256k1.SignatureToDER(sig)
 }
+
+//-------- IPrivateKey
 
 func (key *ECCPrivateKey) PublicKey() PublicKey {
 	if key._publicKey == nil {
