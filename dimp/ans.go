@@ -169,7 +169,7 @@ func (ans *AddressNameService) GetID(name string) ID {
 }
 
 func (ans *AddressNameService) GetNames(identifier ID) []string {
-	array := make([]string, 1)
+	array := make([]string, 0, 1)
 	for key, value := range ans._caches {
 		if identifier.Equal(value) {
 			array = append(array, key)
