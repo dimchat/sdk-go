@@ -35,7 +35,6 @@ import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
 )
 
 type DocumentCommandProcessor struct {
@@ -55,9 +54,7 @@ func (cpu *DocumentCommandProcessor) getDocument(identifier ID, docType string) 
 	if doc == nil {
 		// document not found
 		text := "Sorry, document not found for ID: " + identifier.String()
-		res := NewTextContent(text)
-		ObjectAutorelease(res)
-		return res
+		return NewTextContent(text)
 	}
 	// response
 	meta := facebook.GetMeta(identifier)
@@ -71,24 +68,18 @@ func (cpu *DocumentCommandProcessor) putDocument(identifier ID, meta Meta, doc D
 		if facebook.SaveMeta(meta, identifier) == false {
 			// meta not match
 			text := "Meta not accepted: " + identifier.String()
-			res := NewTextContent(text)
-			ObjectAutorelease(res)
-			return res
+			return NewTextContent(text)
 		}
 	}
 	// received a document for ID
 	if facebook.SaveDocument(doc) == false {
 		// save document failed
 		text := "Document not accepted: " + identifier.String()
-		res := NewTextContent(text)
-		ObjectAutorelease(res)
-		return res
+		return NewTextContent(text)
 	}
 	// response
 	text := "Document received: " + identifier.String()
-	//res := NewReceiptCommand(text, nil, 0, nil)
-	//ObjectRetain(res)
-	//return res
+	//return NewReceiptCommand(text, nil, 0, nil)
 	return receipt(text)
 }
 

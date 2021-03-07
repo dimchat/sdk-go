@@ -27,7 +27,6 @@ package crypto
 
 import (
 	. "github.com/dimchat/mkm-go/crypto"
-	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -45,9 +44,7 @@ type PlainKey struct {
 func NewPlainKey() *PlainKey {
 	dict := make(map[string]interface{})
 	dict["algorithm"] = PLAIN
-	key := new(PlainKey).Init(dict)
-	ObjectRetain(key)
-	return key
+	return new(PlainKey).Init(dict)
 }
 
 func (key *PlainKey) Init(dict map[string]interface{}) *PlainKey {

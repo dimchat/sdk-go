@@ -34,7 +34,6 @@ import (
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/mkm"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -192,40 +191,25 @@ func (meta *ETHMeta) MatchID(identifier ID) bool {
 //
 
 func NewDefaultMeta(key VerifyKey, seed string, fingerprint []byte) Meta {
-	meta := new(BaseMeta).InitWithType(MKM, key, seed, fingerprint)
-	ObjectRetain(meta)
-	return meta
+	return new(BaseMeta).InitWithType(MKM, key, seed, fingerprint)
 }
 
 func ParseDefaultMeta(dict map[string]interface{}) Meta {
-	meta := new(BaseMeta).Init(dict)
-	ObjectRetain(meta)
-	ObjectAutorelease(meta)
-	return meta
+	return new(BaseMeta).Init(dict)
 }
 
 func NewBTCMeta(version uint8, key VerifyKey, seed string, fingerprint []byte) Meta {
-	meta := new(BaseMeta).InitWithType(version, key, seed, fingerprint)
-	ObjectRetain(meta)
-	return meta
+	return new(BaseMeta).InitWithType(version, key, seed, fingerprint)
 }
 
 func ParseBTCMeta(dict map[string]interface{}) Meta {
-	meta := new(BaseMeta).Init(dict)
-	ObjectRetain(meta)
-	ObjectAutorelease(meta)
-	return meta
+	return new(BaseMeta).Init(dict)
 }
 
 func NewETHMeta(version uint8, key VerifyKey, seed string, fingerprint []byte) Meta {
-	meta := new(BaseMeta).InitWithType(version, key, seed, fingerprint)
-	ObjectRetain(meta)
-	return meta
+	return new(BaseMeta).InitWithType(version, key, seed, fingerprint)
 }
 
 func ParseETHMeta(dict map[string]interface{}) Meta {
-	meta := new(BaseMeta).Init(dict)
-	ObjectRetain(meta)
-	ObjectAutorelease(meta)
-	return meta
+	return new(BaseMeta).Init(dict)
 }

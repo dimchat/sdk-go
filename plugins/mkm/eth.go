@@ -54,9 +54,7 @@ type ETHAddress struct {
 }
 
 func NewETHAddress(address string) *ETHAddress {
-	eth := new(ETHAddress).Init(address)
-	ObjectRetain(eth)
-	return eth
+	return new(ETHAddress).Init(address)
 }
 
 func (address *ETHAddress) Init(string string) *ETHAddress {
@@ -97,9 +95,7 @@ func ETHAddressGenerate(fingerprint []byte) *ETHAddress {
 	digest := KECCAK256(fingerprint)
 	// 2. address = hex_encode(digest.suffix(20));
 	address := "0x" + eip55(HexEncode(digest[32-20:]))
-	eth := NewETHAddress(address)
-	ObjectAutorelease(eth)
-	return eth
+	return NewETHAddress(address)
 }
 
 /**
@@ -110,9 +106,7 @@ func ETHAddressGenerate(fingerprint []byte) *ETHAddress {
  */
 func ETHAddressParse(address string) *ETHAddress {
 	if isETH(address) {
-		eth := NewETHAddress(address)
-		ObjectAutorelease(eth)
-		return eth
+		return NewETHAddress(address)
 	} else {
 		return nil
 	}

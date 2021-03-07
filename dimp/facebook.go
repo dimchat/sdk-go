@@ -34,7 +34,6 @@ import (
 	. "github.com/dimchat/core-go/core"
 	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -137,27 +136,19 @@ func (facebook *Facebook) self() IFacebook {
 func (facebook *Facebook) CreateUser(identifier ID) User {
 	if identifier.IsBroadcast() {
 		// create user 'anyone@anywhere'
-		user := NewUser(identifier)
-		ObjectAutorelease(user)
-		return user
+		return NewUser(identifier)
 	}
 	// make sure meta exists
 	// TODO: make sure visa key exists before calling this
 	// check user type
 	network := identifier.Type()
 	if network == MAIN || network == BTCMain {
-		user := NewUser(identifier)
-		ObjectAutorelease(user)
-		return user
+		return NewUser(identifier)
 	}
 	if network == ROBOT {
-		bot := NewRobot(identifier)
-		ObjectAutorelease(bot)
-		return bot
+		return NewRobot(identifier)
 	} else if network == STATION {
-		server := NewStation(identifier, "", 0)
-		ObjectAutorelease(server)
-		return server
+		return NewStation(identifier, "", 0)
 	} else {
 		return nil
 	}
@@ -166,25 +157,17 @@ func (facebook *Facebook) CreateUser(identifier ID) User {
 func (facebook *Facebook) CreateGroup(identifier ID) Group {
 	if identifier.IsBroadcast() {
 		// create group 'everyone@everywhere'
-		group := NewGroup(identifier)
-		ObjectAutorelease(group)
-		return group
+		return NewGroup(identifier)
 	}
 	// make sure meta exists
 	// check group type
 	network := identifier.Type()
 	if network == POLYLOGUE {
-		group := NewPolylogue(identifier)
-		ObjectAutorelease(group)
-		return group
+		return NewPolylogue(identifier)
 	} else if network == CHATROOM {
-		group := NewChatroom(identifier)
-		ObjectAutorelease(group)
-		return group
+		return NewChatroom(identifier)
 	} else if network == PROVIDER {
-		sp := NewServiceProvider(identifier)
-		ObjectAutorelease(sp)
-		return sp
+		return NewServiceProvider(identifier)
 	} else {
 		return nil
 	}

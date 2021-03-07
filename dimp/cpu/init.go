@@ -34,7 +34,6 @@ import (
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
@@ -55,8 +54,6 @@ import (
 func receipt(message string) Command {
 	cmd := new(BaseCommand).InitWithCommand(RECEIPT)
 	cmd.Set("message", message)
-	ObjectRetain(cmd)
-	ObjectAutorelease(cmd)
 	return cmd
 }
 

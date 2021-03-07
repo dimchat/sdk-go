@@ -35,7 +35,6 @@ import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/format"
-	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -88,14 +87,13 @@ func NewReceiptCommand(text string, env Envelope, sn uint32, signature []byte) R
 	if signature != nil {
 		cmd.SetSignature(signature)
 	}
-	ObjectRetain(cmd)
 	return cmd
 }
 
 func (cmd *BaseReceiptCommand) Init(dict map[string]interface{}) *BaseReceiptCommand {
 	if cmd.BaseCommand.Init(dict) != nil {
 		// lazy load
-		cmd.setEnvelope(nil)
+		cmd._envelope = nil
 	}
 	return cmd
 }
@@ -103,7 +101,7 @@ func (cmd *BaseReceiptCommand) Init(dict map[string]interface{}) *BaseReceiptCom
 func (cmd *BaseReceiptCommand) InitWithMessage(text string) *BaseReceiptCommand {
 	if cmd.BaseCommand.InitWithCommand(RECEIPT) != nil {
 		cmd.Set("message", text)
-		cmd.setEnvelope(nil)
+		cmd._envelope = nil
 	}
 	return cmd
 }
@@ -121,24 +119,6 @@ func (cmd *BaseReceiptCommand) InitWithEnvelope(env Envelope, sn uint32, text st
 		}
 	}
 	return cmd
-}
-
-//func (cmd *BaseReceiptCommand) Release() int {
-//	cnt := cmd.BaseCommand.Release()
-//	if cnt == 0 {
-//		// this object is going to be destroyed,
-//		// release children
-//		cmd.setEnvelope(nil)
-//	}
-//	return cnt
-//}
-
-func (cmd *BaseReceiptCommand) setEnvelope(env Envelope) {
-	if env != cmd._envelope {
-		//ObjectRetain(env)
-		//ObjectRelease(cmd._envelope)
-		cmd._envelope = env
-	}
 }
 
 //-------- IReceiptCommand
@@ -161,7 +141,7 @@ func (cmd *BaseReceiptCommand) Envelope() Envelope {
 				env = cmd.GetMap(false)
 			}
 		}
-		cmd.setEnvelope(EnvelopeParse(env))
+		cmd._envelope = EnvelopeParse(env)
 	}
 	return cmd._envelope
 }
@@ -178,7 +158,7 @@ func (cmd *BaseReceiptCommand) SetEnvelope(env Envelope) {
 			cmd.Set("time", when.Unix())
 		}
 	}
-	cmd.setEnvelope(env)
+	cmd._envelope = env
 }
 
 func (cmd *BaseReceiptCommand) Signature() []byte {

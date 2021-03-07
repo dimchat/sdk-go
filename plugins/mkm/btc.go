@@ -60,9 +60,7 @@ type BTCAddress struct {
 }
 
 func NewBTCAddress(address string, network uint8) *BTCAddress {
-	btc := new(BTCAddress).Init(address, network)
-	ObjectRetain(btc)
-	return btc
+	return new(BTCAddress).Init(address, network)
 }
 
 func (address *BTCAddress) Init(string string, network uint8) *BTCAddress {
@@ -111,9 +109,7 @@ func BTCAddressGenerate(fingerprint []byte, network uint8) *BTCAddress {
 	BytesCopy(head, 0, data, 0, 21)
 	BytesCopy(cc, 0, data, 21, 24)
 	base58 := Base58Encode(data)
-	btc := NewBTCAddress(base58, network)
-	ObjectAutorelease(btc)
-	return btc
+	return NewBTCAddress(base58, network)
 }
 
 /**
@@ -137,9 +133,7 @@ func BTCAddressParse(base58 string) *BTCAddress {
 	cc := checkCode(prefix)
 	if BytesEqual(cc, suffix) {
 		network := data[0]
-		btc := NewBTCAddress(base58, network)
-		ObjectAutorelease(btc)
-		return btc
+		return NewBTCAddress(base58, network)
 	} else {
 		//panic("address check code error")
 		return nil

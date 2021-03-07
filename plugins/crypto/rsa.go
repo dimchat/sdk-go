@@ -35,7 +35,6 @@ import (
 	"encoding/pem"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/format"
-	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/plugins/types"
 )
 
@@ -57,9 +56,7 @@ type RSAPublicKey struct {
 }
 
 func NewRSAPublicKey(dict map[string]interface{}) *RSAPublicKey {
-	key := new(RSAPublicKey).Init(dict)
-	ObjectRetain(key)
-	return key
+	return new(RSAPublicKey).Init(dict)
 }
 
 func (key *RSAPublicKey) Init(dict map[string]interface{}) *RSAPublicKey {
@@ -148,9 +145,7 @@ type RSAPrivateKey struct {
 }
 
 func NewRSAPrivateKey(dict map[string]interface{}) *RSAPrivateKey {
-	key := new(RSAPrivateKey).Init(dict)
-	ObjectRetain(key)
-	return key
+	return new(RSAPrivateKey).Init(dict)
 }
 
 func (key *RSAPrivateKey) Init(dict map[string]interface{}) *RSAPrivateKey {
@@ -158,27 +153,9 @@ func (key *RSAPrivateKey) Init(dict map[string]interface{}) *RSAPrivateKey {
 		// lazy load
 		key._rsaPrivateKey = nil
 		key._data = nil
-		key.setPublicKey(nil)
+		key._publicKey = nil
 	}
 	return key
-}
-
-//func (key *RSAPrivateKey) Release() int {
-//	cnt := key.BasePrivateKey.Release()
-//	if cnt == 0 {
-//		// this object is going to be destroyed,
-//		// release children
-//		key.setPublicKey(nil)
-//	}
-//	return cnt
-//}
-
-func (key *RSAPrivateKey) setPublicKey(pKey PublicKey) {
-	if pKey != key._publicKey {
-		//ObjectRetain(pKey)
-		//ObjectRelease(key._publicKey)
-		key._publicKey = pKey
-	}
 }
 
 func (key *RSAPrivateKey) getPrivateKey() *rsa.PrivateKey {
@@ -278,13 +255,13 @@ func (key *RSAPrivateKey) PublicKey() PublicKey {
 			Bytes: der,
 		}
 		data := pem.EncodeToMemory(block)
-		key.setPublicKey(PublicKeyParse(map[string]interface{}{
+		key._publicKey = PublicKeyParse(map[string]interface{}{
 			"algorithm": RSA,
 			"data": UTF8Decode(data),
 			"mode": "ECB",
 			"padding": "PKCS1",
 			"digest": "SHA256",
-		}))
+		})
 	}
 	return key._publicKey
 }

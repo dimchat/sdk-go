@@ -124,7 +124,7 @@ func (cmd *BaseStorageCommand) Init(dict map[string]interface{}) *BaseStorageCom
 		cmd._data = nil
 		cmd._key = nil
 		cmd._plaintext = nil
-		cmd.setPassword(nil)
+		cmd._password = nil
 	}
 	return cmd
 }
@@ -135,27 +135,9 @@ func (cmd *BaseStorageCommand) InitWithTitle(title string) *BaseStorageCommand {
 		cmd._data = nil
 		cmd._key = nil
 		cmd._plaintext = nil
-		cmd.setPassword(nil)
+		cmd._password = nil
 	}
 	return cmd
-}
-
-//func (cmd *BaseStorageCommand) Release() int {
-//	cnt := cmd.BaseCommand.Release()
-//	if cnt == 0 {
-//		// this object is going to be destroyed,
-//		// release children
-//		cmd.setPassword(nil)
-//	}
-//	return cnt
-//}
-
-func (cmd *BaseStorageCommand) setPassword(password SymmetricKey) {
-	if password != cmd._password {
-		//ObjectRetain(password)
-		//ObjectRelease(cmd._password)
-		cmd._password = password
-	}
 }
 
 //-------- IStorageCommand
@@ -226,7 +208,7 @@ func (cmd *BaseStorageCommand) SetKey(key []byte) {
 	}
 	cmd._key = key
 	// reset password
-	cmd.setPassword(nil)
+	cmd._password = nil
 }
 
 //-------- Decryption
@@ -261,7 +243,7 @@ func (cmd *BaseStorageCommand) DecryptWithSymmetricKey(password SymmetricKey) []
 
 func (cmd *BaseStorageCommand) DecryptWithPrivateKey(privateKey DecryptKey) []byte {
 	if cmd._password == nil {
-		cmd.setPassword(cmd.DecryptKey(privateKey))
+		cmd._password = cmd.DecryptKey(privateKey)
 	}
 	return cmd.DecryptWithSymmetricKey(cmd._password)
 }

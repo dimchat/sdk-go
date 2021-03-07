@@ -29,7 +29,6 @@ import (
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/digest"
 	. "github.com/dimchat/mkm-go/format"
-	. "github.com/dimchat/mkm-go/types"
 	"github.com/dimchat/sdk-go/plugins/crypto/secp256k1"
 )
 
@@ -49,9 +48,7 @@ type ECCPublicKey struct {
 }
 
 func NewECCPublicKey(dict map[string]interface{}) *ECCPublicKey {
-	key := new(ECCPublicKey).Init(dict)
-	ObjectRetain(key)
-	return key
+	return new(ECCPublicKey).Init(dict)
 }
 
 func (key *ECCPublicKey) Init(dict map[string]interface{}) *ECCPublicKey {
@@ -110,36 +107,16 @@ type ECCPrivateKey struct {
 }
 
 func NewECCPrivateKey(dict map[string]interface{}) *ECCPrivateKey {
-	key := new(ECCPrivateKey).Init(dict)
-	ObjectRetain(key)
-	return key
+	return new(ECCPrivateKey).Init(dict)
 }
 
 func (key *ECCPrivateKey) Init(dict map[string]interface{}) *ECCPrivateKey {
 	if key.BasePrivateKey.Init(dict) != nil {
 		// lazy load
 		key._data = nil
-		key.setPublicKey(nil)
+		key._publicKey = nil
 	}
 	return key
-}
-
-//func (key *ECCPrivateKey) Release() int {
-//	cnt := key.BasePrivateKey.Release()
-//	if cnt == 0 {
-//		// this object is going to be destroyed,
-//		// release children
-//		key.setPublicKey(nil)
-//	}
-//	return cnt
-//}
-
-func (key *ECCPrivateKey) setPublicKey(pKey PublicKey) {
-	if pKey != key._publicKey {
-		//ObjectRetain(pKey)
-		//ObjectRelease(key._publicKey)
-		key._publicKey = pKey
-	}
 }
 
 //-------- ICryptographyKey
@@ -180,12 +157,12 @@ func (key *ECCPrivateKey) PublicKey() PublicKey {
 		pri := key.Data()
 		pub := secp256k1.GetPublicKey(pri)
 		data := "04" + HexEncode(pub)
-		key.setPublicKey(PublicKeyParse(map[string]interface{}{
+		key._publicKey = PublicKeyParse(map[string]interface{}{
 			"algorithm": ECC,
 			"data": data,
 			"curve": "secp256k1",
 			"digest": "SHA256",
-		}))
+		})
 	}
 	return key._publicKey
 }

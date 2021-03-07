@@ -34,7 +34,6 @@ import (
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp/cpu"
 )
 
@@ -54,9 +53,7 @@ func (gpu *QueryCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Con
 	members := facebook.GetMembers(group)
 	if owner == nil || members == nil || len(members) == 0 {
 		text := "Sorry, members nof found in group: " + group.String()
-		res := NewTextContent(text)
-		ObjectAutorelease(res)
-		return res
+		return NewTextContent(text)
 	}
 
 	// 1. check permission
@@ -72,13 +69,10 @@ func (gpu *QueryCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) Con
 	}
 
 	// 2. respond
-	var res Content
 	user := facebook.GetCurrentUser()
 	if user.ID().Equal(owner) {
-		res = NewResetCommand(group, members)
+		return NewResetCommand(group, members)
 	} else {
-		res = NewInviteCommand(group, members)
+		return NewInviteCommand(group, members)
 	}
-	ObjectAutorelease(res)
-	return res
 }

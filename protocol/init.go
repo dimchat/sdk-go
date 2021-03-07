@@ -33,7 +33,6 @@ package protocol
 import (
 	. "github.com/dimchat/core-go/core"
 	. "github.com/dimchat/core-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -41,55 +40,31 @@ import (
  */
 func BuildExtraCommandFactories() {
 	CommandRegister(RECEIPT, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		cmd := new(BaseReceiptCommand).Init(dict)
-		ObjectRetain(cmd)
-		ObjectAutorelease(cmd)
-		return cmd
+		return new(BaseReceiptCommand).Init(dict)
 	}))
 	CommandRegister(HANDSHAKE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		cmd := new(BaseHandshakeCommand).Init(dict)
-		ObjectRetain(cmd)
-		ObjectAutorelease(cmd)
-		return cmd
+		return new(BaseHandshakeCommand).Init(dict)
 	}))
 	CommandRegister(LOGIN, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		cmd := new(BaseLoginCommand).Init(dict)
-		ObjectRetain(cmd)
-		ObjectAutorelease(cmd)
-		return cmd
+		return new(BaseLoginCommand).Init(dict)
 	}))
 
 	CommandRegister(MUTE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		cmd := new(MuteCommand).Init(dict)
-		ObjectRetain(cmd)
-		ObjectAutorelease(cmd)
-		return cmd
+		return new(MuteCommand).Init(dict)
 	}))
 	CommandRegister(BLOCK, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		cmd := new(BlockCommand).Init(dict)
-		ObjectRetain(cmd)
-		ObjectAutorelease(cmd)
-		return cmd
+		return new(BlockCommand).Init(dict)
 	}))
 
 	// storage (contacts, private_key)
 	CommandRegister(STORAGE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		cmd := new(BaseStorageCommand).Init(dict)
-		ObjectRetain(cmd)
-		ObjectAutorelease(cmd)
-		return cmd
+		return new(BaseStorageCommand).Init(dict)
 	}))
 	CommandRegister(CONTACTS, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		cmd := new(BaseStorageCommand).Init(dict)
-		ObjectRetain(cmd)
-		ObjectAutorelease(cmd)
-		return cmd
+		return new(BaseStorageCommand).Init(dict)
 	}))
 	CommandRegister(PRIVATE_KEY, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		cmd := new(BaseStorageCommand).Init(dict)
-		ObjectRetain(cmd)
-		ObjectAutorelease(cmd)
-		return cmd
+		return new(BaseStorageCommand).Init(dict)
 	}))
 }
 

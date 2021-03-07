@@ -35,7 +35,6 @@ import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp/cpu"
 )
 
@@ -59,7 +58,6 @@ func (gpu *ResetCommandProcessor) temporarySave(cmd GroupCommand, sender ID) Con
 					// NOTICE: to prevent counterfeit,
 					//         query the owner for newest member-list
 					query := NewQueryCommand(group)
-					ObjectAutorelease(query)
 					gpu.Messenger().SendContent(nil, item, query, nil, 1)
 				}
 			}

@@ -27,7 +27,6 @@ package crypto
 
 import (
 	. "github.com/dimchat/mkm-go/crypto"
-	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -67,13 +66,9 @@ func BuildSymmetricKeyFactories() {
 	SymmetricKeyRegister(AES, NewSymmetricKeyFactory(func() SymmetricKey {
 		dict := make(map[string]interface{})
 		dict["algorithm"] = AES
-		key := NewAESKey(dict)
-		ObjectAutorelease(key)
-		return key
+		return NewAESKey(dict)
 	}, func(dict map[string]interface{}) SymmetricKey {
-		key := NewAESKey(dict)
-		ObjectAutorelease(key)
-		return key
+		return NewAESKey(dict)
 	}))
 	// PLAIN
 	SymmetricKeyRegister(PLAIN, NewSymmetricKeyFactory(func() SymmetricKey {
@@ -139,15 +134,11 @@ func (factory *GeneralPublicKeyFactory) ParsePublicKey(key map[string]interface{
 func BuildPublicKeyFactories() {
 	// RSA
 	PublicKeyRegister(RSA, NewPublicKeyFactory(func(dict map[string]interface{}) PublicKey {
-		key := NewRSAPublicKey(dict)
-		ObjectAutorelease(key)
-		return key
+		return NewRSAPublicKey(dict)
 	}))
 	// ECC
 	PublicKeyRegister(ECC, NewPublicKeyFactory(func(dict map[string]interface{}) PublicKey {
-		key := NewECCPublicKey(dict)
-		ObjectAutorelease(key)
-		return key
+		return NewECCPublicKey(dict)
 	}))
 }
 
@@ -156,24 +147,16 @@ func BuildPrivateKeyFactories() {
 	PrivateKeyRegister(RSA, NewPrivateKeyFactory(func() PrivateKey {
 		dict := make(map[string]interface{})
 		dict["algorithm"] = RSA
-		key := NewRSAPrivateKey(dict)
-		ObjectAutorelease(key)
-		return key
+		return NewRSAPrivateKey(dict)
 	}, func(dict map[string]interface{}) PrivateKey {
-		key := NewRSAPrivateKey(dict)
-		ObjectAutorelease(key)
-		return key
+		return NewRSAPrivateKey(dict)
 	}))
 	// ECC
 	PrivateKeyRegister(ECC, NewPrivateKeyFactory(func() PrivateKey {
 		dict := make(map[string]interface{})
 		dict["algorithm"] = ECC
-		key := NewECCPrivateKey(dict)
-		ObjectAutorelease(key)
-		return key
+		return NewECCPrivateKey(dict)
 	}, func(dict map[string]interface{}) PrivateKey {
-		key := NewECCPrivateKey(dict)
-		ObjectAutorelease(key)
-		return key
+		return NewECCPrivateKey(dict)
 	}))
 }

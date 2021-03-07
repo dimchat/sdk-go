@@ -134,15 +134,10 @@ func (ans *AddressNameService) Init() *AddressNameService {
 }
 
 func (ans *AddressNameService) setID(name string, identifier ID) {
-	old := ans._caches[name]
-	if old != identifier {
-		ObjectRetain(identifier)
-		ObjectRelease(old)
-		if identifier == nil {
-			delete(ans._caches, name)
-		} else {
-			ans._caches[name] = identifier
-		}
+	if identifier == nil {
+		delete(ans._caches, name)
+	} else {
+		ans._caches[name] = identifier
 	}
 }
 
