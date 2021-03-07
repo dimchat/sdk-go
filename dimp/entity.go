@@ -129,7 +129,7 @@ func (group *Polylogue) Init(identifier ID) *Polylogue {
 	return group
 }
 
-func (group *Polylogue) GetOwner() ID {
+func (group *Polylogue) Owner() ID {
 	owner := group.BaseGroup.Owner()
 	if owner == nil {
 		// polylogue owner is its founder
@@ -151,7 +151,7 @@ func (group *Chatroom) Init(identifier ID) *Chatroom {
 	return group
 }
 
-func (group *Chatroom) GetAdmins() []ID {
+func (group *Chatroom) Admins() []ID {
 	delegate := group.DataSource().(ChatroomDataSource)
 	return delegate.GetAdmins(group.ID())
 }

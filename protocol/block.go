@@ -71,27 +71,27 @@ func (cmd *BlockCommand) InitWithList(list []ID) *BlockCommand {
 	return cmd
 }
 
-func (cmd *BlockCommand) Release() int {
-	cnt := cmd.BaseCommand.Release()
-	if cnt == 0 {
-		// this object is going to be destroyed,
-		// release children
-		cmd.setList(nil)
-	}
-	return cnt
-}
+//func (cmd *BlockCommand) Release() int {
+//	cnt := cmd.BaseCommand.Release()
+//	if cnt == 0 {
+//		// this object is going to be destroyed,
+//		// release children
+//		cmd.setList(nil)
+//	}
+//	return cnt
+//}
 
 func (cmd *BlockCommand) setList(list []ID) {
-	if list != nil {
-		for _, item := range list {
-			ObjectRetain(item)
-		}
-	}
-	if cmd._list != nil {
-		for _, item := range cmd._list {
-			ObjectRelease(item)
-		}
-	}
+	//if list != nil {
+	//	for _, item := range list {
+	//		ObjectRetain(item)
+	//	}
+	//}
+	//if cmd._list != nil {
+	//	for _, item := range cmd._list {
+	//		ObjectRelease(item)
+	//	}
+	//}
 	cmd._list = list
 }
 

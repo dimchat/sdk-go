@@ -79,11 +79,11 @@ func (address *BTCAddress) Network() uint8 {
 }
 
 func (address *BTCAddress) IsUser() bool {
-	return NetworkTypeIsUser(address.Network())
+	return NetworkTypeIsUser(address._network)
 }
 
 func (address *BTCAddress) IsGroup() bool {
-	return NetworkTypeIsGroup(address.Network())
+	return NetworkTypeIsGroup(address._network)
 }
 
 func (address *BTCAddress) IsBroadcast() bool {

@@ -124,20 +124,20 @@ func (key *ECCPrivateKey) Init(dict map[string]interface{}) *ECCPrivateKey {
 	return key
 }
 
-func (key *ECCPrivateKey) Release() int {
-	cnt := key.BasePrivateKey.Release()
-	if cnt == 0 {
-		// this object is going to be destroyed,
-		// release children
-		key.setPublicKey(nil)
-	}
-	return cnt
-}
+//func (key *ECCPrivateKey) Release() int {
+//	cnt := key.BasePrivateKey.Release()
+//	if cnt == 0 {
+//		// this object is going to be destroyed,
+//		// release children
+//		key.setPublicKey(nil)
+//	}
+//	return cnt
+//}
 
 func (key *ECCPrivateKey) setPublicKey(pKey PublicKey) {
 	if pKey != key._publicKey {
-		ObjectRetain(pKey)
-		ObjectRelease(key._publicKey)
+		//ObjectRetain(pKey)
+		//ObjectRelease(key._publicKey)
 		key._publicKey = pKey
 	}
 }

@@ -163,20 +163,20 @@ func (key *RSAPrivateKey) Init(dict map[string]interface{}) *RSAPrivateKey {
 	return key
 }
 
-func (key *RSAPrivateKey) Release() int {
-	cnt := key.BasePrivateKey.Release()
-	if cnt == 0 {
-		// this object is going to be destroyed,
-		// release children
-		key.setPublicKey(nil)
-	}
-	return cnt
-}
+//func (key *RSAPrivateKey) Release() int {
+//	cnt := key.BasePrivateKey.Release()
+//	if cnt == 0 {
+//		// this object is going to be destroyed,
+//		// release children
+//		key.setPublicKey(nil)
+//	}
+//	return cnt
+//}
 
 func (key *RSAPrivateKey) setPublicKey(pKey PublicKey) {
 	if pKey != key._publicKey {
-		ObjectRetain(pKey)
-		ObjectRelease(key._publicKey)
+		//ObjectRetain(pKey)
+		//ObjectRelease(key._publicKey)
 		key._publicKey = pKey
 	}
 }

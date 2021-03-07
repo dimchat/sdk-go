@@ -116,21 +116,20 @@ type AddressNameService struct {
 }
 
 func (ans *AddressNameService) Init() *AddressNameService {
-	if ans.BaseObject.Init() != nil {
-		ans._reserved = make(map[string]bool, len(KEYWORDS))
-		// reserved names
-		for _, item := range KEYWORDS {
-			ans._reserved[item] = true
-		}
-
-		ans._caches = make(map[string]ID, 1024)
-		// constant ANS records
-		ans.setID("all", EVERYONE)
-		ans.setID("everyone", EVERYONE)
-		ans.setID("anyone", ANYONE)
-		ans.setID("owner", ANYONE)
-		ans.setID("founder", FOUNDER)
+	// reserved names
+	ans._reserved = make(map[string]bool, len(KEYWORDS))
+	for _, item := range KEYWORDS {
+		ans._reserved[item] = true
 	}
+
+	ans._caches = make(map[string]ID, 1024)
+	// constant ANS records
+	ans.setID("all", EVERYONE)
+	ans.setID("everyone", EVERYONE)
+	ans.setID("anyone", ANYONE)
+	ans.setID("owner", ANYONE)
+	ans.setID("founder", FOUNDER)
+
 	return ans
 }
 
@@ -147,16 +146,12 @@ func (ans *AddressNameService) setID(name string, identifier ID) {
 	}
 }
 
-func (ans *AddressNameService) self() IAddressNameService {
-	return ans.BaseObject.Self().(IAddressNameService)
-}
-
 func (ans *AddressNameService) IsReserved(name string) bool {
 	return ans._reserved[name]
 }
 
 func (ans *AddressNameService) Cache(name string, identifier ID) bool {
-	if ans.self().IsReserved(name) {
+	if ans.IsReserved(name) {
 		// this name is reserved, cannot register
 		return false
 	}
@@ -180,5 +175,5 @@ func (ans *AddressNameService) GetNames(identifier ID) []string {
 
 func (ans *AddressNameService) Save(name string, identifier ID) bool {
 	// override to save this record into local storage
-	return ans.self().Cache(name, identifier)
+	return ans.Cache(name, identifier)
 }

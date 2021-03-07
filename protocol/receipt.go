@@ -123,20 +123,20 @@ func (cmd *BaseReceiptCommand) InitWithEnvelope(env Envelope, sn uint32, text st
 	return cmd
 }
 
-func (cmd *BaseReceiptCommand) Release() int {
-	cnt := cmd.BaseCommand.Release()
-	if cnt == 0 {
-		// this object is going to be destroyed,
-		// release children
-		cmd.setEnvelope(nil)
-	}
-	return cnt
-}
+//func (cmd *BaseReceiptCommand) Release() int {
+//	cnt := cmd.BaseCommand.Release()
+//	if cnt == 0 {
+//		// this object is going to be destroyed,
+//		// release children
+//		cmd.setEnvelope(nil)
+//	}
+//	return cnt
+//}
 
 func (cmd *BaseReceiptCommand) setEnvelope(env Envelope) {
 	if env != cmd._envelope {
-		ObjectRetain(env)
-		ObjectRelease(cmd._envelope)
+		//ObjectRetain(env)
+		//ObjectRelease(cmd._envelope)
 		cmd._envelope = env
 	}
 }

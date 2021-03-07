@@ -56,23 +56,30 @@ type DefaultMeta struct {
 	_addresses map[uint8]Address
 }
 
-func (shadow *DefaultMeta) Init(dict map[string]interface{}) *DefaultMeta {
-	if shadow.BaseMeta.Init(dict) != nil {
-		shadow._addresses = make(map[uint8]Address)
+func (meta *DefaultMeta) Init(dict map[string]interface{}) *DefaultMeta {
+	if meta.BaseMeta.Init(dict) != nil {
+		meta._addresses = make(map[uint8]Address)
 	}
-	return shadow
+	return meta
 }
 
-func (shadow *DefaultMeta) GenerateAddress(network uint8) Address {
-	self := shadow.Self().(Meta)
+func (meta *DefaultMeta) GenerateAddress(network uint8) Address {
 	// check caches
-	address := shadow._addresses[network]
-	if address == nil && self.IsValid() {
+	address := meta._addresses[network]
+	if address == nil && meta.IsValid() {
 		// generate and cache it
-		address = BTCAddressGenerate(self.Fingerprint(), network)
-		shadow._addresses[network] = address
+		address = BTCAddressGenerate(meta.Fingerprint(), network)
+		meta._addresses[network] = address
 	}
 	return address
+}
+
+func (meta *DefaultMeta) GenerateID(network uint8, terminal string) ID {
+	return MetaGenerateID(meta, network, terminal)
+}
+
+func (meta *DefaultMeta) MatchID(identifier ID) bool {
+	return MetaMatchID(meta, identifier)
 }
 
 /**
@@ -95,30 +102,37 @@ type BTCMeta struct {
 	_address Address
 }
 
-func (shadow *BTCMeta) Init(dict map[string]interface{}) *BTCMeta {
-	if shadow.BaseMeta.Init(dict) != nil {
-		shadow._address = nil
+func (meta *BTCMeta) Init(dict map[string]interface{}) *BTCMeta {
+	if meta.BaseMeta.Init(dict) != nil {
+		meta._address = nil
 	}
-	return shadow
+	return meta
 }
 
-func (shadow *BTCMeta) GenerateAddress(network uint8) Address {
+func (meta *BTCMeta) GenerateAddress(network uint8) Address {
 	if network != BTCMain {
 		return nil
 	}
-	self := shadow.Self().(Meta)
 	// check caches
-	address := shadow._address
-	if address == nil && self.IsValid() {
+	address := meta._address
+	if address == nil && meta.IsValid() {
 		// generate and cache it
-		key := self.Key()
+		key := meta.Key()
 		pKey, ok := key.(CryptographyKey)
 		if ok {
 			address = BTCAddressGenerate(pKey.Data(), network)
-			shadow._address = address
+			meta._address = address
 		}
 	}
 	return address
+}
+
+func (meta *BTCMeta) GenerateID(network uint8, terminal string) ID {
+	return MetaGenerateID(meta, network, terminal)
+}
+
+func (meta *BTCMeta) MatchID(identifier ID) bool {
+	return MetaMatchID(meta, identifier)
 }
 
 /**
@@ -140,30 +154,37 @@ type ETHMeta struct {
 	_address Address
 }
 
-func (shadow *ETHMeta) Init(dict map[string]interface{}) *ETHMeta {
-	if shadow.BaseMeta.Init(dict) != nil {
-		shadow._address = nil
+func (meta *ETHMeta) Init(dict map[string]interface{}) *ETHMeta {
+	if meta.BaseMeta.Init(dict) != nil {
+		meta._address = nil
 	}
-	return shadow
+	return meta
 }
 
-func (shadow *ETHMeta) GenerateAddress(network uint8) Address {
+func (meta *ETHMeta) GenerateAddress(network uint8) Address {
 	if network != MAIN {
 		return nil
 	}
-	self := shadow.Self().(Meta)
 	// check caches
-	address := shadow._address
-	if address == nil && self.IsValid() {
+	address := meta._address
+	if address == nil && meta.IsValid() {
 		// generate and cache it
-		key := self.Key()
+		key := meta.Key()
 		pKey, ok := key.(CryptographyKey)
 		if ok {
 			address = ETHAddressGenerate(pKey.Data())
-			shadow._address = address
+			meta._address = address
 		}
 	}
 	return address
+}
+
+func (meta *ETHMeta) GenerateID(network uint8, terminal string) ID {
+	return MetaGenerateID(meta, network, terminal)
+}
+
+func (meta *ETHMeta) MatchID(identifier ID) bool {
+	return MetaMatchID(meta, identifier)
 }
 
 //

@@ -71,27 +71,27 @@ func (cmd *MuteCommand) InitWithList(list []ID) *MuteCommand {
 	return cmd
 }
 
-func (cmd *MuteCommand) Release() int {
-	cnt := cmd.BaseCommand.Release()
-	if cnt == 0 {
-		// this object is going to be destroyed,
-		// release children
-		cmd.setList(nil)
-	}
-	return cnt
-}
+//func (cmd *MuteCommand) Release() int {
+//	cnt := cmd.BaseCommand.Release()
+//	if cnt == 0 {
+//		// this object is going to be destroyed,
+//		// release children
+//		cmd.setList(nil)
+//	}
+//	return cnt
+//}
 
 func (cmd *MuteCommand) setList(list []ID) {
-	if list != nil {
-		for _, item := range list {
-			ObjectRetain(item)
-		}
-	}
-	if cmd._list != nil {
-		for _, item := range cmd._list {
-			ObjectRelease(item)
-		}
-	}
+	//if list != nil {
+	//	for _, item := range list {
+	//		ObjectRetain(item)
+	//	}
+	//}
+	//if cmd._list != nil {
+	//	for _, item := range cmd._list {
+	//		ObjectRelease(item)
+	//	}
+	//}
 	cmd._list = list
 }
 

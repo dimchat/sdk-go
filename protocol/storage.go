@@ -36,7 +36,6 @@ import (
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
 )
 
 const (
@@ -141,24 +140,20 @@ func (cmd *BaseStorageCommand) InitWithTitle(title string) *BaseStorageCommand {
 	return cmd
 }
 
-func (cmd *BaseStorageCommand) self() StorageCommand {
-	return cmd.self().(StorageCommand)
-}
-
-func (cmd *BaseStorageCommand) Release() int {
-	cnt := cmd.BaseCommand.Release()
-	if cnt == 0 {
-		// this object is going to be destroyed,
-		// release children
-		cmd.setPassword(nil)
-	}
-	return cnt
-}
+//func (cmd *BaseStorageCommand) Release() int {
+//	cnt := cmd.BaseCommand.Release()
+//	if cnt == 0 {
+//		// this object is going to be destroyed,
+//		// release children
+//		cmd.setPassword(nil)
+//	}
+//	return cnt
+//}
 
 func (cmd *BaseStorageCommand) setPassword(password SymmetricKey) {
 	if password != cmd._password {
-		ObjectRetain(password)
-		ObjectRelease(cmd._password)
+		//ObjectRetain(password)
+		//ObjectRelease(cmd._password)
 		cmd._password = password
 	}
 }
@@ -237,7 +232,7 @@ func (cmd *BaseStorageCommand) SetKey(key []byte) {
 //-------- Decryption
 
 func (cmd *BaseStorageCommand) DecryptKey(privateKey DecryptKey) SymmetricKey {
-	data := cmd.self().Key()
+	data := cmd.Key()
 	if data == nil {
 		return nil
 	}
@@ -255,7 +250,7 @@ func (cmd *BaseStorageCommand) DecryptWithSymmetricKey(password SymmetricKey) []
 			panic("symmetric key empty")
 			return nil
 		}
-		data := cmd.self().Data()
+		data := cmd.Data()
 		if data == nil {
 			return nil
 		}
@@ -266,7 +261,7 @@ func (cmd *BaseStorageCommand) DecryptWithSymmetricKey(password SymmetricKey) []
 
 func (cmd *BaseStorageCommand) DecryptWithPrivateKey(privateKey DecryptKey) []byte {
 	if cmd._password == nil {
-		cmd.setPassword(cmd.self().DecryptKey(privateKey))
+		cmd.setPassword(cmd.DecryptKey(privateKey))
 	}
-	return cmd.self().DecryptWithSymmetricKey(cmd._password)
+	return cmd.DecryptWithSymmetricKey(cmd._password)
 }

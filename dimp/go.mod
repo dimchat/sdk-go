@@ -3,7 +3,7 @@ module github.com/dimchat/sdk-go/dimp
 go 1.13
 
 require (
-	github.com/dimchat/core-go v0.0.0-20210302184819-3156496487d0
-	github.com/dimchat/dkd-go v0.0.0-20210301074550-587583c9be18
-	github.com/dimchat/mkm-go v0.0.0-20210228191316-513108f405a9
+	github.com/dimchat/core-go v0.0.0-20210307072838-050402fe77d5
+	github.com/dimchat/dkd-go v0.0.0-20210307070832-88dbbaae37e9
+	github.com/dimchat/mkm-go v0.0.0-20210306211330-230410b699c2
 )
