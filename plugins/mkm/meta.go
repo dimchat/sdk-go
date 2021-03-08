@@ -191,25 +191,25 @@ func (meta *ETHMeta) MatchID(identifier ID) bool {
 //
 
 func NewDefaultMeta(key VerifyKey, seed string, fingerprint []byte) Meta {
-	return new(BaseMeta).InitWithType(MKM, key, seed, fingerprint)
+	return new(DefaultMeta).InitWithType(MKM, key, seed, fingerprint)
 }
 
 func ParseDefaultMeta(dict map[string]interface{}) Meta {
-	return new(BaseMeta).Init(dict)
+	return new(DefaultMeta).Init(dict)
 }
 
 func NewBTCMeta(version uint8, key VerifyKey, seed string, fingerprint []byte) Meta {
-	return new(BaseMeta).InitWithType(version, key, seed, fingerprint)
+	return new(BTCMeta).InitWithType(version, key, seed, fingerprint)
 }
 
 func ParseBTCMeta(dict map[string]interface{}) Meta {
-	return new(BaseMeta).Init(dict)
+	return new(BTCMeta).Init(dict)
 }
 
 func NewETHMeta(version uint8, key VerifyKey, seed string, fingerprint []byte) Meta {
-	return new(BaseMeta).InitWithType(version, key, seed, fingerprint)
+	return new(ETHMeta).InitWithType(version, key, seed, fingerprint)
 }
 
 func ParseETHMeta(dict map[string]interface{}) Meta {
-	return new(BaseMeta).Init(dict)
+	return new(ETHMeta).Init(dict)
 }
