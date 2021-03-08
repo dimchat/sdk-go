@@ -62,6 +62,13 @@ func (meta *DefaultMeta) Init(dict map[string]interface{}) *DefaultMeta {
 	return meta
 }
 
+func (meta *DefaultMeta) InitWithType(version uint8, key VerifyKey, seed string, fingerprint []byte) *DefaultMeta {
+	if meta.BaseMeta.InitWithType(version, key, seed, fingerprint) != nil {
+		meta._addresses = make(map[uint8]Address)
+	}
+	return meta
+}
+
 func (meta *DefaultMeta) GenerateAddress(network uint8) Address {
 	// check caches
 	address := meta._addresses[network]
@@ -103,6 +110,13 @@ type BTCMeta struct {
 
 func (meta *BTCMeta) Init(dict map[string]interface{}) *BTCMeta {
 	if meta.BaseMeta.Init(dict) != nil {
+		meta._address = nil
+	}
+	return meta
+}
+
+func (meta *BTCMeta) InitWithType(version uint8, key VerifyKey, seed string, fingerprint []byte) *BTCMeta {
+	if meta.BaseMeta.InitWithType(version, key, seed, fingerprint) != nil {
 		meta._address = nil
 	}
 	return meta
@@ -155,6 +169,13 @@ type ETHMeta struct {
 
 func (meta *ETHMeta) Init(dict map[string]interface{}) *ETHMeta {
 	if meta.BaseMeta.Init(dict) != nil {
+		meta._address = nil
+	}
+	return meta
+}
+
+func (meta *ETHMeta) InitWithType(version uint8, key VerifyKey, seed string, fingerprint []byte) *ETHMeta {
+	if meta.BaseMeta.InitWithType(version, key, seed, fingerprint) != nil {
 		meta._address = nil
 	}
 	return meta
