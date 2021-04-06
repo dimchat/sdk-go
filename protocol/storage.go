@@ -36,6 +36,7 @@ import (
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 const (
@@ -146,7 +147,7 @@ func (cmd *BaseStorageCommand) ID() ID {
 	return IDParse(cmd.Get("ID"))
 }
 func (cmd *BaseStorageCommand) SetID(identifier ID) {
-	if identifier == nil {
+	if ValueIsNil(identifier) {
 		cmd.Remove("ID")
 	} else {
 		cmd.Set("ID", identifier.String())
@@ -182,7 +183,7 @@ func (cmd *BaseStorageCommand) Data() []byte {
 	return cmd._data
 }
 func (cmd *BaseStorageCommand) SetData(data []byte) {
-	if data == nil {
+	if ValueIsNil(data) {
 		cmd.Remove("data")
 	} else {
 		cmd.Set("data", Base64Encode(data))
@@ -201,7 +202,7 @@ func (cmd *BaseStorageCommand) Key() []byte {
 	return cmd._key
 }
 func (cmd *BaseStorageCommand) SetKey(key []byte) {
-	if key == nil {
+	if ValueIsNil(key) {
 		cmd.Remove("key")
 	} else {
 		cmd.Set("key", Base64Encode(key))
@@ -223,12 +224,12 @@ func (cmd *BaseStorageCommand) DecryptKey(privateKey DecryptKey) SymmetricKey {
 		//panic("failed to decrypt key")
 		return nil
 	}
-	return SymmetricKeyParse(JSONDecode(key))
+	return SymmetricKeyParse(JSONDecodeMap(key))
 }
 
 func (cmd *BaseStorageCommand) DecryptWithSymmetricKey(password SymmetricKey) []byte {
 	if cmd._plaintext == nil {
-		if password == nil {
+		if ValueIsNil(password) {
 			panic("symmetric key empty")
 			return nil
 		}

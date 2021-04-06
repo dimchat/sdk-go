@@ -35,6 +35,7 @@ import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/format"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -79,7 +80,7 @@ type BaseReceiptCommand struct {
 
 func NewReceiptCommand(text string, env Envelope, sn uint32, signature []byte) ReceiptCommand {
 	cmd := new(BaseReceiptCommand)
-	if env == nil {
+	if ValueIsNil(env) {
 		cmd.InitWithMessage(text)
 	} else {
 		cmd.InitWithEnvelope(env, sn, text)
@@ -146,7 +147,7 @@ func (cmd *BaseReceiptCommand) Envelope() Envelope {
 	return cmd._envelope
 }
 func (cmd *BaseReceiptCommand) SetEnvelope(env Envelope) {
-	if env == nil {
+	if ValueIsNil(env) {
 		cmd.Remove("sender")
 		cmd.Remove("receiver")
 		//cmd.Remove("time")
@@ -169,7 +170,7 @@ func (cmd *BaseReceiptCommand) Signature() []byte {
 	return Base64Decode(signature.(string))
 }
 func (cmd *BaseReceiptCommand) SetSignature(signature []byte) {
-	if signature == nil {
+	if ValueIsNil(signature) {
 		cmd.Remove("signature")
 	} else {
 		cmd.Set("signature", Base64Encode(signature))

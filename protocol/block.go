@@ -33,6 +33,7 @@ package protocol
 import (
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 const BLOCK = "block"
@@ -81,7 +82,7 @@ func (cmd *BlockCommand) List() []ID {
 }
 
 func (cmd *BlockCommand) SetList(list []ID) {
-	if list == nil {
+	if ValueIsNil(list) {
 		cmd.Remove("list")
 	} else {
 		cmd.Set("list", IDRevert(list))

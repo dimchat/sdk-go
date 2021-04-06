@@ -163,11 +163,7 @@ func (cmd *BaseLoginCommand) StationInfo() map[string]interface{} {
 	return station.(map[string]interface{})
 }
 func (cmd *BaseLoginCommand) SetStationInfo(station map[string]interface{}) {
-	if station == nil {
-		cmd.Remove("station")
-	} else {
-		cmd.Set("station", station)
-	}
+	cmd.Set("station", station)
 }
 
 func (cmd *BaseLoginCommand) ProviderInfo() map[string]interface{} {
@@ -178,9 +174,5 @@ func (cmd *BaseLoginCommand) ProviderInfo() map[string]interface{} {
 	return sp.(map[string]interface{})
 }
 func (cmd *BaseLoginCommand) SetProviderInfo(sp map[string]interface{}) {
-	if sp == nil {
-		cmd.Remove("provider")
-	} else {
-		cmd.Set("provider", sp)
-	}
+	cmd.Set("provider", sp)
 }

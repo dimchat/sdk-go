@@ -33,6 +33,7 @@ package dimp
 import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 	"time"
 )
 
@@ -85,7 +86,7 @@ func (transmitter *MessengerTransmitter) Facebook() IFacebook {
 }
 
 func (transmitter *MessengerTransmitter) SendContent(sender ID, receiver ID, content Content, callback MessengerCallback, priority int) bool {
-	if sender == nil {
+	if ValueIsNil(sender) {
 		// Application Layer should make sure user is already login before it send message to server.
 		// Application layer should put message into queue so that it will send automatically after user login
 		user := transmitter.Facebook().GetCurrentUser()
@@ -118,7 +119,7 @@ func (transmitter *MessengerTransmitter) SendInstantMessage(iMsg InstantMessage,
 
 func (transmitter *MessengerTransmitter) SendReliableMessage(rMsg ReliableMessage, callback MessengerCallback, priority int) bool {
 	var handler MessengerCompletionHandler
-	if callback == nil {
+	if ValueIsNil(callback) {
 		handler = nil
 	} else {
 		handler = new(completionHandler).Init(callback, rMsg)

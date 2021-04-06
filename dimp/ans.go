@@ -134,7 +134,7 @@ func (ans *AddressNameService) Init() *AddressNameService {
 }
 
 func (ans *AddressNameService) setID(name string, identifier ID) {
-	if identifier == nil {
+	if ValueIsNil(identifier) {
 		delete(ans._caches, name)
 	} else {
 		ans._caches[name] = identifier

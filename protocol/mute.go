@@ -33,6 +33,7 @@ package protocol
 import (
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 const MUTE = "mute"
@@ -81,7 +82,7 @@ func (cmd *MuteCommand) List() []ID {
 }
 
 func (cmd *MuteCommand) SetList(list []ID) {
-	if list == nil {
+	if ValueIsNil(list) {
 		cmd.Remove("list")
 	} else {
 		cmd.Set("list", IDRevert(list))
