@@ -128,6 +128,7 @@ func (key *ECCPrivateKey) Data() []byte {
 			// generate key
 			_, pri := secp256k1.Generate()
 			key._data = pri
+			key.Set("data", HexEncode(pri))
 		} else {
 			// parse PEM file content
 			str := data.(string)
