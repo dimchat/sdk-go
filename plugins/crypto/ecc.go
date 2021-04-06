@@ -37,7 +37,6 @@ import (
  *
  *      keyInfo format: {
  *          algorithm    : "ECC",
- *          curve        : "secp256k1",
  *          data         : "..." // base64_encode()
  *      }
  */
@@ -94,7 +93,6 @@ func (key *ECCPublicKey) Verify(data []byte, signature []byte) bool {
  *
  *      keyInfo format: {
  *          algorithm    : "ECC",
- *          curve        : "secp256k1",
  *          data         : "..." // base64_encode()
  *      }
  */
@@ -129,6 +127,8 @@ func (key *ECCPrivateKey) Data() []byte {
 			_, pri := secp256k1.Generate()
 			key._data = pri
 			key.Set("data", HexEncode(pri))
+			key.Set("curve", "SECP256k1")
+			key.Set("digest", "SHA256")
 		} else {
 			// parse PEM file content
 			str := data.(string)
@@ -161,7 +161,7 @@ func (key *ECCPrivateKey) PublicKey() PublicKey {
 		key._publicKey = PublicKeyParse(map[string]interface{}{
 			"algorithm": ECC,
 			"data": data,
-			"curve": "secp256k1",
+			"curve": "SECP256k1",
 			"digest": "SHA256",
 		})
 	}

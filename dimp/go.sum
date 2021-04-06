@@ -1,6 +1,6 @@
-github.com/dimchat/core-go v0.0.0-20210406113612-38502f2e7eb3 h1:Jo1TWOOnN6kK939x3SC7z3YyF/KmWAmWlHmVRbiKqaI=
-github.com/dimchat/core-go v0.0.0-20210406113612-38502f2e7eb3/go.mod h1:rSGsbh+gUz0bbMG96RDYH5Ft/6KUeZnyGuVEGBXsvAM=
-github.com/dimchat/dkd-go v0.0.0-20210406112419-06069a8e66c6 h1:JPTkP/NZV367hVP9MZ619x7T3Zss4ww3ONQlQ5U/0ow=
-github.com/dimchat/dkd-go v0.0.0-20210406112419-06069a8e66c6/go.mod h1:JNUBkAc2sPg1XLAwP1idjpnBR1OShq7IMLsv4+UfRJE=
-github.com/dimchat/mkm-go v0.0.0-20210406112145-2359367cd90b h1:GmvZpmpqfLnMeejVSxdFPyUoaCUyx+RJCFXv5/6BQ6E=
-github.com/dimchat/mkm-go v0.0.0-20210406112145-2359367cd90b/go.mod h1:rRD77W4jdUAkfNA2fBa+co3/ADLpuTE9EXtlrldz39U=
+github.com/dimchat/core-go v0.0.0-20210406133346-99ee4995eb5a h1:lsF9PKIjMycKw3wq937VS3Npo25jm7pmT82di9y4htQ=
+github.com/dimchat/core-go v0.0.0-20210406133346-99ee4995eb5a/go.mod h1:025BUV9EB1kwOuBnc7o/yMwkH8OiO+2Lbh7itdVEusI=
+github.com/dimchat/dkd-go v0.0.0-20210406132748-3223ccc60407 h1:sQFTB27EmlvqpHVtkmI3RoZiC5DvcLx/lhqB/eblMSw=
+github.com/dimchat/dkd-go v0.0.0-20210406132748-3223ccc60407/go.mod h1:e9PefdVuJLuPgKY/GI7TJVkOojsDRyjU0Xv4OoG8ruA=
+github.com/dimchat/mkm-go v0.0.0-20210406132010-096847306c1d h1:EkdNCJMhQHwNszvSxP+RyLYWx38fLs66HrtCY099peM=
+github.com/dimchat/mkm-go v0.0.0-20210406132010-096847306c1d/go.mod h1:rRD77W4jdUAkfNA2fBa+co3/ADLpuTE9EXtlrldz39U=

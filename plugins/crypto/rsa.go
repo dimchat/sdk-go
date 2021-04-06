@@ -129,7 +129,6 @@ func (key *RSAPublicKey) Encrypt(plaintext []byte) []byte {
  *
  *      keyInfo format: {
  *          algorithm    : "RSA",
- *          keySizeInBits: 1024, // optional
  *          data         : "..." // base64_encode()
  *      }
  */
