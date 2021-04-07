@@ -35,6 +35,7 @@ import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 type DocumentCommandProcessor struct {
@@ -63,7 +64,7 @@ func (cpu *DocumentCommandProcessor) getDocument(identifier ID, docType string) 
 
 func (cpu *DocumentCommandProcessor) putDocument(identifier ID, meta Meta, doc Document) Content {
 	facebook := cpu.Facebook()
-	if meta != nil {
+	if !ValueIsNil(meta) {
 		// received a meta for ID
 		if facebook.SaveMeta(meta, identifier) == false {
 			// meta not match
@@ -88,11 +89,11 @@ func (cpu *DocumentCommandProcessor) Execute(cmd Command, _ ReliableMessage) Con
 	identifier := mCmd.ID()
 	doc := mCmd.Document()
 	if doc == nil {
-		docType := cmd.Get("doc_type")
-		if docType == nil {
-			return cpu.getDocument(identifier, "*")
+		docType, ok := cmd.Get("doc_type").(string)
+		if ok {
+			return cpu.getDocument(identifier, docType)
 		} else {
-			return cpu.getDocument(identifier, docType.(string))
+			return cpu.getDocument(identifier, "*")
 		}
 	} else {
 		meta := mCmd.Meta()

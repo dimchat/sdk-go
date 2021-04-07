@@ -70,9 +70,9 @@ func (server *Station) Host() string {
 	if server._host == "" {
 		doc := server.GetDocument("*")
 		if doc != nil {
-			host := doc.GetProperty("host")
-			if host != nil {
-				server._host = host.(string)
+			host, ok := doc.GetProperty("host").(string)
+			if ok {
+				server._host = host
 			}
 		}
 		if server._host == "" {
@@ -86,9 +86,9 @@ func (server *Station) Port() uint16 {
 	if server._port == 0 {
 		doc := server.GetDocument("*")
 		if doc != nil {
-			port := doc.GetProperty("port")
-			if port != nil {
-				server._port = port.(uint16)
+			port, ok := doc.GetProperty("port").(uint16)
+			if ok {
+				server._port = port
 			}
 		}
 		if server._port == 0 {

@@ -62,15 +62,14 @@ func (key *ECCPublicKey) Init(dict map[string]interface{}) *ECCPublicKey {
 
 func (key *ECCPublicKey) Data() []byte {
 	if key._data == nil {
-		data := key.Get("data")
-		str := data.(string)
+		data, _ := key.Get("data").(string)
 		// check for raw data (33/65 bytes)
-		length := len(str)
-		if length == 66 || length == 130 {
+		dataLen := len(data)
+		if dataLen == 66 || dataLen == 130 {
 			// Hex format
-			key._data = HexDecode(str)
+			key._data = HexDecode(data)
 		}
-		// TODO: PEM format
+		// TODO: PEM format?
 	}
 	return key._data
 }
@@ -121,24 +120,22 @@ func (key *ECCPrivateKey) Init(dict map[string]interface{}) *ECCPrivateKey {
 
 func (key *ECCPrivateKey) Data() []byte {
 	if key._data == nil {
-		data := key.Get("data")
-		if data == nil {
+		data, ok := key.Get("data").(string)
+		if ok {
+			// check for raw data (32 bytes)
+			dataLen := len(data)
+			if dataLen == 64 {
+				// Hex format
+				key._data = HexDecode(data)
+			}
+			// TODO: PEM format?
+		} else {
 			// generate key
 			_, pri := secp256k1.Generate()
 			key._data = pri
 			key.Set("data", HexEncode(pri))
 			key.Set("curve", "SECP256k1")
 			key.Set("digest", "SHA256")
-		} else {
-			// parse PEM file content
-			str := data.(string)
-			// check for raw data (32 bytes)
-			length := len(str)
-			if length == 64 {
-				// Hex format
-				key._data = HexDecode(str)
-			}
-			// TODO: PEM format
 		}
 	}
 	return key._data

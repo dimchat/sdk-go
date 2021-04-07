@@ -130,9 +130,9 @@ func (cmd *BaseHandshakeCommand) InitWithMessage(message string, session string)
 
 func (cmd *BaseHandshakeCommand) Message() string {
 	if cmd._message == "" {
-		message := cmd.Get("message")
-		if message != nil {
-			cmd._message = message.(string)
+		text, ok := cmd.Get("message").(string)
+		if ok {
+			cmd._message = text
 		}
 	}
 	return cmd._message
@@ -140,9 +140,9 @@ func (cmd *BaseHandshakeCommand) Message() string {
 
 func (cmd *BaseHandshakeCommand) Session() string {
 	if cmd._message == "" {
-		session := cmd.Get("session")
-		if session != nil {
-			cmd._session = session.(string)
+		text, ok := cmd.Get("session").(string)
+		if ok {
+			cmd._session = text
 		}
 	}
 	return cmd._message

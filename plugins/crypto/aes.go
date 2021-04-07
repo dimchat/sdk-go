@@ -67,38 +67,38 @@ func (key *AESKey) Init(dict map[string]interface{}) *AESKey {
 func (key *AESKey) keySize() uint {
 	// TODO: get from key data
 
-	size := key.Get("keySize")
-	if size == nil {
-		return 32
+	size, ok := key.Get("keySize").(uint)
+	if ok {
+		return size
 	} else {
-		return size.(uint)
+		return 32
 	}
 }
 
 func (key *AESKey) blockSize() uint {
 	// TODO: get from iv data
 
-	size := key.Get("blockSize")
-	if size == nil {
-		return aes.BlockSize
+	size, ok := key.Get("blockSize").(uint)
+	if ok {
+		return size
 	} else {
-		return size.(uint)
+		return aes.BlockSize
 	}
 }
 
 func (key *AESKey) initVector() []byte {
 	if key._iv == nil {
-		iv := key.Get("iv")
-		if iv == nil {
-			iv = key.Get("I")
+		iv, ok := key.Get("iv").(string)
+		if !ok {
+			iv, _ = key.Get("I").(string)
 		}
-		if iv == nil {
+		if iv == "" {
 			// zero iv
 			zeros := make([]byte, key.blockSize())
 			key.Set("iv", Base64Encode(zeros))
 			key._iv = zeros
 		} else {
-			key._iv = Base64Decode(iv.(string))
+			key._iv = Base64Decode(iv)
 		}
 	}
 	return key._iv
@@ -108,11 +108,11 @@ func (key *AESKey) initVector() []byte {
 
 func (key *AESKey) Data() []byte {
 	if key._data == nil {
-		data := key.Get("data")
-		if data == nil {
-			data = key.Get("D")
+		data, ok := key.Get("data").(string)
+		if !ok {
+			data, _ = key.Get("D").(string)
 		}
-		if data == nil {
+		if data == "" {
 			//
 			// key data empty? generate new key info
 			//
@@ -126,7 +126,7 @@ func (key *AESKey) Data() []byte {
 			key._data = pw
 			key._iv = iv
 		} else {
-			key._data = Base64Decode(data.(string))
+			key._data = Base64Decode(data)
 		}
 	}
 	return key._data

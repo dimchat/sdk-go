@@ -156,28 +156,26 @@ func (cmd *BaseStorageCommand) SetID(identifier ID) {
 
 func (cmd *BaseStorageCommand) Title() string {
 	if cmd._title == "" {
-		title := cmd.Get("title")
-		if title == nil {
+		text, ok := cmd.Get("title").(string)
+		if !ok {
 			// (compatible with v1.0)
 			//  contacts command: {
 			//      command : 'contacts',
 			//      data    : '...',
 			//      key     : '...'
 			//  }
-			title = cmd.Get("command")
+			text, _ = cmd.Get("command").(string)
 		}
-		if title != nil {
-			cmd._title = title.(string)
-		}
+		cmd._title = text
 	}
 	return cmd._title
 }
 
 func (cmd *BaseStorageCommand) Data() []byte {
 	if cmd._data == nil {
-		data := cmd.Get("data")
-		if data != nil {
-			cmd._data = Base64Decode(data.(string))
+		base64, ok := cmd.Get("data").(string)
+		if ok {
+			cmd._data = Base64Decode(base64)
 		}
 	}
 	return cmd._data
@@ -194,9 +192,9 @@ func (cmd *BaseStorageCommand) SetData(data []byte) {
 
 func (cmd *BaseStorageCommand) Key() []byte {
 	if cmd._key == nil {
-		key := cmd.Get("key")
-		if key != nil {
-			cmd._key = Base64Decode(key.(string))
+		base64, ok := cmd.Get("key").(string)
+		if ok {
+			cmd._key = Base64Decode(base64)
 		}
 	}
 	return cmd._key

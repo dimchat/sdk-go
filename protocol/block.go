@@ -64,7 +64,7 @@ func (cmd *BlockCommand) Init(dict map[string]interface{}) *BlockCommand {
 
 func (cmd *BlockCommand) InitWithList(list []ID) *BlockCommand {
 	if cmd.BaseCommand.InitWithCommand(BLOCK) != nil {
-		if list != nil {
+		if !ValueIsNil(list) {
 			cmd.SetList(list)
 		}
 	}

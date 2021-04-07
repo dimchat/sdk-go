@@ -70,8 +70,8 @@ func (key *RSAPublicKey) Init(dict map[string]interface{}) *RSAPublicKey {
 
 func (key *RSAPublicKey) getPublicKey() *rsa.PublicKey {
 	if key._rsaPublicKey == nil {
-		data := key.Get("data")
-		block, _ := pem.Decode(UTF8Encode(data.(string)))
+		data, _ := key.Get("data").(string)
+		block, _ := pem.Decode(UTF8Encode(data))
 		pub, err := x509.ParsePKIXPublicKey(block.Bytes)
 		if err !=  nil {
 			panic(err)
@@ -159,17 +159,17 @@ func (key *RSAPrivateKey) Init(dict map[string]interface{}) *RSAPrivateKey {
 
 func (key *RSAPrivateKey) getPrivateKey() *rsa.PrivateKey {
 	if key._rsaPrivateKey == nil {
-		data := key.Get("data")
-		if data == nil {
-			// generate new key with size
-			key._rsaPrivateKey, _ = key.generate(1024)
-		} else {
-			block, _ := pem.Decode(UTF8Encode(data.(string)))
+		data, ok := key.Get("data").(string)
+		if ok {
+			block, _ := pem.Decode(UTF8Encode(data))
 			pri, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 			if err !=  nil {
 				panic(err)
 			}
 			key._rsaPrivateKey = pri.(*rsa.PrivateKey)
+		} else {
+			// generate new key with size
+			key._rsaPrivateKey, _ = key.generate(1024)
 		}
 	}
 	return key._rsaPrivateKey

@@ -64,7 +64,7 @@ func (cmd *MuteCommand) Init(dict map[string]interface{}) *MuteCommand {
 
 func (cmd *MuteCommand) InitWithList(list []ID) *MuteCommand {
 	if cmd.BaseCommand.InitWithCommand(MUTE) != nil {
-		if list != nil {
+		if !ValueIsNil(list) {
 			cmd.SetList(list)
 		}
 	}

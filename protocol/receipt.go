@@ -85,7 +85,7 @@ func NewReceiptCommand(text string, env Envelope, sn uint32, signature []byte) R
 	} else {
 		cmd.InitWithEnvelope(env, sn, text)
 	}
-	if signature != nil {
+	if !ValueIsNil(signature) {
 		cmd.SetSignature(signature)
 	}
 	return cmd
@@ -125,11 +125,12 @@ func (cmd *BaseReceiptCommand) InitWithEnvelope(env Envelope, sn uint32, text st
 //-------- IReceiptCommand
 
 func (cmd *BaseReceiptCommand) Message() string {
-	text := cmd.Get("message")
-	if text == nil {
+	text, ok := cmd.Get("message").(string)
+	if ok {
+		return text
+	} else {
 		return ""
 	}
-	return text.(string)
 }
 
 func (cmd *BaseReceiptCommand) Envelope() Envelope {
@@ -163,11 +164,12 @@ func (cmd *BaseReceiptCommand) SetEnvelope(env Envelope) {
 }
 
 func (cmd *BaseReceiptCommand) Signature() []byte {
-	signature := cmd.Get("signature")
-	if signature == nil {
+	base64, ok := cmd.Get("signature").(string)
+	if ok {
+		return Base64Decode(base64)
+	} else {
 		return nil
 	}
-	return Base64Decode(signature.(string))
 }
 func (cmd *BaseReceiptCommand) SetSignature(signature []byte) {
 	if ValueIsNil(signature) {

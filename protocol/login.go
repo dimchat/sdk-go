@@ -122,11 +122,12 @@ func (cmd *BaseLoginCommand) ID() ID {
 }
 
 func (cmd *BaseLoginCommand) Device() string {
-	device := cmd.Get("device")
-	if device == nil {
+	text, ok := cmd.Get("device").(string)
+	if ok {
+		return text
+	} else {
 		return ""
 	}
-	return device.(string)
 }
 func (cmd *BaseLoginCommand) SetDevice(device string) {
 	if device == "" {
@@ -137,11 +138,12 @@ func (cmd *BaseLoginCommand) SetDevice(device string) {
 }
 
 func (cmd *BaseLoginCommand) Agent() string {
-	agent := cmd.Get("agent")
-	if agent == nil {
+	text, ok := cmd.Get("agent").(string)
+	if ok {
+		return text
+	} else {
 		return ""
 	}
-	return agent.(string)
 }
 func (cmd *BaseLoginCommand) SetAgent(agent string) {
 	if agent == "" {
@@ -156,22 +158,24 @@ func (cmd *BaseLoginCommand) SetAgent(agent string) {
 //
 
 func (cmd *BaseLoginCommand) StationInfo() map[string]interface{} {
-	station := cmd.Get("station")
-	if station == nil {
+	info, ok := cmd.Get("station").(map[string]interface{})
+	if ok {
+		return info
+	} else {
 		return nil
 	}
-	return station.(map[string]interface{})
 }
 func (cmd *BaseLoginCommand) SetStationInfo(station map[string]interface{}) {
 	cmd.Set("station", station)
 }
 
 func (cmd *BaseLoginCommand) ProviderInfo() map[string]interface{} {
-	sp := cmd.Get("provider")
-	if sp == nil {
+	info, ok := cmd.Get("provider").(map[string]interface{})
+	if ok {
+		return info
+	} else {
 		return nil
 	}
-	return sp.(map[string]interface{})
 }
 func (cmd *BaseLoginCommand) SetProviderInfo(sp map[string]interface{}) {
 	cmd.Set("provider", sp)
