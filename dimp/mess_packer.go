@@ -55,26 +55,26 @@ func (packer *MessengerPacker) Facebook() IFacebook {
 }
 
 func (packer *MessengerPacker) isWaiting(identifier ID) bool {
-	if identifier.IsBroadcast() {
-		// broadcast ID doesn't contain meta or visa
-		return false
-	}
 	if identifier.IsGroup() {
-		// if group is not broadcast ID, its meta should be exists
+		// checking group meta
 		return packer.Facebook().GetMeta(identifier) == nil
+	} else {
+		// checking visa key
+		return packer.Facebook().GetPublicKeyForEncryption(identifier) == nil
 	}
-	// if user is not broadcast ID, its visa key should be exists
-	return packer.Facebook().GetPublicKeyForEncryption(identifier) == nil
 }
 
 func (packer *MessengerPacker) EncryptMessage(iMsg InstantMessage) SecureMessage {
 	receiver := iMsg.Receiver()
 	group := iMsg.Group()
-	if packer.isWaiting(receiver) || (group != nil && packer.isWaiting(group)) {
-		// NOTICE: the application will query visa automatically,
-		//         save this message in a queue waiting sender's visa response
-		packer.Messenger().SuspendInstantMessage(iMsg)
-		return nil
+	if !(receiver.IsBroadcast() || (group != nil && group.IsBroadcast())) {
+		// this message is not a broadcast message
+		if packer.isWaiting(receiver) || (group != nil && packer.isWaiting(group)) {
+			// NOTICE: the application will query visa automatically,
+			//         save this message in a queue waiting sender's visa response
+			packer.Messenger().SuspendInstantMessage(iMsg)
+			return nil
+		}
 	}
 	// make sure visa.key exists before encrypting message
 	return packer.MessagePacker.EncryptMessage(iMsg)
