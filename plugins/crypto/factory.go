@@ -63,7 +63,7 @@ func (factory *GeneralSymmetricKeyFactory) ParseSymmetricKey(key map[string]inte
 
 func BuildSymmetricKeyFactories() {
 	// AES
-	SymmetricKeyRegister(AES, NewSymmetricKeyFactory(func() SymmetricKey {
+	SymmetricKeySetFactory(AES, NewSymmetricKeyFactory(func() SymmetricKey {
 		dict := make(map[string]interface{})
 		dict["algorithm"] = AES
 		return NewAESKey(dict)
@@ -71,7 +71,7 @@ func BuildSymmetricKeyFactories() {
 		return NewAESKey(dict)
 	}))
 	// PLAIN
-	SymmetricKeyRegister(PLAIN, NewSymmetricKeyFactory(func() SymmetricKey {
+	SymmetricKeySetFactory(PLAIN, NewSymmetricKeyFactory(func() SymmetricKey {
 		return GetPlainKey()
 	}, func(dict map[string]interface{}) SymmetricKey {
 		return GetPlainKey()
@@ -133,18 +133,18 @@ func (factory *GeneralPublicKeyFactory) ParsePublicKey(key map[string]interface{
 
 func BuildPublicKeyFactories() {
 	// RSA
-	PublicKeyRegister(RSA, NewPublicKeyFactory(func(dict map[string]interface{}) PublicKey {
+	PublicKeySetFactory(RSA, NewPublicKeyFactory(func(dict map[string]interface{}) PublicKey {
 		return NewRSAPublicKey(dict)
 	}))
 	// ECC
-	PublicKeyRegister(ECC, NewPublicKeyFactory(func(dict map[string]interface{}) PublicKey {
+	PublicKeySetFactory(ECC, NewPublicKeyFactory(func(dict map[string]interface{}) PublicKey {
 		return NewECCPublicKey(dict)
 	}))
 }
 
 func BuildPrivateKeyFactories() {
 	// RSA
-	PrivateKeyRegister(RSA, NewPrivateKeyFactory(func() PrivateKey {
+	PrivateKeySetFactory(RSA, NewPrivateKeyFactory(func() PrivateKey {
 		dict := make(map[string]interface{})
 		dict["algorithm"] = RSA
 		return NewRSAPrivateKey(dict)
@@ -152,7 +152,7 @@ func BuildPrivateKeyFactories() {
 		return NewRSAPrivateKey(dict)
 	}))
 	// ECC
-	PrivateKeyRegister(ECC, NewPrivateKeyFactory(func() PrivateKey {
+	PrivateKeySetFactory(ECC, NewPrivateKeyFactory(func() PrivateKey {
 		dict := make(map[string]interface{})
 		dict["algorithm"] = ECC
 		return NewECCPrivateKey(dict)

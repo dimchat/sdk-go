@@ -39,35 +39,44 @@ import (
  *  Register command factories
  */
 func BuildExtraCommandFactories() {
-	CommandRegister(RECEIPT, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+	CommandSetFactory(RECEIPT, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
 		return new(BaseReceiptCommand).Init(dict)
 	}))
-	CommandRegister(HANDSHAKE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+	CommandSetFactory(HANDSHAKE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
 		return new(BaseHandshakeCommand).Init(dict)
 	}))
-	CommandRegister(LOGIN, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+	CommandSetFactory(LOGIN, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
 		return new(BaseLoginCommand).Init(dict)
 	}))
 
-	CommandRegister(MUTE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+	CommandSetFactory(MUTE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
 		return new(MuteCommand).Init(dict)
 	}))
-	CommandRegister(BLOCK, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+	CommandSetFactory(BLOCK, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
 		return new(BlockCommand).Init(dict)
 	}))
 
 	// storage (contacts, private_key)
-	CommandRegister(STORAGE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+	CommandSetFactory(STORAGE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
 		return new(BaseStorageCommand).Init(dict)
 	}))
-	CommandRegister(CONTACTS, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+	CommandSetFactory(CONTACTS, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
 		return new(BaseStorageCommand).Init(dict)
 	}))
-	CommandRegister(PRIVATE_KEY, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
+	CommandSetFactory(PRIVATE_KEY, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
 		return new(BaseStorageCommand).Init(dict)
 	}))
 }
 
 func init() {
+	//
+	//  Register core factories
+	//
+	BuildContentFactories()
+	BuildCommandFactories()
+
+	//
+	//  Register extra command factories
+	//
 	BuildExtraCommandFactories()
 }

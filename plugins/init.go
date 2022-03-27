@@ -27,7 +27,6 @@ package plugins
 
 import (
 	. "github.com/dimchat/mkm-go/digest"
-	. "github.com/dimchat/mkm-go/mkm"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/sdk-go/plugins/crypto"
 	. "github.com/dimchat/sdk-go/plugins/digest"
@@ -38,8 +37,8 @@ import (
  *  Data Digesters
  */
 func RegisterDataDigesters()  {
-	SetRIPEMD160Digester(new(RIPEMD160Digester))
-	SetKECCAK256Digester(new(KECCAK256Digester))
+	RIPEMD160SetDigester(new(RIPEMD160Digester))
+	KECCAK256SetDigester(new(KECCAK256Digester))
 }
 
 /**
@@ -64,21 +63,21 @@ func BuildAddressFactory() AddressFactory {
  *  Meta factories
  */
 func BuildMetaFactories() {
-	MetaRegister(MKM, NewGeneralMetaFactory(MKM))
-	MetaRegister(BTC, NewGeneralMetaFactory(BTC))
-	MetaRegister(ExBTC, NewGeneralMetaFactory(ExBTC))
-	MetaRegister(ETH, NewGeneralMetaFactory(ETH))
-	MetaRegister(ExETH, NewGeneralMetaFactory(ExETH))
+	MetaSetFactory(MKM, NewGeneralMetaFactory(MKM))
+	MetaSetFactory(BTC, NewGeneralMetaFactory(BTC))
+	MetaSetFactory(ExBTC, NewGeneralMetaFactory(ExBTC))
+	MetaSetFactory(ETH, NewGeneralMetaFactory(ETH))
+	MetaSetFactory(ExETH, NewGeneralMetaFactory(ExETH))
 }
 
 /**
  *  Document factories
  */
 func BuildDocumentFactories() {
-	DocumentRegister("*", NewGeneralDocumentFactory("*"))
-	DocumentRegister(VISA, NewGeneralDocumentFactory(VISA))
-	DocumentRegister(PROFILE, NewGeneralDocumentFactory(PROFILE))
-	DocumentRegister(BULLETIN, NewGeneralDocumentFactory(BULLETIN))
+	DocumentSetFactory("*", NewGeneralDocumentFactory("*"))
+	DocumentSetFactory(VISA, NewGeneralDocumentFactory(VISA))
+	DocumentSetFactory(PROFILE, NewGeneralDocumentFactory(PROFILE))
+	DocumentSetFactory(BULLETIN, NewGeneralDocumentFactory(BULLETIN))
 }
 
 func init() {

@@ -72,20 +72,12 @@ func (meta *DefaultMeta) InitWithType(version uint8, key VerifyKey, seed string,
 func (meta *DefaultMeta) GenerateAddress(network uint8) Address {
 	// check caches
 	address := meta._addresses[network]
-	if address == nil && meta.IsValid() {
+	if address == nil {
 		// generate and cache it
 		address = BTCAddressGenerate(meta.Fingerprint(), network)
 		meta._addresses[network] = address
 	}
 	return address
-}
-
-func (meta *DefaultMeta) GenerateID(network uint8, terminal string) ID {
-	return MetaGenerateID(meta, network, terminal)
-}
-
-func (meta *DefaultMeta) MatchID(identifier ID) bool {
-	return MetaMatchID(meta, identifier)
 }
 
 /**
@@ -128,24 +120,13 @@ func (meta *BTCMeta) GenerateAddress(network uint8) Address {
 	}
 	// check caches
 	address := meta._address
-	if address == nil && meta.IsValid() {
+	if address == nil {
 		// generate and cache it
 		key := meta.Key()
-		pKey, ok := key.(CryptographyKey)
-		if ok {
-			address = BTCAddressGenerate(pKey.Data(), network)
-			meta._address = address
-		}
+		address = BTCAddressGenerate(key.Data(), network)
+		meta._address = address
 	}
 	return address
-}
-
-func (meta *BTCMeta) GenerateID(network uint8, terminal string) ID {
-	return MetaGenerateID(meta, network, terminal)
-}
-
-func (meta *BTCMeta) MatchID(identifier ID) bool {
-	return MetaMatchID(meta, identifier)
 }
 
 /**
@@ -187,24 +168,13 @@ func (meta *ETHMeta) GenerateAddress(network uint8) Address {
 	}
 	// check caches
 	address := meta._address
-	if address == nil && meta.IsValid() {
+	if address == nil {
 		// generate and cache it
 		key := meta.Key()
-		pKey, ok := key.(CryptographyKey)
-		if ok {
-			address = ETHAddressGenerate(pKey.Data())
-			meta._address = address
-		}
+		address = ETHAddressGenerate(key.Data())
+		meta._address = address
 	}
 	return address
-}
-
-func (meta *ETHMeta) GenerateID(network uint8, terminal string) ID {
-	return MetaGenerateID(meta, network, terminal)
-}
-
-func (meta *ETHMeta) MatchID(identifier ID) bool {
-	return MetaMatchID(meta, identifier)
 }
 
 //

@@ -1,4 +1,9 @@
 /* license: https://mit-license.org
+ *
+ *  Ming-Ke-Ming : Decentralized User Identity Authentication
+ *
+ *                                Written in 2021 by Moky <albert.moky@gmail.com>
+ *
  * ==============================================================================
  * The MIT License (MIT)
  *
@@ -23,54 +28,28 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package crypto
+package mkm
 
-/**
- *  Symmetric key for broadcast message,
- *  which will do nothing when en/decoding message data
- */
-var PLAIN = "PLAIN"
+import (
+	. "github.com/dimchat/mkm-go/mkm"
+	. "github.com/dimchat/mkm-go/protocol"
+)
 
-type PlainKey struct {
-	BaseSymmetricKey
+type AddressCreator func(address string) Address
 
-	_data []byte
+type GeneralAddressFactory struct {
+	BaseAddressFactory
+
+	create AddressCreator
 }
 
-func NewPlainKey() *PlainKey {
-	dict := make(map[string]interface{})
-	dict["algorithm"] = PLAIN
-	return new(PlainKey).Init(dict)
-}
-
-func (key *PlainKey) Init(dict map[string]interface{}) *PlainKey {
-	if key.BaseSymmetricKey.Init(dict) != nil {
-		key._data = make([]byte, 0)
+func (factory *GeneralAddressFactory) Init(fn AddressCreator) *GeneralAddressFactory {
+	if factory.BaseAddressFactory.Init() != nil {
+		factory.create = fn
 	}
-	return key
+	return factory
 }
 
-func (key *PlainKey) Data() []byte {
-	return key._data
-}
-
-func (key *PlainKey) Encrypt(plaintext []byte) []byte {
-	return plaintext
-}
-
-func (key *PlainKey) Decrypt(ciphertext []byte) []byte {
-	return ciphertext
-}
-
-//
-//  Singleton
-//
-var sharedPlainKey *PlainKey = nil
-
-func GetPlainKey() *PlainKey {
-	return sharedPlainKey
-}
-
-func init() {
-	sharedPlainKey = NewPlainKey()
+func (factory *GeneralAddressFactory) CreateAddress(address string) Address {
+	return factory.create(address)
 }
