@@ -31,6 +31,7 @@
 package cpu
 
 import (
+	"fmt"
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
@@ -38,48 +39,60 @@ import (
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
+var (
+	StrMetaCmdError = "Meta command error."
+	FmtMetaNotFound = "Sorry, meta not found for ID: %s"
+	FmtMetaNotAccepted = "Meta not accepted: %s"
+	FmtMetaAccepted = "Meta received: %s"
+)
+
 type MetaCommandProcessor struct {
-	BaseCommandProcessor
+	CommandProcessor
 }
 
-func (cpu *MetaCommandProcessor) Init() *MetaCommandProcessor {
-	if cpu.BaseCommandProcessor.Init() != nil {
-	}
+func NewMetaCommandProcessor(facebook IFacebook, messenger IMessenger) *MetaCommandProcessor {
+	cpu := new(MetaCommandProcessor)
+	cpu.Init(facebook, messenger)
 	return cpu
 }
 
-func (cpu *MetaCommandProcessor) getMeta(identifier ID) Content {
+func (cpu *MetaCommandProcessor) getMeta(identifier ID) []Content {
 	// query meta for ID
 	meta := cpu.Facebook().GetMeta(identifier)
 	if meta == nil {
-		// meta not found
-		text := "Sorry, meta not found for ID: " + identifier.String()
-		return NewTextContent(text)
+		text := fmt.Sprintf(FmtMetaNotFound, identifier.String())
+		return cpu.RespondText(text, nil)
+	} else {
+		res := MetaCommandRespond(identifier, meta)
+		return cpu.RespondContent(res)
 	}
-	// response
-	return MetaCommandRespond(identifier, meta)
 }
 
-func (cpu *MetaCommandProcessor) putMeta(identifier ID, meta Meta) Content {
+func (cpu *MetaCommandProcessor) putMeta(identifier ID, meta Meta) []Content {
 	// received a meta for ID
-	if cpu.Facebook().SaveMeta(meta, identifier) == false {
+	if cpu.Facebook().SaveMeta(meta, identifier) {
+		// meta saved
+		text := fmt.Sprintf(FmtMetaAccepted, identifier.String())
+		return cpu.RespondReceipt(text)
+	} else {
 		// save meta failed
-		text := "Meta not accepted: " + identifier.String()
-		return NewTextContent(text)
+		text := fmt.Sprintf(FmtMetaNotAccepted, identifier.String())
+		return cpu.RespondText(text, nil)
 	}
-	// response
-	text := "Meta received: " + identifier.String()
-	//return NewReceiptCommand(text, nil, 0, nil)
-	return receipt(text)
 }
 
-func (cpu *MetaCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
+func (cpu *MetaCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
 	mCmd, _ := cmd.(MetaCommand)
 	identifier := mCmd.ID()
 	meta := mCmd.Meta()
-	if meta == nil {
+	if identifier == nil {
+		// error
+		return cpu.RespondText(StrMetaCmdError, cmd.Group())
+	} else if meta == nil {
+		// query meta for ID
 		return cpu.getMeta(identifier)
 	} else {
+		// received a meta for ID
 		return cpu.putMeta(identifier, meta)
 	}
 }

@@ -34,66 +34,65 @@ import (
 	"fmt"
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/protocol"
+)
+
+var (
+	FmtContentNotSupport = "Content (type: %d) not support yet!"
 )
 
 /**
  *  CPU: Content Processing Unit
  */
-type ContentProcessor interface {
+type ContentProcessor struct {
+	IContentProcessor
+	MessengerHelper
+}
+type IContentProcessor interface {
 
-	SetMessenger(messenger IMessenger)
+	/**
+	 *  Process message content
+	 *
+	 * @param content - content received
+	 * @param message - reliable message
+	 * @return contents responding to msg.sender
+	 */
+	Process(content Content, rMsg ReliableMessage) []Content
+}
 
-	Process(content Content, rMsg ReliableMessage) Content
+//func NewContentProcessor(facebook IFacebook, messenger IMessenger) * ContentProcessor {
+//	cpu := new(ContentProcessor)
+//	cpu.Init(facebook, messenger)
+//	return cpu
+//}
+
+func (cpu *ContentProcessor) Process(content Content, _ ReliableMessage) []Content {
+	text := fmt.Sprintf(FmtContentNotSupport, content.Type())
+	return cpu.RespondText(text, content.Group())
 }
 
 //
-//  CPU Factories
+//  Convenient responding
 //
-var contentProcessors = make(map[uint8]ContentProcessor)
 
-func ContentProcessorRegister(msgType uint8, cpu ContentProcessor) {
-	contentProcessors[msgType] = cpu
-}
-func ContentProcessorGet(content Content) ContentProcessor {
-	return ContentProcessorGetByType(content.Type())
-}
-func ContentProcessorGetByType(msgType uint8) ContentProcessor {
-	return contentProcessors[msgType]
-}
-
-/**
- *  Base Content Processor
- */
-type BaseContentProcessor struct {
-	ContentProcessor
-
-	_messenger IMessenger
-}
-
-func (cpu *BaseContentProcessor) Init() *BaseContentProcessor {
-	cpu._messenger = nil
-	return cpu
-}
-
-func (cpu *BaseContentProcessor) SetMessenger(messenger IMessenger) {
-	cpu._messenger = messenger
-}
-
-func (cpu *BaseContentProcessor) Messenger() IMessenger {
-	return cpu._messenger
-}
-
-func (cpu *BaseContentProcessor) Facebook() IFacebook {
-	return cpu.Messenger().Facebook()
-}
-
-func (cpu *BaseContentProcessor) Process(content Content, _ ReliableMessage) Content {
-	text := fmt.Sprintf("Content (type: %d) not support yet!", content.Type())
+func (cpu *ContentProcessor) RespondText(text string, group ID) []Content {
 	res := NewTextContent(text)
-	// check group message
-	group := content.Group()
 	if group != nil {
 		res.SetGroup(group)
 	}
-	return res
+	return []Content{res}
+}
+
+func (cpu *ContentProcessor) RespondReceipt(text string) []Content {
+	res := NewReceiptCommand(text, nil, 0, nil)
+	return []Content{res}
+}
+
+func (cpu *ContentProcessor) RespondContent(content Content) []Content {
+	if content == nil {
+		return nil
+	} else {
+		return []Content{content}
+	}
 }

@@ -31,38 +31,39 @@
 package cpu
 
 import (
-	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
 type ForwardContentProcessor struct {
-	BaseContentProcessor
+	ContentProcessor
 }
 
-func (cpu *ForwardContentProcessor) Init() *ForwardContentProcessor {
-	if cpu.BaseContentProcessor.Init() != nil {
-	}
+func NewForwardContentProcessor(facebook IFacebook, messenger IMessenger) * ForwardContentProcessor {
+	cpu := new(ForwardContentProcessor)
+	cpu.Init(facebook, messenger)
 	return cpu
 }
 
-func (cpu *ForwardContentProcessor) Process(content Content, _ ReliableMessage) Content {
+func (cpu *ForwardContentProcessor) Process(content Content, _ ReliableMessage) []Content {
 	forward, _ := content.(ForwardContent)
 	secret := forward.ForwardMessage()
 	// call messenger to process it
-	secret = cpu.Messenger().ProcessReliableMessage(secret)
-	// check response
-	if secret != nil {
-		// Over The Top
-		return NewForwardContent(secret)
-	}/* else {
-		receiver := forward.GetMessage().Receiver()
-		text := "Message forwarded: " + receiver.String()
-		return NewReceiptCommand(text, nil, 0, nil)
-	}*/
-
-	// NOTICE: decrypt failed, not for you?
-	//         it means you are asked to re-pack and forward this message
-	return nil
+	messenger := cpu.Messenger()
+	// 1. verify message
+	sMsg := messenger.VerifyMessage(secret)
+	if sMsg == nil {
+		// waiting for sender's meta if not exists
+		return nil
+	}
+	// 2. decrypt message
+	iMsg := messenger.DecryptMessage(sMsg)
+	if iMsg == nil {
+		// NOTICE: decrypt failed, not for you?
+		//         it means you are asked to re-pack and forward this message
+		return nil
+	}
+	// 3. process message content
+	return messenger.ProcessContent(iMsg.Content(), secret)
 }

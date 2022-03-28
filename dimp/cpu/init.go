@@ -31,59 +31,44 @@
 package cpu
 
 import (
-	. "github.com/dimchat/core-go/dkd"
-	. "github.com/dimchat/core-go/protocol"
-	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp"
+	. "github.com/dimchat/mkm-go/protocol"
 )
 
-/**
- *  Command message: {
- *      type : 0x88,
- *      sn   : 123,  // the same serial number with the original message
- *
- *      command   : "receipt",
- *      message   : "...",
- *      // -- extra info
- *      sender    : "...",
- *      receiver  : "...",
- *      time      : 0,
- *      signature : "..." // the same signature with the original message
- *  }
- */
-func receipt(message string) Command {
-	cmd := new(BaseCommand).InitWithCommand(RECEIPT)
-	cmd.Set("message", message)
-	return cmd
+//
+//  Utils for Group command Processing Units
+//
+
+func find(id ID, list []ID) int {
+	for index, item := range list {
+		if id.Equal(item) {
+			return index
+		}
+	}
+	return -1
 }
 
-//
-//  Register content processors
-//
-func BuildContentProcessors() {
-	ContentProcessorRegister(FORWARD, new(ForwardContentProcessor).Init())
-
-	fpu := new(BaseFileContentProcessor).Init()
-	ContentProcessorRegister(FILE, fpu)
-	ContentProcessorRegister(IMAGE, fpu)
-	ContentProcessorRegister(AUDIO, fpu)
-	ContentProcessorRegister(VIDEO, fpu)
-
-	ContentProcessorRegister(COMMAND, new(BaseCommandProcessor).Init())
-	ContentProcessorRegister(HISTORY, new(HistoryCommandProcessor).Init())
-
-	ContentProcessorRegister(0, new(BaseContentProcessor).Init())
+func contains(id ID, list []ID) bool {
+	return find(id, list) != -1
 }
 
-//
-//  Register command processors
-//
-func BuildCommandProcessors() {
-	CommandProcessorRegister(META, new(MetaCommandProcessor).Init())
-	CommandProcessorRegister(DOCUMENT, new(DocumentCommandProcessor).Init())
-}
-
-func init() {
-	BuildContentProcessors()
-	BuildCommandProcessors()
+func remove(list []ID, item ID) []ID {
+	pos := find(item, list)
+	if pos < 0 {
+		return list
+	} else if pos == 0 {
+		return list[1:]
+	}
+	length := len(list) - 1
+	if pos == length {
+		return list[:length]
+	}
+	out := make([]ID, length)
+	index := 0
+	for ; index < pos; index++ {
+		out[index] = list[index]
+	}
+	for ; index < length; index++ {
+		out[index] = list[index+1]
+	}
+	return out
 }

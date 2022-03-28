@@ -32,29 +32,26 @@ package cpu
 
 import (
 	"fmt"
-	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
+var (
+	FmtHisCmdNotSupport = "History command (name: %s) not support yet!"
+)
+
 type HistoryCommandProcessor struct {
-	BaseCommandProcessor
+	CommandProcessor
 }
 
-func (cpu *HistoryCommandProcessor) Init() *HistoryCommandProcessor {
-	if cpu.BaseCommandProcessor.Init() != nil {
-	}
+func NewHistoryCommandProcessor(facebook IFacebook, messenger IMessenger) *HistoryCommandProcessor {
+	cpu := new(HistoryCommandProcessor)
+	cpu.Init(facebook, messenger)
 	return cpu
 }
 
-func (cpu *HistoryCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
-	text := fmt.Sprintf("History command (name: %s) not support yet!", cmd.CommandName())
-	res := NewTextContent(text)
-	// check group message
-	group := cmd.Group()
-	if group != nil {
-		res.SetGroup(group)
-	}
-	return res
+func (cpu *HistoryCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
+	text := fmt.Sprintf(FmtHisCmdNotSupport, cmd.CommandName())
+	return cpu.RespondText(text, cmd.Group())
 }

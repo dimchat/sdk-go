@@ -32,78 +32,49 @@ package dimp
 
 import (
 	"fmt"
-	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
+)
+
+var (
+	FmtCmdNotSupport = "Command (name: %s) not support yet!"
 )
 
 /**
  *  CPU: Command Processing Unit
  */
-type CommandProcessor interface {
-	ContentProcessor
+type CommandProcessor struct {
 	ICommandProcessor
+	ContentProcessor
 }
 type ICommandProcessor interface {
+	IContentProcessor
+	ICommandProcessorExt
+}
+type ICommandProcessorExt interface {
 
-	Execute(cmd Command, rMsg ReliableMessage) Content
+	/**
+	 *  Execute command
+	 *
+	 * @param cmd     - command received
+	 * @param message - reliable message
+	 * @return contents responding to msg.sender
+	 */
+	Execute(cmd Command, rMsg ReliableMessage) []Content
 }
 
-//
-//  CPU Factories
-//
-var commandProcessors = make(map[string]CommandProcessor)
-
-func CommandProcessorRegister(command string, cpu CommandProcessor) {
-	commandProcessors[command] = cpu
-}
-func CommandProcessorGet(cmd Command) CommandProcessor {
-	return CommandProcessorGetByName(cmd.CommandName())
-}
-func CommandProcessorGetByName(command string) CommandProcessor {
-	return commandProcessors[command]
-}
-
-/**
- *  Base Command Processor
- */
-type BaseCommandProcessor struct {
-	BaseContentProcessor
-	ICommandProcessor
-}
-
-func (cpu *BaseCommandProcessor) Init() *BaseCommandProcessor {
-	if cpu.BaseContentProcessor.Init() != nil {
-	}
+func NewCommandProcessor(facebook IFacebook, messenger IMessenger) * CommandProcessor {
+	cpu := new(CommandProcessor)
+	cpu.Init(facebook, messenger)
 	return cpu
 }
 
-func (cpu *BaseCommandProcessor) Process(content Content, rMsg ReliableMessage) Content {
+func (cpu *CommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
 	cmd, _ := content.(Command)
-	// get CPU by command name
-	processor := CommandProcessorGet(cmd)
-	if processor == nil {
-		// check for group command
-		_, ok := cmd.(GroupCommand)
-		if ok {
-			processor = CommandProcessorGetByName("group")
-		}
-	}
-	if processor == nil {
-		processor = cpu
-	} else {
-		processor.SetMessenger(cpu.Messenger())
-	}
-	return processor.Execute(cmd, rMsg)
+	return cpu.Execute(cmd, rMsg)
 }
 
-func (cpu *BaseCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
-	text := fmt.Sprintf("Command (name: %s) not support yet!", cmd.CommandName())
-	res := NewTextContent(text)
-	// check group message
-	group := cmd.Group()
-	if group != nil {
-		res.SetGroup(group)
-	}
-	return res
+func (cpu *CommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
+	text := fmt.Sprintf(FmtCmdNotSupport, cmd.CommandName())
+	return cpu.RespondText(text, cmd.Group())
 }

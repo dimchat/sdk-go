@@ -31,72 +31,165 @@
 package dimp
 
 import (
-	. "github.com/dimchat/core-go/core"
+	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/mkm-go/crypto"
+	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
-type MessengerPacker struct {
-	MessagePacker
+/**
+ *  Message Packer
+ *  ~~~~~~~~~~~~~~
+ */
+type MessagePacker struct {
+	MessengerHelper
+	IPacker
 }
 
-func (packer *MessengerPacker) Init(messenger IMessenger) *MessengerPacker {
-	if packer.MessagePacker.Init(messenger) != nil {
+//-------- IPacker
+
+func (packer *MessagePacker) GetOvertGroup(content Content) ID {
+	group := content.Group()
+	if group == nil {
+		return nil
 	}
-	return packer
-}
-
-func (packer *MessengerPacker) Messenger() IMessenger {
-	return packer.Transceiver().(IMessenger)
-}
-
-func (packer *MessengerPacker) Facebook() IFacebook {
-	return packer.Messenger().Facebook()
-}
-
-func (packer *MessengerPacker) isWaiting(identifier ID) bool {
-	if identifier.IsGroup() {
-		// checking group meta
-		return packer.Facebook().GetMeta(identifier) == nil
-	} else {
-		// checking visa key
-		return packer.Facebook().GetPublicKeyForEncryption(identifier) == nil
+	if group.IsBroadcast() {
+		// broadcast message is always overt
+		return group
 	}
+	msgType := content.Type()
+	if msgType == COMMAND || msgType == HISTORY {
+		// group command should be sent to each member directly, so
+		// don't expose group ID
+		return nil
+	}
+	return group
 }
 
-func (packer *MessengerPacker) EncryptMessage(iMsg InstantMessage) SecureMessage {
+//
+//  InstantMessage -> SecureMessage -> ReliableMessage -> Data
+//
+
+func (packer *MessagePacker) EncryptMessage(iMsg InstantMessage) SecureMessage {
+	messenger := packer.Messenger()
+	// check message delegate
+	if iMsg.Delegate() == nil {
+		iMsg.SetDelegate(messenger)
+	}
+	sender := iMsg.Sender()
 	receiver := iMsg.Receiver()
-	group := iMsg.Group()
-	if !(receiver.IsBroadcast() || (group != nil && group.IsBroadcast())) {
-		// this message is not a broadcast message
-		if packer.isWaiting(receiver) || (group != nil && packer.isWaiting(group)) {
-			// NOTICE: the application will query visa automatically,
-			//         save this message in a queue waiting sender's visa response
-			packer.Messenger().SuspendInstantMessage(iMsg)
+	// if 'group' exists and the 'receiver' is a group ID,
+	// they must be equal
+
+	// NOTICE: while sending group message, don't split it before encrypting.
+	//         this means you could set group ID into message content, but
+	//         keep the "receiver" to be the group ID;
+	//         after encrypted (and signed), you could split the message
+	//         with group members before sending out, or just send it directly
+	//         to the group assistant to let it split messages for you!
+	//    BUT,
+	//         if you don't want to share the symmetric key with other members,
+	//         you could split it (set group ID into message content and
+	//         set contact ID to the "receiver") before encrypting, this usually
+	//         for sending group command to assistant robot, which should not
+	//         share the symmetric key (group msg key) with other members.
+
+	// 1. get symmetric key
+	group := messenger.GetOvertGroup(iMsg.Content())
+	var password SymmetricKey
+	if group == nil {
+		// personal message or (group) command
+		password = messenger.GetCipherKey(sender, receiver, true)
+	} else {
+		password = messenger.GetCipherKey(sender, group, true)
+	}
+
+	// 2. encrypt 'content' to 'data' for receiver/group members
+	var sMsg SecureMessage
+	if receiver.IsGroup() {
+		// group message
+		facebook := packer.Facebook()
+		grp := facebook.GetGroup(receiver)
+		if grp == nil {
+			// group not ready
+			// TODO: suspend this message for waiting group's meta
 			return nil
 		}
+		members := grp.Members()
+		if members == nil || len(members) == 0 {
+			// group members not found
+			// TODO: suspend this message for waiting group's membership
+			return nil
+		}
+		sMsg = iMsg.Encrypt(password, members)
+	} else {
+		// personal message (or split group message)
+		sMsg = iMsg.Encrypt(password, nil)
 	}
-	// make sure visa.key exists before encrypting message
-	return packer.MessagePacker.EncryptMessage(iMsg)
+	if sMsg == nil {
+		// public key for encryption not found
+		// TODO: suspend this message for waiting receiver's meta
+		return nil
+	}
+
+	// overt group ID
+	if group != nil && !receiver.Equal(group) {
+		// NOTICE: this help the receiver knows the group ID
+		//         when the group message separated to multi-messages,
+		//         if don't want the others know you are the group members,
+		//         remove it.
+		sMsg.Envelope().SetGroup(group)
+	}
+
+	// NOTICE: copy content type to envelope
+	//         this help the intermediate nodes to recognize message type
+	sMsg.Envelope().SetType(iMsg.Content().Type())
+
+	// OK
+	return sMsg
 }
 
-func (packer *MessengerPacker) VerifyMessage(rMsg ReliableMessage) SecureMessage {
+func (packer *MessagePacker) SignMessage(sMsg SecureMessage) ReliableMessage {
+	// check message delegate
+	if sMsg.Delegate() == nil {
+		messenger := packer.Messenger()
+		sMsg.SetDelegate(messenger)
+	}
+	// sign 'data' by sender
+	return sMsg.Sign()
+}
+
+func (packer *MessagePacker) SerializeMessage(rMsg ReliableMessage) []byte {
+	dict := rMsg.GetMap(false)
+	return JSONEncodeMap(dict)
+}
+
+func (packer *MessagePacker) DeserializeMessage(data []byte) ReliableMessage {
+	dict := JSONDecodeMap(data)
+	// TODO: translate short keys
+	//       'S' -> 'sender'
+	//       'R' -> 'receiver'
+	//       'W' -> 'time'
+	//       'T' -> 'type'
+	//       'G' -> 'group'
+	//       ------------------
+	//       'D' -> 'data'
+	//       'V' -> 'signature'
+	//       'K' -> 'key'
+	//       ------------------
+	//       'M' -> 'meta'
+	return ReliableMessageParse(dict)
+}
+
+func (packer *MessagePacker) VerifyMessage(rMsg ReliableMessage) SecureMessage {
+	// TODO: make sure meta exists before verifying message
 	facebook := packer.Facebook()
 	sender := rMsg.Sender()
 	// [Meta Protocol]
 	meta := rMsg.Meta()
-	if meta == nil {
-		// get from local storage
-		meta = facebook.GetMeta(sender)
-	} else if !facebook.SaveMeta(meta, sender) {
-		// failed to save meta attached to message
-		meta = nil
-	}
-	if meta == nil {
-		// NOTICE: the application will query meta automatically,
-		//         save this message in a queue waiting sender's meta response
-		packer.Messenger().SuspendReliableMessage(rMsg)
-		return nil
+	if meta != nil {
+		facebook.SaveMeta(meta, sender)
 	}
 	// [Visa Protocol]
 	visa := rMsg.Visa()
@@ -104,18 +197,27 @@ func (packer *MessengerPacker) VerifyMessage(rMsg ReliableMessage) SecureMessage
 		// check & save visa attached to message
 		facebook.SaveDocument(visa)
 	}
-	// make sure meta exists before verifying message
-	return packer.MessagePacker.VerifyMessage(rMsg)
+	// check message delegate
+	if rMsg.Delegate() == nil {
+		messenger := packer.Messenger()
+		rMsg.SetDelegate(messenger)
+	}
+	//
+	//  TODO: check [Meta Protocol]
+	//        make sure the sender's meta exists
+	//        (do in by application)
+	//
+
+	// verify 'data' with 'signature'
+	return rMsg.Verify()
 }
 
-func (packer *MessengerPacker) DecryptMessage(sMsg SecureMessage) InstantMessage {
-	// check message delegate
-	if sMsg.Delegate() == nil {
-		sMsg.SetDelegate(packer.Messenger())
-	}
-	var trimmed SecureMessage
+func (packer *MessagePacker) DecryptMessage(sMsg SecureMessage) InstantMessage {
+	// TODO: make sure private key (decrypt key) exists before decrypting message
+	facebook := packer.Facebook()
 	receiver := sMsg.Receiver()
-	user := packer.Facebook().SelectLocalUser(receiver)
+	user := facebook.SelectLocalUser(receiver)
+	var trimmed SecureMessage
 	if user == nil {
 		// current users not match
 		trimmed = nil
@@ -130,6 +232,20 @@ func (packer *MessengerPacker) DecryptMessage(sMsg SecureMessage) InstantMessage
 		panic("receiver error: " + receiver.String())
 		return nil
 	}
-	// make sure private key (decrypt key) exists before decrypting message
-	return packer.MessagePacker.DecryptMessage(sMsg)
+	// check message delegate
+	if sMsg.Delegate() == nil {
+		messenger := packer.Messenger()
+		sMsg.SetDelegate(messenger)
+	}
+	//
+	//  NOTICE: make sure the receiver is YOU!
+	//          which means the receiver's private key exists;
+	//          if the receiver is a group ID, split it first
+	//
+
+	// decrypt 'data' to 'content'
+	return sMsg.Decrypt()
+
+	// TODO: check top-secret message
+	//       (do it by application)
 }

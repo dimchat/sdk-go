@@ -31,122 +31,151 @@
 package dimp
 
 import (
-	. "github.com/dimchat/core-go/core"
 	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
-type IMessenger interface {
-	Transceiver
-
-	Transmitter
-	MessengerDelegate
-	MessengerDataSource
-
-	Facebook() IFacebook
-}
-
 type Messenger struct {
-	MessageTransceiver
+	Transceiver
+	IMessengerExt
 
-	_delegate MessengerDelegate
-	_dataSource MessengerDataSource
-
-	_transmitter Transmitter
+	_keyCache CipherKeyDelegate
+	_packer Packer
+	_processor Processor
+}
+type IMessenger interface {
+	ITransceiver
+	IMessengerExt
+}
+type IMessengerExt interface {
+	ICipherKeyDelegate
+	IPacker
+	IProcessor
 }
 
 func (messenger *Messenger) Init() *Messenger {
-	if messenger.MessageTransceiver.Init() != nil {
-		messenger._delegate = nil
-		messenger._dataSource = nil
-
-		messenger._transmitter = nil
+	if messenger.Transceiver.Init() != nil {
+		messenger._keyCache = nil
+		messenger._packer = nil
+		messenger._processor = nil
 	}
 	return messenger
 }
 
-func (messenger *Messenger) Facebook() IFacebook {
-	return messenger.EntityFactory().(IFacebook)
+func (messenger *Messenger) CipherKeyDelegate() CipherKeyDelegate {
+	return messenger._keyCache
+}
+func (messenger *Messenger) SetCipherKeyDelegate(delegate CipherKeyDelegate) {
+	messenger._keyCache = delegate
 }
 
-/**
- *  Delegate for Station
- *
- * @param delegate - message delegate
- */
-func (messenger *Messenger) SetDelegate(delegate MessengerDelegate) {
-	messenger._delegate = delegate
+func (messenger *Messenger) Packer() Packer {
+	return messenger._packer
 }
-func (messenger *Messenger) Delegate() MessengerDelegate {
-	return messenger._delegate
+func (messenger *Messenger) SetPacker(packer Packer) {
+	messenger._packer = packer
 }
 
-/**
- *  Delegate for Message Storage
- *
- * @param delegate - message data source
- */
-func (messenger *Messenger) SetDataSource(delegate MessengerDataSource) {
-	messenger._dataSource = delegate
+func (messenger *Messenger) Processor() Processor {
+	return messenger._processor
 }
-func (messenger *Messenger) DataSource() MessengerDataSource {
-	return messenger._dataSource
+func (messenger *Messenger) SetProcessor(processor Processor) {
+	messenger._processor = processor
 }
 
-/**
- *  Delegate for transmitting message
- *
- * @param transmitter - message transmitter
- */
-func (messenger *Messenger) SetTransmitter(transmitter Transmitter) {
-	messenger._transmitter = transmitter
-}
-func (messenger *Messenger) Transmitter() Transmitter {
-	return messenger._transmitter
+//-------- ICipherKeyDelegate
+
+func (messenger *Messenger) GetCipherKey(sender, receiver ID, generate bool) SymmetricKey {
+	return messenger.CipherKeyDelegate().GetCipherKey(sender, receiver, generate)
 }
 
-//
-//  Interfaces for transmitting Message
-//
-func (messenger *Messenger) SendContent(sender ID, receiver ID, content Content, callback MessengerCallback, priority int) bool {
-	return messenger.Transmitter().SendContent(sender, receiver, content, callback, priority)
+func (messenger *Messenger) CacheCipherKey(sender, receiver ID, key SymmetricKey) {
+	messenger.CipherKeyDelegate().CacheCipherKey(sender, receiver, key)
 }
 
-func (messenger *Messenger) SendInstantMessage(iMsg InstantMessage, callback MessengerCallback, priority int) bool {
-	return messenger.Transmitter().SendInstantMessage(iMsg, callback, priority)
+//-------- IPacker
+
+func (messenger *Messenger) GetOvertGroup(content Content) ID {
+	return messenger.Packer().GetOvertGroup(content)
 }
 
-func (messenger *Messenger) SendReliableMessage(rMsg ReliableMessage, callback MessengerCallback, priority int) bool {
-	return messenger.SendReliableMessage(rMsg, callback, priority)
+func (messenger *Messenger) EncryptMessage(iMsg InstantMessage) SecureMessage {
+	return messenger.Packer().EncryptMessage(iMsg)
 }
 
-//
-//  Interfaces for Station
-//
-func (messenger *Messenger) UploadData(data []byte, iMsg InstantMessage) string {
-	return messenger.Delegate().UploadData(data, iMsg)
+func (messenger *Messenger) SignMessage(sMsg SecureMessage) ReliableMessage {
+	return messenger.Packer().SignMessage(sMsg)
 }
 
-func (messenger *Messenger) DownloadData(url string, iMsg InstantMessage) []byte {
-	return messenger.Delegate().DownloadData(url, iMsg)
+func (messenger *Messenger) SerializeMessage(rMsg ReliableMessage) []byte {
+	return messenger.Packer().SerializeMessage(rMsg)
 }
 
-func (messenger *Messenger) SendPackage(data []byte, handler MessengerCompletionHandler, priority int) bool {
-	return messenger.Delegate().SendPackage(data, handler, priority)
+func (messenger *Messenger) DeserializeMessage(data []byte) ReliableMessage {
+	return messenger.Packer().DeserializeMessage(data)
 }
 
-//
-//  Interfaces for Message Storage
-//
-func (messenger *Messenger) SaveMessage(iMsg InstantMessage) bool {
-	return messenger.DataSource().SaveMessage(iMsg)
+func (messenger *Messenger) VerifyMessage(rMsg ReliableMessage) SecureMessage {
+	return messenger.Packer().VerifyMessage(rMsg)
 }
 
-func (messenger *Messenger) SuspendInstantMessage(iMsg InstantMessage) {
-	messenger.DataSource().SuspendInstantMessage(iMsg)
+func (messenger *Messenger) DecryptMessage(sMsg SecureMessage) InstantMessage {
+	return messenger.Packer().DecryptMessage(sMsg)
 }
 
-func (messenger *Messenger) SuspendReliableMessage(rMsg ReliableMessage) {
-	messenger.DataSource().SuspendReliableMessage(rMsg)
+//-------- IProcessor
+
+func (messenger *Messenger) ProcessPackage(data []byte) [][]byte {
+	return messenger.Processor().ProcessPackage(data)
+}
+
+func (messenger *Messenger) ProcessReliableMessage(rMsg ReliableMessage) []ReliableMessage {
+	return messenger.Processor().ProcessReliableMessage(rMsg)
+}
+
+func (messenger *Messenger) ProcessSecureMessage(sMsg SecureMessage, rMsg ReliableMessage) []SecureMessage {
+	return messenger.Processor().ProcessSecureMessage(sMsg, rMsg)
+}
+
+func (messenger *Messenger) ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) []InstantMessage {
+	return messenger.Processor().ProcessInstantMessage(iMsg, rMsg)
+}
+
+func (messenger *Messenger) ProcessContent(content Content, rMsg ReliableMessage) []Content {
+	return messenger.Processor().ProcessContent(content, rMsg)
+}
+
+//-------- ISecureMessageDelegate
+
+func (messenger *Messenger) DeserializeKey(key []byte, sender ID, receiver ID, sMsg SecureMessage) SymmetricKey {
+	if key == nil {
+		// get key from cache
+		return messenger.GetCipherKey(sender, receiver, false)
+	} else {
+		// call super()
+		return messenger.Transceiver.DeserializeKey(key, sender, receiver, sMsg)
+	}
+}
+
+func (messenger *Messenger) DeserializeContent(data []byte, password SymmetricKey, sMsg SecureMessage) Content {
+	// call super()
+	content := messenger.Transceiver.DeserializeContent(data, password, sMsg)
+	if !messenger.IsBroadcast(sMsg) {
+		// check and cache key for reuse
+		group := messenger.GetOvertGroup(content)
+		if group == nil {
+			// personal message or (group) command
+			// cache key with direction (sender -> receiver)
+			messenger.CacheCipherKey(sMsg.Sender(), sMsg.Receiver(), password)
+		} else {
+			// group message (excludes group command)
+			// cache the key with direction (sender -> group)
+			messenger.CacheCipherKey(sMsg.Sender(), group, password)
+		}
+	}
+	// NOTICE: check attachment for File/Image/Audio/Video message content
+	//         after deserialize content, this job should be do in subclass
+	return content
 }

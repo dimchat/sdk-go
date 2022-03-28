@@ -30,89 +30,63 @@
  */
 package dimp
 
-import . "github.com/dimchat/dkd-go/protocol"
+import (
+	. "github.com/dimchat/mkm-go/crypto"
+	. "github.com/dimchat/mkm-go/protocol"
+)
 
 /**
- *  Messenger Delegate
- *  ~~~~~~~~~~~~~~~~~~
+ *  Cipher Key Delegate
+ *
+ *  1. get symmetric key for sending message;
+ *  2. cache symmetric key for reusing.
  */
-type MessengerDelegate interface {
+type CipherKeyDelegate interface {
+	ICipherKeyDelegate
+}
+type ICipherKeyDelegate interface {
 
 	/**
-	 *  Upload encrypted data to CDN
+	 *  Get cipher key for encrypt message from 'sender' to 'receiver'
 	 *
-	 * @param data - encrypted file data
-	 * @param iMsg - instant message
-	 * @return download URL
+	 * @param sender - from where (user or contact ID)
+	 * @param receiver - to where (contact or user/group ID)
+	 * @param generate - generate when key not exists
+	 * @return cipher key
 	 */
-	UploadData(data []byte, iMsg InstantMessage) string
+	GetCipherKey(sender, receiver ID, generate bool) SymmetricKey
 
 	/**
-	 *  Download encrypted data from CDN
+	 *  Cache cipher key for reusing, with the direction (from 'sender' to 'receiver')
 	 *
-	 * @param url - download URL
-	 * @param iMsg - instant message
-	 * @return encrypted file data
+	 * @param sender - from where (user or contact ID)
+	 * @param receiver - to where (contact or user/group ID)
+	 * @param key - cipher key
 	 */
-	DownloadData(url string, iMsg InstantMessage) []byte
-
-	/**
-	 *  Send out a data package onto network
-	 *
-	 * @param data - package data
-	 * @param handler - completion handler
-	 * @param priority - task priority
-	 * @return true on success
-	 */
-	SendPackage(data []byte, handler MessengerCompletionHandler, priority int) bool
+	CacheCipherKey(sender, receiver ID, key SymmetricKey)
 }
 
 /**
- *  Messenger DataSource
- *  ~~~~~~~~~~~~~~~~~~~~
+ *  Messenger Shadow
+ *  ~~~~~~~~~~~~~~~~
+ *
+ *  delegate for messenger
  */
-type MessengerDataSource interface {
-
-	/**
-	 * Save the message into local storage
-	 *
-	 * @param iMsg - instant message
-	 * @return true on success
-	 */
-	SaveMessage(iMsg InstantMessage) bool
-
-	/**
-	 *  Suspend the sending message for the receiver's meta & visa,
-	 *  or group meta when received new message
-	 *
-	 * @param iMsg - instant message to be sent
-	 */
-	SuspendInstantMessage(iMsg InstantMessage)
-
-	/**
-	 *  Suspend the received message for the sender's meta
-	 *
-	 * @param rMsg - message received from network
-	 */
-	SuspendReliableMessage(rMsg ReliableMessage)
+type MessengerHelper struct {
+	_facebook IFacebook
+	_messenger IMessenger
 }
 
-/**
- *  Messenger Completion Handler
- *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
-type MessengerCompletionHandler interface {
-
-	OnSuccess()
-
-	OnFailed(err error)
+func (helper *MessengerHelper) Init(facebook IFacebook, messenger IMessenger) *MessengerHelper {
+	helper._facebook = facebook
+	helper._messenger = messenger
+	return helper
 }
 
-/**
- *  Messenger Callback
- *  ~~~~~~~~~~~~~~~~~~
- */
-type MessengerCallback interface {
+func (helper *MessengerHelper) Facebook() IFacebook {
+	return helper._facebook
+}
 
-	OnFinished(result interface{}, err error)
+func (helper *MessengerHelper) Messenger() IMessenger {
+	return helper._messenger
 }

@@ -31,72 +31,87 @@
 package cpu
 
 import (
+	"fmt"
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/mkm-go/types"
+	. "github.com/dimchat/sdk-go/dimp"
+)
+
+var (
+	StrDocCmdError = "Document command error."
+	FmtDocNotFound = "Sorry, document not found for ID: %s"
+	FmtDocNotAccepted = "Document not accepted: %s"
+	FmtDocAccepted = "Document received: %s"
 )
 
 type DocumentCommandProcessor struct {
 	MetaCommandProcessor
 }
 
-func (cpu *DocumentCommandProcessor) Init() *DocumentCommandProcessor {
-	if cpu.MetaCommandProcessor.Init() != nil {
-	}
+func NewDocumentCommandProcessor(facebook IFacebook, messenger IMessenger) *DocumentCommandProcessor {
+	cpu := new(DocumentCommandProcessor)
+	cpu.Init(facebook, messenger)
 	return cpu
 }
 
-func (cpu *DocumentCommandProcessor) getDocument(identifier ID, docType string) Content {
+func (cpu *DocumentCommandProcessor) getDocument(identifier ID, docType string) []Content {
 	facebook := cpu.Facebook()
 	// query entity document for ID
 	doc := facebook.GetDocument(identifier, docType)
 	if doc == nil {
-		// document not found
-		text := "Sorry, document not found for ID: " + identifier.String()
-		return NewTextContent(text)
+		text := fmt.Sprintf(FmtDocNotFound, identifier.String())
+		return cpu.RespondText(text, nil)
+	} else {
+		meta := facebook.GetMeta(identifier)
+		res := DocumentCommandRespond(identifier, meta, doc)
+		return cpu.RespondContent(res)
 	}
-	// response
-	meta := facebook.GetMeta(identifier)
-	return DocumentCommandRespond(identifier, meta, doc)
 }
 
-func (cpu *DocumentCommandProcessor) putDocument(identifier ID, meta Meta, doc Document) Content {
+func (cpu *DocumentCommandProcessor) putDocument(identifier ID, meta Meta, doc Document) []Content {
+	if doc.ID().Equal(identifier) == false {
+		return cpu.RespondText(StrDocCmdError, nil)
+	}
 	facebook := cpu.Facebook()
 	if !ValueIsNil(meta) {
 		// received a meta for ID
 		if facebook.SaveMeta(meta, identifier) == false {
 			// meta not match
-			text := "Meta not accepted: " + identifier.String()
-			return NewTextContent(text)
+			text := fmt.Sprintf(FmtMetaNotAccepted, identifier.String())
+			return cpu.RespondText(text, nil)
 		}
 	}
 	// received a document for ID
-	if facebook.SaveDocument(doc) == false {
+	if facebook.SaveDocument(doc) {
+		// document saved
+		text := fmt.Sprintf(FmtDocAccepted, identifier.String())
+		return cpu.RespondReceipt(text)
+	} else {
 		// save document failed
-		text := "Document not accepted: " + identifier.String()
-		return NewTextContent(text)
+		text := fmt.Sprintf(FmtDocNotAccepted, identifier.String())
+		return cpu.RespondText(text, nil)
 	}
-	// response
-	text := "Document received: " + identifier.String()
-	//return NewReceiptCommand(text, nil, 0, nil)
-	return receipt(text)
 }
 
-func (cpu *DocumentCommandProcessor) Execute(cmd Command, _ ReliableMessage) Content {
+func (cpu *DocumentCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
 	mCmd, _ := cmd.(DocumentCommand)
 	identifier := mCmd.ID()
 	doc := mCmd.Document()
-	if doc == nil {
+	if identifier == nil {
+		// error
+		return cpu.RespondText(StrDocCmdError, nil)
+	} else if doc == nil {
+		// query document for ID
 		docType, ok := cmd.Get("doc_type").(string)
-		if ok {
-			return cpu.getDocument(identifier, docType)
-		} else {
-			return cpu.getDocument(identifier, "*")
+		if !ok || docType == "" {
+			docType = "*"  // ANY
 		}
+		return cpu.getDocument(identifier, docType)
 	} else {
-		meta := mCmd.Meta()
-		return cpu.putDocument(identifier, meta, doc)
+		// received a new document for ID
+		return cpu.putDocument(identifier, mCmd.Meta(), doc)
 	}
 }

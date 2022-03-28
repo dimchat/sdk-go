@@ -31,7 +31,7 @@
 package dimp
 
 import (
-	. "github.com/dimchat/core-go/dimp"
+	. "github.com/dimchat/core-go/mkm"
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
