@@ -35,24 +35,6 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 )
 
-type ProcessorFactory struct {
-	IProcessorFactory
-	MessengerHelper
-
-	_creator IProcessorCreator
-
-	_contentProcessors map[uint8]IContentProcessor
-	_commandProcessors map[string]ICommandProcessor
-}
-type IProcessorFactory interface {
-
-	GetProcessor(content Content) IContentProcessor
-
-	GetContentProcessor(msgType uint8) IContentProcessor
-
-	GetCommandProcessor(msgType uint8, cmdName string) ICommandProcessor
-}
-
 type IProcessorCreator interface {
 
 	/**
@@ -71,6 +53,24 @@ type IProcessorCreator interface {
 	 * @return CommandProcessor
 	 */
 	CreateCommandProcessor(msgType uint8, cmdName string) ICommandProcessor
+}
+
+type ProcessorFactory struct {
+	IProcessorFactory
+	MessengerHelper
+
+	_creator IProcessorCreator
+
+	_contentProcessors map[uint8]IContentProcessor
+	_commandProcessors map[string]ICommandProcessor
+}
+type IProcessorFactory interface {
+
+	GetProcessor(content Content) IContentProcessor
+
+	GetContentProcessor(msgType uint8) IContentProcessor
+
+	GetCommandProcessor(msgType uint8, cmdName string) ICommandProcessor
 }
 
 func (factory *ProcessorFactory) Init(facebook IFacebook, messenger IMessenger) *ProcessorFactory {

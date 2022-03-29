@@ -53,6 +53,15 @@ type IMessengerExt interface {
 	ICipherKeyDelegate
 	IPacker
 	IProcessor
+
+	CipherKeyDelegate() CipherKeyDelegate
+	SetCipherKeyDelegate(delegate CipherKeyDelegate)
+
+	Packer() Packer
+	SetPacker(packer Packer)
+
+	Processor() Processor
+	SetProcessor(processor Processor)
 }
 
 func (messenger *Messenger) Init() *Messenger {
@@ -147,7 +156,7 @@ func (messenger *Messenger) ProcessContent(content Content, rMsg ReliableMessage
 	return messenger.Processor().ProcessContent(content, rMsg)
 }
 
-//-------- ISecureMessageDelegate
+//-------- ISecureMessageDelegate (ITransceiver)
 
 func (messenger *Messenger) DeserializeKey(key []byte, sender ID, receiver ID, sMsg SecureMessage) SymmetricKey {
 	if key == nil {

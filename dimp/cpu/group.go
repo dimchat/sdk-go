@@ -69,11 +69,6 @@ func NewGroupCommandProcessor(facebook IFacebook, messenger IMessenger) *GroupCo
 	return cpu
 }
 
-func (gpu *GroupCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
-	text := fmt.Sprintf(FmtGrpCmdNotSupport, cmd.CommandName())
-	return gpu.RespondText(text, cmd.Group())
-}
-
 func (gpu *GroupCommandProcessor) GetMembers(cmd GroupCommand) []ID {
 	// get from members
 	members := cmd.Members()
@@ -85,6 +80,13 @@ func (gpu *GroupCommandProcessor) GetMembers(cmd GroupCommand) []ID {
 		}
 	}
 	return members
+}
+
+//-------- ICommandProcessor
+
+func (gpu *GroupCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
+	text := fmt.Sprintf(FmtGrpCmdNotSupport, cmd.CommandName())
+	return gpu.RespondText(text, cmd.Group())
 }
 
 /**
@@ -100,6 +102,8 @@ func NewInviteCommandProcessor(facebook IFacebook, messenger IMessenger) *Invite
 	cpu.Init(facebook, messenger)
 	return cpu
 }
+
+//-------- ICommandProcessor
 
 func (gpu *InviteCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) []Content {
 	facebook := gpu.Facebook()
@@ -170,6 +174,8 @@ func NewExpelCommandProcessor(facebook IFacebook, messenger IMessenger) *ExpelCo
 	return cpu
 }
 
+//-------- ICommandProcessor
+
 func (gpu *ExpelCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) []Content {
 	facebook := gpu.Facebook()
 
@@ -239,6 +245,8 @@ func (gpu *QuitCommandProcessor) RemoveAssistant(cmd QuitCommand, _ ReliableMess
 	// NOTICE: group assistant should be retried by the owner
 	return gpu.RespondText(StrAssistantCannotQuit, cmd.Group())
 }
+
+//-------- ICommandProcessor
 
 func (gpu *QuitCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) []Content {
 	facebook := gpu.Facebook()
@@ -321,6 +329,8 @@ func (gpu *ResetCommandProcessor) temporarySave(cmd GroupCommand, sender ID) []C
 	return gpu.RespondContent(NewQueryCommand(group))
 }
 
+//-------- ICommandProcessor
+
 func (gpu *ResetCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) []Content {
 	facebook := gpu.Facebook()
 
@@ -400,6 +410,8 @@ func NewQueryCommandProcessor(facebook IFacebook, messenger IMessenger) *QueryCo
 	cpu.Init(facebook, messenger)
 	return cpu
 }
+
+//-------- ICommandProcessor
 
 func (gpu *QueryCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) []Content {
 	facebook := gpu.Facebook()

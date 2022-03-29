@@ -52,7 +52,7 @@ import (
  *      GetPrivateKeyForSignature(user ID) SignKey
  *      GetPrivateKeyForVisaSignature(user ID) SignKey
  *
- *      // IFacebook
+ *      // IFacebookExt
  *      SaveMeta(meta Meta, identifier ID) bool
  *      SaveDocument(doc Document) bool
  *      SaveMembers(members []ID, group ID) bool

@@ -46,6 +46,8 @@ func NewForwardContentProcessor(facebook IFacebook, messenger IMessenger) * Forw
 	return cpu
 }
 
+//-------- IContentProcessor
+
 func (cpu *ForwardContentProcessor) Process(content Content, _ ReliableMessage) []Content {
 	forward, _ := content.(ForwardContent)
 	secret := forward.ForwardMessage()

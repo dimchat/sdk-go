@@ -39,7 +39,12 @@ import (
  *  Robot User
  */
 type Robot struct {
+	IRobot
 	BaseUser
+}
+type IRobot interface {
+
+	Master() ID
 }
 
 func (user *Robot) Init(identifier ID) *Robot {
@@ -48,14 +53,30 @@ func (user *Robot) Init(identifier ID) *Robot {
 	return user
 }
 
+//-------- IRobot
+
+func (user *Robot) Master() ID {
+	doc := user.Visa()
+	if doc == nil {
+		return nil
+	}
+	return IDParse(doc.Get("master"))
+}
+
 /**
  *  DIM Server
  */
 type Station struct {
+	IStation
 	BaseUser
 
 	_host string
 	_port uint16
+}
+type IStation interface {
+
+	Host() string
+	Port() uint16
 }
 
 func (server *Station) Init(identifier ID, host string, port uint16) *Station {
@@ -65,6 +86,8 @@ func (server *Station) Init(identifier ID, host string, port uint16) *Station {
 	}
 	return server
 }
+
+//-------- IStation
 
 func (server *Station) Host() string {
 	if server._host == "" {
@@ -102,7 +125,12 @@ func (server *Station) Port() uint16 {
  *  DIM Station Owner
  */
 type ServiceProvider struct {
+	IServiceProvider
 	BaseGroup
+}
+type IServiceProvider interface {
+
+	GetStations() []ID
 }
 
 func (sp *ServiceProvider) Init(identifier ID) *ServiceProvider {
@@ -110,6 +138,8 @@ func (sp *ServiceProvider) Init(identifier ID) *ServiceProvider {
 	}
 	return sp
 }
+
+//-------- IServiceProvider
 
 func (sp *ServiceProvider) GetStations() []ID {
 	return sp.Members()
@@ -119,7 +149,12 @@ func (sp *ServiceProvider) GetStations() []ID {
  *  Simple group chat
  */
 type Polylogue struct {
+	IPolylogue
 	BaseGroup
+}
+type IPolylogue interface {
+
+	Owner() ID
 }
 
 func (group *Polylogue) Init(identifier ID) *Polylogue {
@@ -127,6 +162,8 @@ func (group *Polylogue) Init(identifier ID) *Polylogue {
 	}
 	return group
 }
+
+//-------- IPolylogue
 
 func (group *Polylogue) Owner() ID {
 	owner := group.BaseGroup.Owner()
@@ -141,7 +178,12 @@ func (group *Polylogue) Owner() ID {
  *  Big group with admins
  */
 type Chatroom struct {
+	IChatroom
 	BaseGroup
+}
+type IChatroom interface {
+
+	Admins() []ID
 }
 
 func (group *Chatroom) Init(identifier ID) *Chatroom {
@@ -149,6 +191,8 @@ func (group *Chatroom) Init(identifier ID) *Chatroom {
 	}
 	return group
 }
+
+//-------- IChatroom
 
 func (group *Chatroom) Admins() []ID {
 	delegate := group.DataSource().(ChatroomDataSource)
@@ -160,7 +204,10 @@ func (group *Chatroom) Admins() []ID {
  *  Chatroom admins should be set complying with the consensus algorithm
  */
 type ChatroomDataSource interface {
+	IChatroomDataSource
 	GroupDataSource
+}
+type IChatroomDataSource interface {
 
 	/**
 	 *  Get all admins in the chatroom

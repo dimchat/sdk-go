@@ -1,5 +1,5 @@
-github.com/dimchat/mkm-go v0.0.0-20220327094105-888f1f562b6f h1:gFC72hoPgYi38R0ATXtRFExDH4tjC6zKajI1ZPaNUjQ=
-github.com/dimchat/mkm-go v0.0.0-20220327094105-888f1f562b6f/go.mod h1:rRD77W4jdUAkfNA2fBa+co3/ADLpuTE9EXtlrldz39U=
+github.com/dimchat/mkm-go v0.0.0-20220329150955-4343044f3298 h1:BWC5H3kaHL6hHPn42W5gQEi1VTovVWzRbdkW1vTAwC0=
+github.com/dimchat/mkm-go v0.0.0-20220329150955-4343044f3298/go.mod h1:rRD77W4jdUAkfNA2fBa+co3/ADLpuTE9EXtlrldz39U=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 h1:/ZScEX8SfEmUGRHs0gxpqteO5nfNW6axyZbBdw9A12g=
 golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83/go.mod h1:jdWPYTVW3xRLrWPugEBEK3UY2ZEsg3UU495nc5E+M+I=

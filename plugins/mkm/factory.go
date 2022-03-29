@@ -56,6 +56,8 @@ func (factory *GeneralMetaFactory) Init(version uint8) *GeneralMetaFactory {
 	return factory
 }
 
+//-------- IMetaFactory
+
 func (factory *GeneralMetaFactory) CreateMeta(key VerifyKey, seed string, fingerprint []byte) Meta {
 	switch factory._type {
 	case MKM:
@@ -115,7 +117,7 @@ func (factory *GeneralMetaFactory) ParseMeta(meta map[string]interface{}) Meta {
  *  ~~~~~~~~~~~~~~~~
  */
 type GeneralDocumentFactory struct {
-	DocumentFactory
+	IDocumentFactory
 
 	_type string
 }
@@ -141,6 +143,8 @@ func (factory *GeneralDocumentFactory) getDocType(identifier ID) string {
 	}
 	return factory._type
 }
+
+//-------- IDocumentFactory
 
 func (factory *GeneralDocumentFactory) CreateDocument(identifier ID, data []byte, signature []byte) Document {
 	docType := factory.getDocType(identifier)

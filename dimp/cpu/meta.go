@@ -81,6 +81,8 @@ func (cpu *MetaCommandProcessor) putMeta(identifier ID, meta Meta) []Content {
 	}
 }
 
+//-------- ICommandProcessor
+
 func (cpu *MetaCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
 	mCmd, _ := cmd.(MetaCommand)
 	identifier := mCmd.ID()

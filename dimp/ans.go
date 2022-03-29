@@ -106,7 +106,6 @@ type IAddressNameService interface {
  *  ANS
  */
 type AddressNameService struct {
-	BaseObject
 	IAddressNameService
 
 	_reserved map[string]bool
@@ -140,6 +139,8 @@ func (ans *AddressNameService) setID(name string, identifier ID) {
 		ans._caches[name] = identifier
 	}
 }
+
+//-------- IAddressNameService
 
 func (ans *AddressNameService) IsReserved(name string) bool {
 	return ans._reserved[name]

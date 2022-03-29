@@ -27,6 +27,7 @@ package plugins
 
 import (
 	. "github.com/dimchat/mkm-go/digest"
+	. "github.com/dimchat/mkm-go/mkm"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/sdk-go/plugins/crypto"
 	. "github.com/dimchat/sdk-go/plugins/digest"

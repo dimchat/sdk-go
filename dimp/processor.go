@@ -54,7 +54,7 @@ func (processor *MessageProcessor) Factory() IProcessorFactory {
 	return processor._factory
 }
 
-//-------- IProcessorFactory
+//-------- Processor Factory
 
 func (processor *MessageProcessor) GetProcessor(content Content) IContentProcessor {
 	return processor.Factory().GetProcessor(content)

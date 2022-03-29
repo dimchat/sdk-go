@@ -96,6 +96,8 @@ func (cpu *DocumentCommandProcessor) putDocument(identifier ID, meta Meta, doc D
 	}
 }
 
+//-------- ICommandProcessor
+
 func (cpu *DocumentCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
 	mCmd, _ := cmd.(DocumentCommand)
 	identifier := mCmd.ID()

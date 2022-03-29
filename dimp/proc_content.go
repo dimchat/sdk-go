@@ -67,6 +67,8 @@ type IContentProcessor interface {
 //	return cpu
 //}
 
+//-------- IContentProcessor
+
 func (cpu *ContentProcessor) Process(content Content, _ ReliableMessage) []Content {
 	text := fmt.Sprintf(FmtContentNotSupport, content.Type())
 	return cpu.RespondText(text, content.Group())

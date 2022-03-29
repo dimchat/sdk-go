@@ -69,10 +69,14 @@ func NewCommandProcessor(facebook IFacebook, messenger IMessenger) * CommandProc
 	return cpu
 }
 
+//-------- IContentProcessor
+
 func (cpu *CommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
 	cmd, _ := content.(Command)
 	return cpu.Execute(cmd, rMsg)
 }
+
+//-------- ICommandProcessorExt
 
 func (cpu *CommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
 	text := fmt.Sprintf(FmtCmdNotSupport, cmd.CommandName())

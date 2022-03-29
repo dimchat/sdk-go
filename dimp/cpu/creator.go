@@ -47,6 +47,8 @@ type ProcessorCreator struct {
 	MessengerHelper
 }
 
+//-------- IProcessorCreator
+
 func (factory *ProcessorCreator) CreateContentProcessor(msgType uint8) IContentProcessor {
 	// core contents
 	if msgType == FORWARD {

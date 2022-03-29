@@ -69,6 +69,8 @@ func (meta *DefaultMeta) InitWithType(version uint8, key VerifyKey, seed string,
 	return meta
 }
 
+//-------- IMeta
+
 func (meta *DefaultMeta) GenerateAddress(network uint8) Address {
 	// check caches
 	address := meta._addresses[network]
@@ -113,6 +115,8 @@ func (meta *BTCMeta) InitWithType(version uint8, key VerifyKey, seed string, fin
 	}
 	return meta
 }
+
+//-------- IMeta
 
 func (meta *BTCMeta) GenerateAddress(network uint8) Address {
 	if network != BTCMain {
@@ -161,6 +165,8 @@ func (meta *ETHMeta) InitWithType(version uint8, key VerifyKey, seed string, fin
 	}
 	return meta
 }
+
+//-------- IMeta
 
 func (meta *ETHMeta) GenerateAddress(network uint8) Address {
 	if network != MAIN {
