@@ -37,11 +37,15 @@ import (
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
+type ICipherKeyDelegate interface {CipherKeyDelegate}
+type IPacker interface {Packer}
+type IProcessor interface {Processor}
+
 type IMessenger interface {
 	ITransceiver
-	CipherKeyDelegate
-	Packer
-	Processor
+	ICipherKeyDelegate
+	IPacker
+	IProcessor
 
 	CipherKeyDelegate() CipherKeyDelegate
 	SetCipherKeyDelegate(delegate CipherKeyDelegate)

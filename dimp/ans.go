@@ -70,7 +70,7 @@ var KEYWORDS = [...]string {
 	"root", "supervisor",
 }
 
-type IAddressNameService interface {
+type AddressNameService interface {
 
 	IsReserved(name string) bool
 
@@ -105,16 +105,13 @@ type IAddressNameService interface {
 /**
  *  ANS
  */
-type AddressNameService struct {
-	IAddressNameService
+type AddressNameServer struct {
 
 	_reserved map[string]bool
 	_caches map[string]ID
-
-	_service IAddressNameService
 }
 
-func (ans *AddressNameService) Init() *AddressNameService {
+func (ans *AddressNameServer) Init() *AddressNameServer {
 	// reserved names
 	ans._reserved = make(map[string]bool, len(KEYWORDS))
 	for _, item := range KEYWORDS {
@@ -132,7 +129,7 @@ func (ans *AddressNameService) Init() *AddressNameService {
 	return ans
 }
 
-func (ans *AddressNameService) setID(name string, identifier ID) {
+func (ans *AddressNameServer) setID(name string, identifier ID) {
 	if ValueIsNil(identifier) {
 		delete(ans._caches, name)
 	} else {
@@ -142,11 +139,11 @@ func (ans *AddressNameService) setID(name string, identifier ID) {
 
 //-------- IAddressNameService
 
-func (ans *AddressNameService) IsReserved(name string) bool {
+func (ans *AddressNameServer) IsReserved(name string) bool {
 	return ans._reserved[name]
 }
 
-func (ans *AddressNameService) Cache(name string, identifier ID) bool {
+func (ans *AddressNameServer) Cache(name string, identifier ID) bool {
 	if ans.IsReserved(name) {
 		// this name is reserved, cannot register
 		return false
@@ -155,11 +152,11 @@ func (ans *AddressNameService) Cache(name string, identifier ID) bool {
 	return true
 }
 
-func (ans *AddressNameService) GetID(name string) ID {
+func (ans *AddressNameServer) GetID(name string) ID {
 	return ans._caches[name]
 }
 
-func (ans *AddressNameService) GetNames(identifier ID) []string {
+func (ans *AddressNameServer) GetNames(identifier ID) []string {
 	array := make([]string, 0, 1)
 	for key, value := range ans._caches {
 		if identifier.Equal(value) {
@@ -169,7 +166,7 @@ func (ans *AddressNameService) GetNames(identifier ID) []string {
 	return array
 }
 
-func (ans *AddressNameService) Save(name string, identifier ID) bool {
+func (ans *AddressNameServer) Save(name string, identifier ID) bool {
 	// override to save this record into local storage
 	return ans.Cache(name, identifier)
 }

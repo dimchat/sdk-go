@@ -62,7 +62,7 @@ func (factory *GeneralSymmetricKeyFactory) ParseSymmetricKey(key map[string]inte
 	return factory._parser(key)
 }
 
-func BuildSymmetricKeyFactories() {
+func RegisterSymmetricKeyFactories() {
 	// AES
 	SymmetricKeySetFactory(AES, NewSymmetricKeyFactory(func() SymmetricKey {
 		dict := make(map[string]interface{})
@@ -134,7 +134,7 @@ func (factory *GeneralPublicKeyFactory) ParsePublicKey(key map[string]interface{
 	return factory._parser(key)
 }
 
-func BuildPublicKeyFactories() {
+func RegisterPublicKeyFactories() {
 	// RSA
 	PublicKeySetFactory(RSA, NewPublicKeyFactory(func(dict map[string]interface{}) PublicKey {
 		return NewRSAPublicKey(dict)
@@ -145,7 +145,7 @@ func BuildPublicKeyFactories() {
 	}))
 }
 
-func BuildPrivateKeyFactories() {
+func RegisterPrivateKeyFactories() {
 	// RSA
 	PrivateKeySetFactory(RSA, NewPrivateKeyFactory(func() PrivateKey {
 		dict := make(map[string]interface{})

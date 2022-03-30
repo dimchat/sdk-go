@@ -45,7 +45,7 @@ func RegisterDataDigesters()  {
 /**
  *  Address factory
  */
-func BuildAddressFactory() AddressFactory {
+func RegisterAddressFactory() AddressFactory {
 	factory := AddressGetFactory()
 	if factory == nil {
 		factory = new(GeneralAddressFactory).Init(func(address string) Address {
@@ -63,7 +63,7 @@ func BuildAddressFactory() AddressFactory {
 /**
  *  Meta factories
  */
-func BuildMetaFactories() {
+func RegisterMetaFactories() {
 	MetaSetFactory(MKM, NewGeneralMetaFactory(MKM))
 	MetaSetFactory(BTC, NewGeneralMetaFactory(BTC))
 	MetaSetFactory(ExBTC, NewGeneralMetaFactory(ExBTC))
@@ -74,7 +74,7 @@ func BuildMetaFactories() {
 /**
  *  Document factories
  */
-func BuildDocumentFactories() {
+func RegisterDocumentFactories() {
 	DocumentSetFactory("*", NewGeneralDocumentFactory("*"))
 	DocumentSetFactory(VISA, NewGeneralDocumentFactory(VISA))
 	DocumentSetFactory(PROFILE, NewGeneralDocumentFactory(PROFILE))
@@ -84,12 +84,12 @@ func BuildDocumentFactories() {
 func init() {
 	RegisterDataDigesters()
 
-	BuildSymmetricKeyFactories()
-	BuildPrivateKeyFactories()
-	BuildPublicKeyFactories()
+	RegisterSymmetricKeyFactories()
+	RegisterPrivateKeyFactories()
+	RegisterPublicKeyFactories()
 
-	BuildAddressFactory()
+	RegisterAddressFactory()
 
-	BuildMetaFactories()
-	BuildDocumentFactories()
+	RegisterMetaFactories()
+	RegisterDocumentFactories()
 }

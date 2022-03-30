@@ -96,7 +96,7 @@ func BlockCommandRespond(list []ID) BlockCommand {
 /**
  *  Register command factories
  */
-func BuildExtraCommandFactories() {
+func RegisterExtraCommandFactories() {
 	CommandSetFactory(RECEIPT, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
 		return new(BaseReceiptCommand).Init(dict)
 	}))
@@ -130,11 +130,11 @@ func init() {
 	//
 	//  Register core factories
 	//
-	BuildContentFactories()
-	BuildCommandFactories()
+	RegisterContentFactories()
+	RegisterCommandFactories()
 
 	//
 	//  Register extra command factories
 	//
-	BuildExtraCommandFactories()
+	RegisterExtraCommandFactories()
 }

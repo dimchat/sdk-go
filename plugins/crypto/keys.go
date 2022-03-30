@@ -54,9 +54,9 @@ type BaseSymmetricKey struct {
 
 //-------- IEncryptKey
 
-func (key *BaseSymmetricKey) Encrypt(plaintext []byte) []byte {
-	panic("not implemented")
-}
+//func (key *BaseSymmetricKey) Encrypt(plaintext []byte) []byte {
+//	panic("not implemented")
+//}
 
 //-------- IDecryptKey
 
@@ -96,12 +96,12 @@ type BasePrivateKey struct {
 
 //-------- IPrivateKey
 
-func (key *BasePrivateKey) PublicKey() PublicKey {
-	panic("not implemented")
-}
+//func (key *BasePrivateKey) PublicKey() PublicKey {
+//	panic("not implemented")
+//}
 
 //-------- ISignKey
 
-func (key *BasePrivateKey) Sign(data []byte) []byte {
-	panic("not implemented")
-}
+//func (key *BasePrivateKey) Sign(data []byte) []byte {
+//	panic("not implemented")
+//}

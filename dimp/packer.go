@@ -163,6 +163,10 @@ func (packer *MessagePacker) SerializeMessage(rMsg ReliableMessage) []byte {
 	return JSONEncodeMap(dict)
 }
 
+//
+//  Data -> ReliableMessage -> SecureMessage -> InstantMessage
+//
+
 func (packer *MessagePacker) DeserializeMessage(data []byte) ReliableMessage {
 	dict := JSONDecodeMap(data)
 	// TODO: translate short keys
