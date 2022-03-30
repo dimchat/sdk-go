@@ -28,9 +28,10 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package protocol
+package dkd
 
 import (
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
 )
@@ -57,35 +58,85 @@ import (
  *      }
  *  }
  */
-type LoginCommand interface {
-	Command
+type BaseLoginCommand struct {
+	BaseCommand
+}
 
-	/**
-	 *  User ID
-	 */
-	ID() ID
+func (cmd *BaseLoginCommand) Init(dict map[string]interface{}) *BaseLoginCommand {
+	if cmd.BaseCommand.Init(dict) != nil {
+	}
+	return cmd
+}
 
-	/**
-	 *  Device ID
-	 */
-	Device() string
-	SetDevice(device string)
+func (cmd *BaseLoginCommand) InitWithID(identifier ID) *BaseLoginCommand {
+	if cmd.BaseCommand.InitWithCommand(LOGIN) != nil {
+		cmd.Set("ID", identifier.String())
+	}
+	return cmd
+}
 
-	/**
-	 *  User Agent
-	 */
-	Agent() string
-	SetAgent(agent string)
+//-------- ILoginCommand
 
-	/**
-	 *  DIM Network Station
-	 */
-	StationInfo() map[string]interface{}
-	SetStationInfo(station map[string]interface{})
+func (cmd *BaseLoginCommand) ID() ID {
+	return IDParse(cmd.Get("ID"))
+}
 
-	/**
-	 *  DIM Network Service Provider
-	 */
-	ProviderInfo() map[string]interface{}
-	SetProviderInfo(sp map[string]interface{})
+func (cmd *BaseLoginCommand) Device() string {
+	text, ok := cmd.Get("device").(string)
+	if ok {
+		return text
+	} else {
+		return ""
+	}
+}
+func (cmd *BaseLoginCommand) SetDevice(device string) {
+	if device == "" {
+		cmd.Remove("device")
+	} else {
+		cmd.Set("device", device)
+	}
+}
+
+func (cmd *BaseLoginCommand) Agent() string {
+	text, ok := cmd.Get("agent").(string)
+	if ok {
+		return text
+	} else {
+		return ""
+	}
+}
+func (cmd *BaseLoginCommand) SetAgent(agent string) {
+	if agent == "" {
+		cmd.Remove("agent")
+	} else {
+		cmd.Set("agent", agent)
+	}
+}
+
+//
+//  Server Info
+//
+
+func (cmd *BaseLoginCommand) StationInfo() map[string]interface{} {
+	info, ok := cmd.Get("station").(map[string]interface{})
+	if ok {
+		return info
+	} else {
+		return nil
+	}
+}
+func (cmd *BaseLoginCommand) SetStationInfo(station map[string]interface{}) {
+	cmd.Set("station", station)
+}
+
+func (cmd *BaseLoginCommand) ProviderInfo() map[string]interface{} {
+	info, ok := cmd.Get("provider").(map[string]interface{})
+	if ok {
+		return info
+	} else {
+		return nil
+	}
+}
+func (cmd *BaseLoginCommand) SetProviderInfo(sp map[string]interface{}) {
+	cmd.Set("provider", sp)
 }

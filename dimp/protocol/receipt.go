@@ -31,11 +31,8 @@
 package protocol
 
 import (
-	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/format"
-	. "github.com/dimchat/mkm-go/types"
 )
 
 /**
@@ -54,9 +51,6 @@ import (
  */
 type ReceiptCommand interface {
 	Command
-	IReceiptCommand
-}
-type IReceiptCommand interface {
 
 	Message() string
 
@@ -65,116 +59,4 @@ type IReceiptCommand interface {
 
 	Signature() []byte
 	SetSignature(signature []byte)
-}
-
-//
-//  Receipt command implementation
-//
-type BaseReceiptCommand struct {
-	BaseCommand
-	IReceiptCommand
-
-	// original message info
-	_envelope Envelope
-}
-
-func NewReceiptCommand(text string, env Envelope, sn uint32, signature []byte) ReceiptCommand {
-	cmd := new(BaseReceiptCommand)
-	if ValueIsNil(env) {
-		cmd.InitWithMessage(text)
-	} else {
-		cmd.InitWithEnvelope(env, sn, text)
-	}
-	if !ValueIsNil(signature) {
-		cmd.SetSignature(signature)
-	}
-	return cmd
-}
-
-func (cmd *BaseReceiptCommand) Init(dict map[string]interface{}) *BaseReceiptCommand {
-	if cmd.BaseCommand.Init(dict) != nil {
-		// lazy load
-		cmd._envelope = nil
-	}
-	return cmd
-}
-
-func (cmd *BaseReceiptCommand) InitWithMessage(text string) *BaseReceiptCommand {
-	if cmd.BaseCommand.InitWithCommand(RECEIPT) != nil {
-		cmd.Set("message", text)
-		cmd._envelope = nil
-	}
-	return cmd
-}
-
-func (cmd *BaseReceiptCommand) InitWithEnvelope(env Envelope, sn uint32, text string) *BaseReceiptCommand {
-	if cmd.BaseCommand.InitWithCommand(RECEIPT) != nil {
-		// envelope of the message responding to
-		cmd.SetEnvelope(env)
-		// SerialNumber of the message responding to
-		if sn > 0 {
-			cmd.Set("sn", sn)
-		}
-		if text != "" {
-			cmd.Set("message", text)
-		}
-	}
-	return cmd
-}
-
-//-------- IReceiptCommand
-
-func (cmd *BaseReceiptCommand) Message() string {
-	text, ok := cmd.Get("message").(string)
-	if ok {
-		return text
-	} else {
-		return ""
-	}
-}
-
-func (cmd *BaseReceiptCommand) Envelope() Envelope {
-	if cmd._envelope == nil {
-		env := cmd.Get("envelope")
-		if env == nil {
-			sender := cmd.Get("sender")
-			receiver := cmd.Get("receiver")
-			if sender != nil && receiver != nil {
-				env = cmd.GetMap(false)
-			}
-		}
-		cmd._envelope = EnvelopeParse(env)
-	}
-	return cmd._envelope
-}
-func (cmd *BaseReceiptCommand) SetEnvelope(env Envelope) {
-	if ValueIsNil(env) {
-		cmd.Remove("sender")
-		cmd.Remove("receiver")
-		//cmd.Remove("time")
-	} else {
-		cmd.Set("sender", env.Sender().String())
-		cmd.Set("receiver", env.Receiver().String())
-		when := env.Time()
-		if when.IsZero() == false {
-			cmd.Set("time", when.Unix())
-		}
-	}
-	cmd._envelope = env
-}
-
-func (cmd *BaseReceiptCommand) Signature() []byte {
-	base64, ok := cmd.Get("signature").(string)
-	if ok {
-		return Base64Decode(base64)
-	} else {
-		return nil
-	}
-}
-func (cmd *BaseReceiptCommand) SetSignature(signature []byte) {
-	if ValueIsNil(signature) {
-		cmd.Remove("signature")
-	} else {
-		cmd.Set("signature", Base64Encode(signature))
-	}
 }

@@ -28,55 +28,63 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package protocol
+package dkd
 
 import (
-	. "github.com/dimchat/core-go/core"
-	. "github.com/dimchat/core-go/protocol"
+	. "github.com/dimchat/core-go/dkd"
+	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
+	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 
 /**
- *  Register command factories
+ *  Command message: {
+ *      type : 0x88,
+ *      sn   : 123,
+ *
+ *      command : "block",
+ *      list    : []      // block-list
+ *  }
  */
-func BuildExtraCommandFactories() {
-	CommandSetFactory(RECEIPT, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseReceiptCommand).Init(dict)
-	}))
-	CommandSetFactory(HANDSHAKE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseHandshakeCommand).Init(dict)
-	}))
-	CommandSetFactory(LOGIN, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseLoginCommand).Init(dict)
-	}))
+type BaseBlockCommand struct {
+	BaseCommand
 
-	CommandSetFactory(MUTE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(MuteCommand).Init(dict)
-	}))
-	CommandSetFactory(BLOCK, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BlockCommand).Init(dict)
-	}))
-
-	// storage (contacts, private_key)
-	CommandSetFactory(STORAGE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseStorageCommand).Init(dict)
-	}))
-	CommandSetFactory(CONTACTS, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseStorageCommand).Init(dict)
-	}))
-	CommandSetFactory(PRIVATE_KEY, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseStorageCommand).Init(dict)
-	}))
+	// block-list
+	_list []ID
 }
 
-func init() {
-	//
-	//  Register core factories
-	//
-	BuildContentFactories()
-	BuildCommandFactories()
+func (cmd *BaseBlockCommand) Init(dict map[string]interface{}) *BaseBlockCommand {
+	if cmd.BaseCommand.Init(dict) != nil {
+		// lazy load
+		cmd._list = nil
+	}
+	return cmd
+}
 
-	//
-	//  Register extra command factories
-	//
-	BuildExtraCommandFactories()
+func (cmd *BaseBlockCommand) InitWithList(list []ID) *BaseBlockCommand {
+	if cmd.BaseCommand.InitWithCommand(BLOCK) != nil {
+		if !ValueIsNil(list) {
+			cmd.SetBlockList(list)
+		}
+	}
+	return cmd
+}
+
+func (cmd *BaseBlockCommand) BlockList() []ID {
+	if cmd._list == nil {
+		list := cmd.Get("list")
+		if list != nil {
+			cmd._list = IDConvert(list)
+		}
+	}
+	return cmd._list
+}
+
+func (cmd *BaseBlockCommand) SetBlockList(list []ID) {
+	if ValueIsNil(list) {
+		cmd.Remove("list")
+	} else {
+		cmd.Set("list", IDRevert(list))
+	}
+	cmd._list = list
 }

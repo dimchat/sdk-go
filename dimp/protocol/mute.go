@@ -31,9 +31,8 @@
 package protocol
 
 import (
-	. "github.com/dimchat/core-go/dkd"
+	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
 )
 
 const MUTE = "mute"
@@ -47,56 +46,10 @@ const MUTE = "mute"
  *      list    : []      // mute-list
  *  }
  */
-type MuteCommand struct {
-	BaseCommand
+type MuteCommand interface {
+	Command
 
 	// mute-list
-	_list []ID
-}
-
-func (cmd *MuteCommand) Init(dict map[string]interface{}) *MuteCommand {
-	if cmd.BaseCommand.Init(dict) != nil {
-		// lazy load
-		cmd._list = nil
-	}
-	return cmd
-}
-
-func (cmd *MuteCommand) InitWithList(list []ID) *MuteCommand {
-	if cmd.BaseCommand.InitWithCommand(MUTE) != nil {
-		if !ValueIsNil(list) {
-			cmd.SetList(list)
-		}
-	}
-	return cmd
-}
-
-func (cmd *MuteCommand) List() []ID {
-	if cmd._list == nil {
-		list := cmd.Get("list")
-		if list != nil {
-			cmd._list = IDConvert(list)
-		}
-	}
-	return cmd._list
-}
-
-func (cmd *MuteCommand) SetList(list []ID) {
-	if ValueIsNil(list) {
-		cmd.Remove("list")
-	} else {
-		cmd.Set("list", IDRevert(list))
-	}
-	cmd._list = list
-}
-
-//
-//  Factories
-//
-func MuteCommandQuery() *MuteCommand {
-	return new(MuteCommand).InitWithList(nil)
-}
-
-func MuteCommandRespond(list []ID) *MuteCommand {
-	return new(MuteCommand).InitWithList(list)
+	MuteList() []ID
+	SetMuteList(list []ID)
 }
