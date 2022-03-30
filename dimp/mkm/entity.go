@@ -56,8 +56,6 @@ type Provider interface {
 
 type Polylogue interface {
 	Group
-
-	Owner() ID
 }
 
 type Chatroom interface {

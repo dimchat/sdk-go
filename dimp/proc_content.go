@@ -36,7 +36,6 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp/dkd"
-	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 
 var (
