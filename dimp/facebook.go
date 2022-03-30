@@ -34,6 +34,7 @@ import (
 	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/core-go/mkm"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/mkm"
 	"reflect"
 )
 
@@ -304,7 +305,7 @@ func (facebook *Facebook) CreateGroup(identifier ID) Group {
 	} else if network == CHATROOM {
 		return NewChatroom(identifier)
 	} else if network == PROVIDER {
-		return NewServiceProvider(identifier)
+		return NewProvider(identifier)
 	} else {
 		return nil
 	}

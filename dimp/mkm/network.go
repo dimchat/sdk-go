@@ -28,7 +28,7 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package mkm
 
 import (
 	. "github.com/dimchat/core-go/mkm"
@@ -37,17 +37,13 @@ import (
 
 /**
  *  Robot User
+ *  ~~~~~~~~~~
  */
-type Robot struct {
-	IRobot
+type BaseRobot struct {
 	BaseUser
 }
-type IRobot interface {
 
-	Master() ID
-}
-
-func (user *Robot) Init(identifier ID) *Robot {
+func (user *BaseRobot) Init(identifier ID) *BaseRobot {
 	if user.BaseUser.Init(identifier) != nil {
 	}
 	return user
@@ -55,7 +51,7 @@ func (user *Robot) Init(identifier ID) *Robot {
 
 //-------- IRobot
 
-func (user *Robot) Master() ID {
+func (user *BaseRobot) Master() ID {
 	doc := user.Visa()
 	if doc == nil {
 		return nil
@@ -65,21 +61,16 @@ func (user *Robot) Master() ID {
 
 /**
  *  DIM Server
+ *  ~~~~~~~~~~
  */
-type Station struct {
-	IStation
+type BaseStation struct {
 	BaseUser
 
 	_host string
 	_port uint16
 }
-type IStation interface {
 
-	Host() string
-	Port() uint16
-}
-
-func (server *Station) Init(identifier ID, host string, port uint16) *Station {
+func (server *BaseStation) Init(identifier ID, host string, port uint16) *BaseStation {
 	if server.BaseUser.Init(identifier) != nil {
 		server._host = host
 		server._port = port
@@ -89,7 +80,7 @@ func (server *Station) Init(identifier ID, host string, port uint16) *Station {
 
 //-------- IStation
 
-func (server *Station) Host() string {
+func (server *BaseStation) Host() string {
 	if server._host == "" {
 		doc := server.GetDocument("*")
 		if doc != nil {
@@ -105,7 +96,7 @@ func (server *Station) Host() string {
 	return server._host
 }
 
-func (server *Station) Port() uint16 {
+func (server *BaseStation) Port() uint16 {
 	if server._port == 0 {
 		doc := server.GetDocument("*")
 		if doc != nil {
@@ -123,14 +114,10 @@ func (server *Station) Port() uint16 {
 
 /**
  *  DIM Station Owner
+ *  ~~~~~~~~~~~~~~~~~
  */
 type ServiceProvider struct {
-	IServiceProvider
 	BaseGroup
-}
-type IServiceProvider interface {
-
-	GetStations() []ID
 }
 
 func (sp *ServiceProvider) Init(identifier ID) *ServiceProvider {
@@ -143,108 +130,4 @@ func (sp *ServiceProvider) Init(identifier ID) *ServiceProvider {
 
 func (sp *ServiceProvider) GetStations() []ID {
 	return sp.Members()
-}
-
-/**
- *  Simple group chat
- */
-type Polylogue struct {
-	IPolylogue
-	BaseGroup
-}
-type IPolylogue interface {
-
-	Owner() ID
-}
-
-func (group *Polylogue) Init(identifier ID) *Polylogue {
-	if group.BaseGroup.Init(identifier) != nil {
-	}
-	return group
-}
-
-//-------- IPolylogue
-
-func (group *Polylogue) Owner() ID {
-	owner := group.BaseGroup.Owner()
-	if owner == nil {
-		// polylogue owner is its founder
-		owner = group.Founder()
-	}
-	return owner
-}
-
-/**
- *  Big group with admins
- */
-type Chatroom struct {
-	IChatroom
-	BaseGroup
-}
-type IChatroom interface {
-
-	Admins() []ID
-}
-
-func (group *Chatroom) Init(identifier ID) *Chatroom {
-	if group.BaseGroup.Init(identifier) != nil {
-	}
-	return group
-}
-
-//-------- IChatroom
-
-func (group *Chatroom) Admins() []ID {
-	delegate := group.DataSource().(ChatroomDataSource)
-	return delegate.GetAdmins(group.ID())
-}
-
-/**
- *  This interface is for getting information for chatroom
- *  Chatroom admins should be set complying with the consensus algorithm
- */
-type ChatroomDataSource interface {
-	IChatroomDataSource
-	GroupDataSource
-}
-type IChatroomDataSource interface {
-
-	/**
-	 *  Get all admins in the chatroom
-	 *
-	 * @param chatroom - chatroom ID
-	 * @return admin ID list
-	 */
-	GetAdmins(group ID) []ID
-}
-
-//
-//  Creators
-//
-func NewUser(identifier ID) *BaseUser {
-	return new(BaseUser).Init(identifier)
-}
-
-func NewGroup(identifier ID) *BaseGroup {
-	return new(BaseGroup).Init(identifier)
-}
-
-func NewRobot(identifier ID) *Robot {
-	return new(Robot).Init(identifier)
-}
-
-func NewStation(identifier ID, host string, port uint16) *Station {
-	return new(Station).Init(identifier, host, port)
-}
-
-func NewServiceProvider(identifier ID) *ServiceProvider {
-	return new(ServiceProvider).Init(identifier)
-}
-
-func NewPolylogue(identifier ID) *Polylogue {
-	return new(Polylogue).Init(identifier)
-}
-
-func NewChatroom(identifier ID) *Chatroom {
-	return new(Chatroom).Init(identifier)
 }
