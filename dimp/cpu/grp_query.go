@@ -31,44 +31,58 @@
 package cpu
 
 import (
-	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/core-go/dkd"
+	. "github.com/dimchat/core-go/protocol"
+	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp"
 )
 
-//
-//  Utils for Group command Processing Units
-//
+var (
+	StrQueryNotAllowed = "Sorry, you are not allowed to query this group."
+)
 
-func find(id ID, list []ID) int {
-	for index, item := range list {
-		if id.Equal(item) {
-			return index
+/**
+ *  Group command: "query"
+ *  ~~~~~~~~~~~~~~~~~~~~~~
+ */
+type QueryCommandProcessor struct {
+	GroupCommandProcessor
+}
+
+func NewQueryCommandProcessor(facebook IFacebook, messenger IMessenger) *QueryCommandProcessor {
+	cpu := new(QueryCommandProcessor)
+	cpu.Init(facebook, messenger)
+	return cpu
+}
+
+//-------- ICommandProcessor
+
+func (gpu *QueryCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) []Content {
+	facebook := gpu.Facebook()
+
+	// 0. check group
+	group := cmd.Group()
+	owner := facebook.GetOwner(group)
+	members := facebook.GetMembers(group)
+	if owner == nil || members == nil || len(members) == 0 {
+		return gpu.RespondText(StrGroupEmpty, group)
+	}
+
+	// 1. check permission
+	sender := rMsg.Sender()
+	if !contains(members, sender) {
+		// not a member? check assistants
+		assistants := facebook.GetAssistants(group)
+		if assistants == nil || !contains(assistants, sender) {
+			return gpu.RespondText(StrQueryNotAllowed, group)
 		}
 	}
-	return -1
-}
 
-func contains(id ID, list []ID) bool {
-	return find(id, list) != -1
-}
-
-func remove(list []ID, item ID) []ID {
-	pos := find(item, list)
-	if pos < 0 {
-		return list
-	} else if pos == 0 {
-		return list[1:]
+	// 2. respond
+	user := facebook.GetCurrentUser()
+	if user.ID().Equal(owner) {
+		return gpu.RespondContent(NewResetCommand(group, members))
+	} else {
+		return gpu.RespondContent(NewInviteCommand(group, members))
 	}
-	length := len(list) - 1
-	if pos == length {
-		return list[:length]
-	}
-	out := make([]ID, length)
-	index := 0
-	for ; index < pos; index++ {
-		out[index] = list[index]
-	}
-	for ; index < length; index++ {
-		out[index] = list[index+1]
-	}
-	return out
 }

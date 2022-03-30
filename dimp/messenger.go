@@ -37,22 +37,11 @@ import (
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
-type Messenger struct {
-	Transceiver
-	IMessengerExt
-
-	_keyCache CipherKeyDelegate
-	_packer Packer
-	_processor Processor
-}
 type IMessenger interface {
 	ITransceiver
-	IMessengerExt
-}
-type IMessengerExt interface {
-	ICipherKeyDelegate
-	IPacker
-	IProcessor
+	CipherKeyDelegate
+	Packer
+	Processor
 
 	CipherKeyDelegate() CipherKeyDelegate
 	SetCipherKeyDelegate(delegate CipherKeyDelegate)
@@ -62,6 +51,14 @@ type IMessengerExt interface {
 
 	Processor() Processor
 	SetProcessor(processor Processor)
+}
+
+type Messenger struct {
+	Transceiver
+
+	_keyCache CipherKeyDelegate
+	_packer Packer
+	_processor Processor
 }
 
 func (messenger *Messenger) Init() *Messenger {

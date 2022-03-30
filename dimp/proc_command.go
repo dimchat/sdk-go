@@ -43,15 +43,8 @@ var (
 /**
  *  CPU: Command Processing Unit
  */
-type CommandProcessor struct {
-	ICommandProcessor
+type CommandProcessor interface {
 	ContentProcessor
-}
-type ICommandProcessor interface {
-	IContentProcessor
-	ICommandProcessorExt
-}
-type ICommandProcessorExt interface {
 
 	/**
 	 *  Execute command
@@ -63,22 +56,26 @@ type ICommandProcessorExt interface {
 	Execute(cmd Command, rMsg ReliableMessage) []Content
 }
 
-func NewCommandProcessor(facebook IFacebook, messenger IMessenger) * CommandProcessor {
-	cpu := new(CommandProcessor)
+type BaseCommandProcessor struct {
+	BaseContentProcessor
+}
+
+func NewCommandProcessor(facebook IFacebook, messenger IMessenger) CommandProcessor {
+	cpu := new(BaseCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
 
 //-------- IContentProcessor
 
-func (cpu *CommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
+func (cpu *BaseCommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
 	cmd, _ := content.(Command)
 	return cpu.Execute(cmd, rMsg)
 }
 
 //-------- ICommandProcessorExt
 
-func (cpu *CommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
+func (cpu *BaseCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
 	text := fmt.Sprintf(FmtCmdNotSupport, cmd.CommandName())
 	return cpu.RespondText(text, cmd.Group())
 }

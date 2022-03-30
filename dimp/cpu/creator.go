@@ -42,14 +42,13 @@ import (
  *
  *  Delegate for CPU factory
  */
-type ProcessorCreator struct {
-	IProcessorCreator
-	MessengerHelper
+type BaseProcessorCreator struct {
+	TwinsHelper
 }
 
 //-------- IProcessorCreator
 
-func (factory *ProcessorCreator) CreateContentProcessor(msgType uint8) IContentProcessor {
+func (factory *BaseProcessorCreator) CreateContentProcessor(msgType uint8) ContentProcessor {
 	// core contents
 	if msgType == FORWARD {
 		return NewForwardContentProcessor(factory.Facebook(), factory.Messenger())
@@ -58,7 +57,7 @@ func (factory *ProcessorCreator) CreateContentProcessor(msgType uint8) IContentP
 	return nil
 }
 
-func (factory *ProcessorCreator) CreateCommandProcessor(msgType uint8, cmdName string) ICommandProcessor {
+func (factory *BaseProcessorCreator) CreateCommandProcessor(msgType uint8, cmdName string) CommandProcessor {
 	// meta
 	if cmdName == META {
 		return NewMetaCommandProcessor(factory.Facebook(), factory.Messenger())

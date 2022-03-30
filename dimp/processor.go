@@ -31,38 +31,39 @@
 package dimp
 
 import (
-	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/dkd-go/protocol"
 	"time"
 )
 
 type MessageProcessor struct {
-	MessengerHelper
-	IProcessor
+	TwinsHelper
 
-	_factory IProcessorFactory
+	_factory ProcessorFactory
 }
 
-func (processor *MessageProcessor) Init(facebook IFacebook, messenger IMessenger, factory IProcessorFactory) *MessageProcessor {
-	if processor.MessengerHelper.Init(facebook, messenger) != nil {
-		processor._factory = factory
+func (processor *MessageProcessor) Init(facebook IFacebook, messenger IMessenger) *MessageProcessor {
+	if processor.TwinsHelper.Init(facebook, messenger) != nil {
+		processor._factory = nil
 	}
 	return processor
 }
 
-func (processor *MessageProcessor) Factory() IProcessorFactory {
+//-------- CPU Factory
+
+func (processor *MessageProcessor) Factory() ProcessorFactory {
 	return processor._factory
 }
+func (processor *MessageProcessor) SetFactory(factory ProcessorFactory) {
+	processor._factory = factory
+}
 
-//-------- Processor Factory
-
-func (processor *MessageProcessor) GetProcessor(content Content) IContentProcessor {
+func (processor *MessageProcessor) GetProcessor(content Content) ContentProcessor {
 	return processor.Factory().GetProcessor(content)
 }
-func (processor *MessageProcessor) GetContentProcessor(msgType uint8) IContentProcessor {
+func (processor *MessageProcessor) GetContentProcessor(msgType uint8) ContentProcessor {
 	return processor.Factory().GetContentProcessor(msgType)
 }
-func (processor *MessageProcessor) GetCommandProcessor(msgType uint8, cmdName string) ICommandProcessor {
+func (processor *MessageProcessor) GetCommandProcessor(msgType uint8, cmdName string) CommandProcessor {
 	return processor.Factory().GetCommandProcessor(msgType, cmdName)
 }
 

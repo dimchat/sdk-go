@@ -37,7 +37,7 @@ import (
 )
 
 type ForwardContentProcessor struct {
-	ContentProcessor
+	BaseContentProcessor
 }
 
 func NewForwardContentProcessor(facebook IFacebook, messenger IMessenger) * ForwardContentProcessor {

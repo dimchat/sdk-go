@@ -31,29 +31,64 @@
 package cpu
 
 import (
-	"fmt"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
 var (
-	FmtHisCmdNotSupport = "History command (name: %s) not support yet!"
+	StrOwnerCannotQuit = "Sorry, group owner cannot quit."
+	StrAssistantCannotQuit = "Sorry, group assistant cannot quit."
 )
 
-type HistoryCommandProcessor struct {
-	BaseCommandProcessor
+/**
+ *  Group command: "quit"
+ *  ~~~~~~~~~~~~~~~~~~~~~
+ */
+type QuitCommandProcessor struct {
+	GroupCommandProcessor
 }
 
-func NewHistoryCommandProcessor(facebook IFacebook, messenger IMessenger) *HistoryCommandProcessor {
-	cpu := new(HistoryCommandProcessor)
+func NewQuitCommandProcessor(facebook IFacebook, messenger IMessenger) *QuitCommandProcessor {
+	cpu := new(QuitCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
 
+func (gpu *QuitCommandProcessor) RemoveAssistant(cmd QuitCommand, _ ReliableMessage) []Content {
+	// NOTICE: group assistant should be retried by the owner
+	return gpu.RespondText(StrAssistantCannotQuit, cmd.Group())
+}
+
 //-------- ICommandProcessor
 
-func (cpu *HistoryCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
-	text := fmt.Sprintf(FmtHisCmdNotSupport, cmd.CommandName())
-	return cpu.RespondText(text, cmd.Group())
+func (gpu *QuitCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) []Content {
+	facebook := gpu.Facebook()
+
+	// 0. check group
+	group := cmd.Group()
+	owner := facebook.GetOwner(group)
+	members := facebook.GetMembers(group)
+	if owner == nil || members == nil || len(members) == 0 {
+		return gpu.RespondText(StrGroupEmpty, group)
+	}
+
+	// 1. check permission
+	sender := rMsg.Sender()
+	if owner.Equal(sender) {
+		return gpu.RespondText(StrOwnerCannotQuit, group)
+	}
+	assistants := facebook.GetAssistants(group)
+	if assistants != nil && contains(assistants, sender) {
+		return gpu.RemoveAssistant(cmd.(QuitCommand), rMsg)
+	}
+
+	// 2. remove the sender from group members
+	if contains(members, sender) {
+		members = remove(members, sender)
+		facebook.SaveMembers(members, group)
+	}
+
+	// 3. response (no need to response this group command)
+	return nil
 }

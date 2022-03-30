@@ -47,7 +47,7 @@ var (
 )
 
 type MetaCommandProcessor struct {
-	CommandProcessor
+	BaseCommandProcessor
 }
 
 func NewMetaCommandProcessor(facebook IFacebook, messenger IMessenger) *MetaCommandProcessor {

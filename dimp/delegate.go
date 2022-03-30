@@ -42,9 +42,6 @@ import (
  *  2. cache symmetric key for reusing.
  */
 type CipherKeyDelegate interface {
-	ICipherKeyDelegate
-}
-type ICipherKeyDelegate interface {
 
 	/**
 	 *  Get cipher key for encrypt message from 'sender' to 'receiver'
@@ -72,21 +69,21 @@ type ICipherKeyDelegate interface {
  *
  *  delegate for messenger
  */
-type MessengerHelper struct {
+type TwinsHelper struct {
 	_facebook IFacebook
 	_messenger IMessenger
 }
 
-func (helper *MessengerHelper) Init(facebook IFacebook, messenger IMessenger) *MessengerHelper {
+func (helper *TwinsHelper) Init(facebook IFacebook, messenger IMessenger) *TwinsHelper {
 	helper._facebook = facebook
 	helper._messenger = messenger
 	return helper
 }
 
-func (helper *MessengerHelper) Facebook() IFacebook {
+func (helper *TwinsHelper) Facebook() IFacebook {
 	return helper._facebook
 }
 
-func (helper *MessengerHelper) Messenger() IMessenger {
+func (helper *TwinsHelper) Messenger() IMessenger {
 	return helper._messenger
 }

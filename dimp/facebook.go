@@ -38,40 +38,8 @@ import (
 	"reflect"
 )
 
-/**
- *  Entity Manager
- *  ~~~~~~~~~~~~~~
- *  Manage meta/document for all users/groups
- *
- * @abstract:
- *      // IEntityDataSource
- *      GetMeta(identifier ID) Meta
- *      GetDocument(identifier ID, docType string) Document
- *      // IUserDataSource
- *      GetContacts(user ID) []ID
- *      GetPrivateKeysForDecryption(user ID) []DecryptKey
- *      GetPrivateKeyForSignature(user ID) SignKey
- *      GetPrivateKeyForVisaSignature(user ID) SignKey
- *
- *      // IFacebookExt
- *      SaveMeta(meta Meta, identifier ID) bool
- *      SaveDocument(doc Document) bool
- *      SaveMembers(members []ID, group ID) bool
- *      GetLocalUsers() []User
- */
-type Facebook struct {
-	Barrack
-	IFacebookExt
-
-	// memory caches
-	_users map[ID]User
-	_groups map[ID]Group
-}
 type IFacebook interface {
 	IBarrack
-	IFacebookExt
-}
-type IFacebookExt interface {
 
 	/**
 	 *  Save meta for entity ID (must verify first)
@@ -150,6 +118,35 @@ type IFacebookExt interface {
 	SelectLocalUser(receiver ID) User
 }
 
+/**
+ *  Entity Manager
+ *  ~~~~~~~~~~~~~~
+ *  Manage meta/document for all users/groups
+ *
+ * @abstract:
+ *      // IEntityDataSource
+ *      GetMeta(identifier ID) Meta
+ *      GetDocument(identifier ID, docType string) Document
+ *      // IUserDataSource
+ *      GetContacts(user ID) []ID
+ *      GetPrivateKeysForDecryption(user ID) []DecryptKey
+ *      GetPrivateKeyForSignature(user ID) SignKey
+ *      GetPrivateKeyForVisaSignature(user ID) SignKey
+ *
+ *      // IFacebookExt
+ *      SaveMeta(meta Meta, identifier ID) bool
+ *      SaveDocument(doc Document) bool
+ *      SaveMembers(members []ID, group ID) bool
+ *      GetLocalUsers() []User
+ */
+type Facebook struct {
+	Barrack
+
+	// memory caches
+	_users map[ID]User
+	_groups map[ID]Group
+}
+
 func (facebook *Facebook) Init() *Facebook {
 	if facebook.Barrack.Init() != nil {
 		facebook._users = make(map[ID]User)
@@ -210,17 +207,17 @@ func (facebook *Facebook) cacheGroup(group Group) {
 
 //-------- IFacebookExt
 
-func (facebook *Facebook) SaveMeta(meta Meta, identifier ID) bool {
-	panic("not implemented")
-}
-
-func (facebook *Facebook) SaveDocument(doc Document) bool {
-	panic("not implemented")
-}
-
-func (facebook *Facebook) SaveMembers(members []ID, group ID) bool {
-	panic("not implemented")
-}
+//func (facebook *Facebook) SaveMeta(meta Meta, identifier ID) bool {
+//	panic("not implemented")
+//}
+//
+//func (facebook *Facebook) SaveDocument(doc Document) bool {
+//	panic("not implemented")
+//}
+//
+//func (facebook *Facebook) SaveMembers(members []ID, group ID) bool {
+//	panic("not implemented")
+//}
 
 func (facebook *Facebook) CheckDocument(doc Document) bool {
 	identifier := doc.ID()
@@ -311,9 +308,9 @@ func (facebook *Facebook) CreateGroup(identifier ID) Group {
 	}
 }
 
-func (facebook *Facebook) GetLocalUsers() []User {
-	panic("not implemented")
-}
+//func (facebook *Facebook) GetLocalUsers() []User {
+//	panic("not implemented")
+//}
 
 func (facebook *Facebook) GetCurrentUser() User {
 	users := facebook.self().GetLocalUsers()

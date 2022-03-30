@@ -35,7 +35,7 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 )
 
-type IProcessorCreator interface {
+type ProcessorCreator interface {
 
 	/**
 	 *  Create content processor with type
@@ -43,7 +43,7 @@ type IProcessorCreator interface {
 	 * @param msgType - content type
 	 * @return ContentProcessor
 	 */
-	CreateContentProcessor(msgType uint8) IContentProcessor
+	CreateContentProcessor(msgType uint8) ContentProcessor
 
 	/**
 	 *  Create command processor with name
@@ -52,61 +52,70 @@ type IProcessorCreator interface {
 	 * @param cmdName - command name
 	 * @return CommandProcessor
 	 */
-	CreateCommandProcessor(msgType uint8, cmdName string) ICommandProcessor
+	CreateCommandProcessor(msgType uint8, cmdName string) CommandProcessor
 }
 
-type ProcessorFactory struct {
-	IProcessorFactory
-	MessengerHelper
+type ProcessorFactory interface {
 
-	_creator IProcessorCreator
+	/**
+	 *  Get processor for content
+	 */
+	GetProcessor(content Content) ContentProcessor
 
-	_contentProcessors map[uint8]IContentProcessor
-	_commandProcessors map[string]ICommandProcessor
+	/**
+	 *  Get processor for content type
+	 */
+	GetContentProcessor(msgType uint8) ContentProcessor
+
+	/**
+	 *  Get processor for command name
+	 */
+	GetCommandProcessor(msgType uint8, cmdName string) CommandProcessor
 }
-type IProcessorFactory interface {
 
-	GetProcessor(content Content) IContentProcessor
+type CPUFactory struct {
+	TwinsHelper
 
-	GetContentProcessor(msgType uint8) IContentProcessor
+	_creator ProcessorCreator
 
-	GetCommandProcessor(msgType uint8, cmdName string) ICommandProcessor
+	_contentProcessors map[uint8]ContentProcessor
+	_commandProcessors map[string]CommandProcessor
 }
 
-func (factory *ProcessorFactory) Init(facebook IFacebook, messenger IMessenger) *ProcessorFactory {
-	if factory.MessengerHelper.Init(facebook, messenger) != nil {
+func (factory *CPUFactory) Init(facebook IFacebook, messenger IMessenger) *CPUFactory {
+	if factory.TwinsHelper.Init(facebook, messenger) != nil {
+		factory._contentProcessors = make(map[uint8]ContentProcessor)
+		factory._commandProcessors = make(map[string]CommandProcessor)
 		factory._creator = nil
-		factory._contentProcessors = make(map[uint8]IContentProcessor)
-		factory._commandProcessors = make(map[string]ICommandProcessor)
 	}
 	return factory
 }
 
-func (factory *ProcessorFactory) Creator() IProcessorCreator {
+func (factory *CPUFactory) Creator() ProcessorCreator {
 	return factory._creator
 }
-func (factory *ProcessorFactory) SetCreator(self IProcessorCreator) {
+func (factory *CPUFactory) SetCreator(self ProcessorCreator) {
 	factory._creator = self
 }
 
-func (factory *ProcessorFactory) ContentProcessorByType(msgType uint8) IContentProcessor {
+func (factory *CPUFactory) ContentProcessorByType(msgType uint8) ContentProcessor {
 	return factory._contentProcessors[msgType]
 }
-func (factory *ProcessorFactory) SetContentProcessor(msgType uint8, cpu IContentProcessor) {
+func (factory *CPUFactory) SetContentProcessorByTag(msgType uint8, cpu ContentProcessor) {
 	factory._contentProcessors[msgType] = cpu
 }
 
-func (factory *ProcessorFactory) CommandProcessorByName(cmdName string) ICommandProcessor {
+func (factory *CPUFactory) CommandProcessorByName(cmdName string) CommandProcessor {
 	return factory._commandProcessors[cmdName]
 }
-func (factory *ProcessorFactory) SetCommandProcessor(cmdName string, cpu ICommandProcessor) {
+func (factory *CPUFactory) SetCommandProcessorByName(cmdName string, cpu CommandProcessor) {
 	factory._commandProcessors[cmdName] = cpu
 }
 
 //-------- IProcessorFactory
 
-func (factory *ProcessorFactory) GetProcessor(content Content) IContentProcessor {
-	cmd, ok := content.(ICommand)
+func (factory *CPUFactory) GetProcessor(content Content) ContentProcessor {
+	cmd, ok := content.(Command)
 	if ok {
 		return factory.GetCommandProcessor(content.Type(), cmd.CommandName())
 	} else {
@@ -114,23 +123,23 @@ func (factory *ProcessorFactory) GetProcessor(content Content) IContentProcessor
 	}
 }
 
-func (factory *ProcessorFactory) GetContentProcessor(msgType uint8) IContentProcessor {
+func (factory *CPUFactory) GetContentProcessor(msgType uint8) ContentProcessor {
 	cpu := factory.ContentProcessorByType(msgType)
 	if cpu == nil {
 		cpu = factory.Creator().CreateContentProcessor(msgType)
 		if cpu != nil {
-			factory.SetContentProcessor(msgType, cpu)
+			factory.SetContentProcessorByTag(msgType, cpu)
 		}
 	}
 	return cpu
 }
 
-func (factory *ProcessorFactory) GetCommandProcessor(msgType uint8, cmdName string) ICommandProcessor {
+func (factory *CPUFactory) GetCommandProcessor(msgType uint8, cmdName string) CommandProcessor {
 	cpu := factory.CommandProcessorByName(cmdName)
 	if cpu == nil {
 		cpu = factory.Creator().CreateCommandProcessor(msgType, cmdName)
 		if cpu != nil {
-			factory.SetCommandProcessor(cmdName, cpu)
+			factory.SetCommandProcessorByName(cmdName, cpu)
 		}
 	}
 	return cpu

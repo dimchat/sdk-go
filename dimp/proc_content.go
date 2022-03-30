@@ -35,6 +35,7 @@ import (
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/dkd"
 	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 
@@ -45,11 +46,7 @@ var (
 /**
  *  CPU: Content Processing Unit
  */
-type ContentProcessor struct {
-	IContentProcessor
-	MessengerHelper
-}
-type IContentProcessor interface {
+type ContentProcessor interface {
 
 	/**
 	 *  Process message content
@@ -61,15 +58,19 @@ type IContentProcessor interface {
 	Process(content Content, rMsg ReliableMessage) []Content
 }
 
-//func NewContentProcessor(facebook IFacebook, messenger IMessenger) * ContentProcessor {
-//	cpu := new(ContentProcessor)
-//	cpu.Init(facebook, messenger)
-//	return cpu
-//}
+type BaseContentProcessor struct {
+	TwinsHelper
+}
+
+func NewContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+	cpu := new(BaseContentProcessor)
+	cpu.Init(facebook, messenger)
+	return cpu
+}
 
 //-------- IContentProcessor
 
-func (cpu *ContentProcessor) Process(content Content, _ ReliableMessage) []Content {
+func (cpu *BaseContentProcessor) Process(content Content, _ ReliableMessage) []Content {
 	text := fmt.Sprintf(FmtContentNotSupport, content.Type())
 	return cpu.RespondText(text, content.Group())
 }
@@ -78,7 +79,7 @@ func (cpu *ContentProcessor) Process(content Content, _ ReliableMessage) []Conte
 //  Convenient responding
 //
 
-func (cpu *ContentProcessor) RespondText(text string, group ID) []Content {
+func (cpu *BaseContentProcessor) RespondText(text string, group ID) []Content {
 	res := NewTextContent(text)
 	if group != nil {
 		res.SetGroup(group)
@@ -86,12 +87,12 @@ func (cpu *ContentProcessor) RespondText(text string, group ID) []Content {
 	return []Content{res}
 }
 
-func (cpu *ContentProcessor) RespondReceipt(text string) []Content {
+func (cpu *BaseContentProcessor) RespondReceipt(text string) []Content {
 	res := NewReceiptCommand(text, nil, 0, nil)
 	return []Content{res}
 }
 
-func (cpu *ContentProcessor) RespondContent(content Content) []Content {
+func (cpu *BaseContentProcessor) RespondContent(content Content) []Content {
 	if content == nil {
 		return nil
 	} else {
