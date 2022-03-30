@@ -42,7 +42,6 @@ import (
  *  ~~~~~~~~~~~~
  */
 type GeneralMetaFactory struct {
-	MetaFactory
 
 	_type uint8
 }
@@ -117,7 +116,6 @@ func (factory *GeneralMetaFactory) ParseMeta(meta map[string]interface{}) Meta {
  *  ~~~~~~~~~~~~~~~~
  */
 type GeneralDocumentFactory struct {
-	IDocumentFactory
 
 	_type string
 }

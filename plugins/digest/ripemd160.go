@@ -27,13 +27,12 @@ package digest
 
 import (
 	"crypto"
-	. "github.com/dimchat/mkm-go/digest"
 	_ "golang.org/x/crypto/ripemd160"
 )
 
-type RIPEMD160Digester struct {
-	DataDigester
-}
+type RIPEMD160Digester struct {}
+
+//-------- IDataDigester
 
 func (digester RIPEMD160Digester) Digest(data []byte) []byte {
 	hash := crypto.RIPEMD160.New()

@@ -26,13 +26,12 @@
 package digest
 
 import (
-	. "github.com/dimchat/mkm-go/digest"
 	"golang.org/x/crypto/sha3"
 )
 
-type KECCAK256Digester struct {
-	DataDigester
-}
+type KECCAK256Digester struct {}
+
+//-------- IDataDigester
 
 func (digester KECCAK256Digester) Digest(data []byte) []byte {
 	hash := sha3.NewLegacyKeccak256()

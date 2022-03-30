@@ -32,11 +32,16 @@ import (
 
 type BaseKey struct {
 	Dictionary
-	ICryptographyKey
 }
+
+//-------- ICryptographyKey
 
 func (key *BaseKey) Algorithm() string {
 	return CryptographyKeyGetAlgorithm(key.GetMap(false))
+}
+
+func (key *BaseKey) Data() []byte {
+	panic("not implemented")
 }
 
 /**
@@ -45,7 +50,18 @@ func (key *BaseKey) Algorithm() string {
  */
 type BaseSymmetricKey struct {
 	BaseKey
-	ISymmetricKey
+}
+
+//-------- IEncryptKey
+
+func (key *BaseSymmetricKey) Encrypt(plaintext []byte) []byte {
+	panic("not implemented")
+}
+
+//-------- IDecryptKey
+
+func (key *BaseSymmetricKey) Decrypt(ciphertext []byte) []byte {
+	panic("not implemented")
 }
 
 func (key *BaseSymmetricKey) Match(pKey EncryptKey) bool {
@@ -58,7 +74,12 @@ func (key *BaseSymmetricKey) Match(pKey EncryptKey) bool {
  */
 type BasePublicKey struct {
 	BaseKey
-	IPublicKey
+}
+
+//-------- IVerifyKey
+
+func (key *BasePublicKey) Verify(data []byte, signature []byte) bool {
+	panic("not implemented")
 }
 
 func (key *BasePublicKey) Match(sKey SignKey) bool {
@@ -71,5 +92,16 @@ func (key *BasePublicKey) Match(sKey SignKey) bool {
  */
 type BasePrivateKey struct {
 	BaseKey
-	IPrivateKey
+}
+
+//-------- IPrivateKey
+
+func (key *BasePrivateKey) PublicKey() PublicKey {
+	panic("not implemented")
+}
+
+//-------- ISignKey
+
+func (key *BasePrivateKey) Sign(data []byte) []byte {
+	panic("not implemented")
 }

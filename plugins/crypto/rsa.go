@@ -48,7 +48,6 @@ import (
  */
 type RSAPublicKey struct {
 	BasePublicKey
-	IEncryptKey
 
 	_rsaPublicKey *rsa.PublicKey
 
@@ -134,7 +133,6 @@ func (key *RSAPublicKey) Encrypt(plaintext []byte) []byte {
  */
 type RSAPrivateKey struct {
 	BasePrivateKey
-	IDecryptKey
 
 	_rsaPrivateKey *rsa.PrivateKey
 

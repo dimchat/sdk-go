@@ -50,7 +50,6 @@ import (
  */
 type ETHAddress struct {
 	ConstantString
-	IAddress
 }
 
 func NewETHAddress(address string) *ETHAddress {

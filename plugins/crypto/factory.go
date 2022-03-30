@@ -37,7 +37,6 @@ type SymmetricKeyParser func(map[string]interface{}) SymmetricKey
 
 // symmetric key factory
 type GeneralSymmetricKeyFactory struct {
-	SymmetricKeyFactory
 
 	_generator SymmetricKeyGenerator
 	_parser SymmetricKeyParser
@@ -52,6 +51,8 @@ func (factory *GeneralSymmetricKeyFactory) Init(g SymmetricKeyGenerator, p Symme
 	factory._parser = p
 	return factory
 }
+
+//-------- ISymmetricKeyFactory
 
 func (factory *GeneralSymmetricKeyFactory) GenerateSymmetricKey() SymmetricKey {
 	return factory._generator()
@@ -87,7 +88,6 @@ type PublicKeyParser func(map[string]interface{}) PublicKey
 
 // private key factory
 type GeneralPrivateKeyFactory struct {
-	PrivateKeyFactory
 
 	_generator PrivateKeyGenerator
 	_parser PrivateKeyParser
@@ -103,6 +103,8 @@ func (factory *GeneralPrivateKeyFactory) Init(g PrivateKeyGenerator, p PrivateKe
 	return factory
 }
 
+//-------- IPrivateKeyFactory
+
 func (factory *GeneralPrivateKeyFactory) GeneratePrivateKey() PrivateKey {
 	return factory._generator()
 }
@@ -113,7 +115,6 @@ func (factory *GeneralPrivateKeyFactory) ParsePrivateKey(key map[string]interfac
 
 // public key factory
 type GeneralPublicKeyFactory struct {
-	PublicKeyFactory
 
 	_parser PublicKeyParser
 }
@@ -126,6 +127,8 @@ func (factory *GeneralPublicKeyFactory) Init(p PublicKeyParser) *GeneralPublicKe
 	factory._parser = p
 	return factory
 }
+
+//-------- IPublicKeyFactory
 
 func (factory *GeneralPublicKeyFactory) ParsePublicKey(key map[string]interface{}) PublicKey {
 	return factory._parser(key)

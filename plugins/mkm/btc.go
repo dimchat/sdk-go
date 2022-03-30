@@ -54,7 +54,6 @@ import (
  */
 type BTCAddress struct {
 	ConstantString
-	IAddress
 
 	_network uint8
 }
