@@ -155,6 +155,16 @@ func (facebook *Facebook) Init() *Facebook {
 	return facebook
 }
 
+func (facebook *Facebook) Clean() {
+	// remove memory caches
+	facebook._users = nil
+	facebook._groups = nil
+	// clean barrack.Source
+	self := facebook.Source()
+	facebook.SetSource(nil)
+	Cleanup(self)
+}
+
 func (facebook *Facebook) self() IFacebook {
 	self := facebook.Source()
 	return self.(IFacebook)

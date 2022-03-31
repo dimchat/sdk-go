@@ -63,6 +63,21 @@ type CipherKeyDelegate interface {
 	CacheCipherKey(sender, receiver ID, key SymmetricKey)
 }
 
+type Cleanable interface {
+
+	/**
+	 *  Remove foreign pointers to break circular references
+	 */
+	Clean()
+}
+
+func Cleanup(obj interface{}) {
+	target, ok := obj.(Cleanable)
+	if ok && target != nil {
+		target.Clean()
+	}
+}
+
 /**
  *  Messenger Shadow
  *  ~~~~~~~~~~~~~~~~
@@ -78,6 +93,12 @@ func (helper *TwinsHelper) Init(facebook IFacebook, messenger IMessenger) *Twins
 	helper._facebook = facebook
 	helper._messenger = messenger
 	return helper
+}
+
+func (helper *TwinsHelper) Clean() {
+	// remove the twins
+	helper._messenger = nil
+	helper._facebook = nil
 }
 
 func (helper *TwinsHelper) Facebook() IFacebook {

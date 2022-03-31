@@ -48,6 +48,15 @@ func (processor *MessageProcessor) Init(facebook IFacebook, messenger IMessenger
 	return processor
 }
 
+func (processor *MessageProcessor) Clean() {
+	// clean factory
+	factory := processor.Factory()
+	processor.SetFactory(nil)
+	Cleanup(factory)
+	// clean twins
+	processor.TwinsHelper.Clean()
+}
+
 //-------- CPU Factory
 
 func (processor *MessageProcessor) Factory() ProcessorFactory {

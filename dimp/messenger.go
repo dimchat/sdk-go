@@ -74,6 +74,25 @@ func (messenger *Messenger) Init() *Messenger {
 	return messenger
 }
 
+func (messenger Messenger) Clean() {
+	// clean Processor
+	processor := messenger.Processor()
+	messenger.SetProcessor(nil)
+	Cleanup(processor)
+	// clean Packer
+	packer := messenger.Packer()
+	messenger.SetPacker(nil)
+	Cleanup(packer)
+	// clean CipherKeyDelegate
+	keyCache := messenger.CipherKeyDelegate()
+	messenger.SetCipherKeyDelegate(nil)
+	Cleanup(keyCache)
+	// clean transceiver.EntityDelegate
+	barrack := messenger.EntityDelegate()
+	messenger.SetEntityDelegate(nil)
+	Cleanup(barrack)
+}
+
 func (messenger *Messenger) CipherKeyDelegate() CipherKeyDelegate {
 	return messenger._keyCache
 }

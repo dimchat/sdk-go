@@ -91,6 +91,18 @@ func (factory *CPUFactory) Init(facebook IFacebook, messenger IMessenger) *CPUFa
 	return factory
 }
 
+func (factory *CPUFactory) Clean() {
+	// remove processor pools
+	factory._contentProcessors = nil
+	factory._commandProcessors = nil
+	// clean creator
+	creator := factory.Creator()
+	factory.SetCreator(nil)
+	Cleanup(creator)
+	// clean twins
+	factory.TwinsHelper.Clean()
+}
+
 func (factory *CPUFactory) Creator() ProcessorCreator {
 	return factory._creator
 }
