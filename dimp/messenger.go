@@ -35,6 +35,7 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 )
 
 type ICipherKeyDelegate interface {CipherKeyDelegate}
@@ -179,13 +180,12 @@ func (messenger *Messenger) ProcessContent(content Content, rMsg ReliableMessage
 //-------- ISecureMessageDelegate (ITransceiver)
 
 func (messenger *Messenger) DeserializeKey(key []byte, sender ID, receiver ID, sMsg SecureMessage) SymmetricKey {
-	if key == nil {
+	if ValueIsNil(key) {
 		// get key from cache
 		return messenger.GetCipherKey(sender, receiver, false)
-	} else {
-		// call super()
-		return messenger.Transceiver.DeserializeKey(key, sender, receiver, sMsg)
 	}
+	// call super()
+	return messenger.Transceiver.DeserializeKey(key, sender, receiver, sMsg)
 }
 
 func (messenger *Messenger) DeserializeContent(data []byte, password SymmetricKey, sMsg SecureMessage) Content {

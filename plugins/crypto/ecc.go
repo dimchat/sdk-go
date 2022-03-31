@@ -120,23 +120,21 @@ func (key *ECCPrivateKey) Init(dict map[string]interface{}) *ECCPrivateKey {
 
 func (key *ECCPrivateKey) Data() []byte {
 	if key._data == nil {
-		data, ok := key.Get("data").(string)
-		if ok {
-			// check for raw data (32 bytes)
-			dataLen := len(data)
-			if dataLen == 64 {
-				// Hex format
-				key._data = HexDecode(data)
-			}
-			// TODO: PEM format?
-		} else {
+		data, _ := key.Get("data").(string)
+		dataLen := len(data)
+		if dataLen == 0 {
 			// generate key
 			_, pri := secp256k1.Generate()
 			key._data = pri
 			key.Set("data", HexEncode(pri))
 			key.Set("curve", "SECP256k1")
 			key.Set("digest", "SHA256")
+		} else if dataLen == 64 {
+			// check for raw data (32 bytes)
+			// Hex format
+			key._data = HexDecode(data)
 		}
+		// TODO: PEM format?
 	}
 	return key._data
 }

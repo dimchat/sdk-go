@@ -121,9 +121,9 @@ func (cmd *BaseStorageCommand) Title() string {
 
 func (cmd *BaseStorageCommand) Data() []byte {
 	if cmd._data == nil {
-		base64, ok := cmd.Get("data").(string)
-		if ok {
-			cmd._data = Base64Decode(base64)
+		base64 := cmd.Get("data")
+		if base64 != nil {
+			cmd._data = Base64Decode(base64.(string))
 		}
 	}
 	return cmd._data
@@ -140,9 +140,9 @@ func (cmd *BaseStorageCommand) SetData(data []byte) {
 
 func (cmd *BaseStorageCommand) Key() []byte {
 	if cmd._key == nil {
-		base64, ok := cmd.Get("key").(string)
-		if ok {
-			cmd._key = Base64Decode(base64)
+		base64 := cmd.Get("key")
+		if base64 != nil {
+			cmd._key = Base64Decode(base64.(string))
 		}
 	}
 	return cmd._key

@@ -132,12 +132,11 @@ func (cmd *BaseReceiptCommand) SetEnvelope(env Envelope) {
 }
 
 func (cmd *BaseReceiptCommand) Signature() []byte {
-	base64, ok := cmd.Get("signature").(string)
-	if ok {
-		return Base64Decode(base64)
-	} else {
+	base64 := cmd.Get("signature")
+	if base64 == nil {
 		return nil
 	}
+	return Base64Decode(base64.(string))
 }
 func (cmd *BaseReceiptCommand) SetSignature(signature []byte) {
 	if ValueIsNil(signature) {

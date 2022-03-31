@@ -35,6 +35,7 @@ import (
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/dimp/dkd"
 )
 
@@ -92,7 +93,7 @@ func (cpu *BaseContentProcessor) RespondReceipt(text string) []Content {
 }
 
 func (cpu *BaseContentProcessor) RespondContent(content Content) []Content {
-	if content == nil {
+	if ValueIsNil(content) {
 		return nil
 	} else {
 		return []Content{content}

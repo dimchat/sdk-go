@@ -87,17 +87,17 @@ func (key *AESKey) blockSize() uint {
 
 func (key *AESKey) initVector() []byte {
 	if key._iv == nil {
-		iv, ok := key.Get("iv").(string)
-		if !ok {
-			iv, _ = key.Get("I").(string)
+		iv := key.Get("iv")
+		if iv == nil {
+			iv = key.Get("I")
 		}
-		if iv == "" {
+		if iv == nil {
 			// zero iv
 			zeros := make([]byte, key.blockSize())
 			key.Set("iv", Base64Encode(zeros))
 			key._iv = zeros
 		} else {
-			key._iv = Base64Decode(iv)
+			key._iv = Base64Decode(iv.(string))
 		}
 	}
 	return key._iv
@@ -107,11 +107,11 @@ func (key *AESKey) initVector() []byte {
 
 func (key *AESKey) Data() []byte {
 	if key._data == nil {
-		data, ok := key.Get("data").(string)
-		if !ok {
-			data, _ = key.Get("D").(string)
+		data := key.Get("data")
+		if data == nil {
+			data = key.Get("D")
 		}
-		if data == "" {
+		if data == nil {
 			//
 			// key data empty? generate new key info
 			//
@@ -125,7 +125,7 @@ func (key *AESKey) Data() []byte {
 			key._data = pw
 			key._iv = iv
 		} else {
-			key._data = Base64Decode(data)
+			key._data = Base64Decode(data.(string))
 		}
 	}
 	return key._data

@@ -157,17 +157,17 @@ func (key *RSAPrivateKey) Init(dict map[string]interface{}) *RSAPrivateKey {
 
 func (key *RSAPrivateKey) getPrivateKey() *rsa.PrivateKey {
 	if key._rsaPrivateKey == nil {
-		data, ok := key.Get("data").(string)
-		if ok {
+		data, _ := key.Get("data").(string)
+		if len(data) == 0 {
+			// generate new key with size
+			key._rsaPrivateKey, _ = key.generate(1024)
+		} else {
 			block, _ := pem.Decode(UTF8Encode(data))
 			pri, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 			if err !=  nil {
 				panic(err)
 			}
 			key._rsaPrivateKey = pri.(*rsa.PrivateKey)
-		} else {
-			// generate new key with size
-			key._rsaPrivateKey, _ = key.generate(1024)
 		}
 	}
 	return key._rsaPrivateKey
@@ -235,6 +235,10 @@ func (key *RSAPrivateKey) Decrypt(ciphertext []byte) []byte {
 		buffer.Write(data)
 	}
 	return buffer.Bytes()
+}
+
+func (key *RSAPrivateKey) Match(pKey EncryptKey) bool {
+	return SymmetricKeysMatch(pKey, key)
 }
 
 //-------- IPrivateKey

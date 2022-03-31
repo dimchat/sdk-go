@@ -106,7 +106,7 @@ func BTCAddressGenerate(fingerprint []byte, network uint8) *BTCAddress {
 	// 4. data = base58_encode(head + cc)
 	data := make([]byte, 25)
 	BytesCopy(head, 0, data, 0, 21)
-	BytesCopy(cc, 0, data, 21, 24)
+	BytesCopy(cc, 0, data, 21, 4)
 	base58 := Base58Encode(data)
 	return NewBTCAddress(base58, network)
 }
