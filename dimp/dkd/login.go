@@ -118,24 +118,22 @@ func (cmd *BaseLoginCommand) SetAgent(agent string) {
 //
 
 func (cmd *BaseLoginCommand) StationInfo() map[string]interface{} {
-	info, ok := cmd.Get("station").(map[string]interface{})
-	if ok {
-		return info
-	} else {
+	info := cmd.Get("station")
+	if info == nil {
 		return nil
 	}
+	return info.(map[string]interface{})
 }
 func (cmd *BaseLoginCommand) SetStationInfo(station map[string]interface{}) {
 	cmd.Set("station", station)
 }
 
 func (cmd *BaseLoginCommand) ProviderInfo() map[string]interface{} {
-	info, ok := cmd.Get("provider").(map[string]interface{})
-	if ok {
-		return info
-	} else {
+	info := cmd.Get("provider")
+	if info == nil {
 		return nil
 	}
+	return info.(map[string]interface{})
 }
 func (cmd *BaseLoginCommand) SetProviderInfo(sp map[string]interface{}) {
 	cmd.Set("provider", sp)

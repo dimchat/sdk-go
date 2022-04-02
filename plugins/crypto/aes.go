@@ -66,23 +66,21 @@ func (key *AESKey) Init(dict map[string]interface{}) *AESKey {
 func (key *AESKey) keySize() uint {
 	// TODO: get from key data
 
-	size, ok := key.Get("keySize").(uint)
-	if ok {
-		return size
-	} else {
+	size := key.Get("keySize")
+	if size == nil {
 		return 32
 	}
+	return uint(size.(float64))
 }
 
 func (key *AESKey) blockSize() uint {
 	// TODO: get from iv data
 
-	size, ok := key.Get("blockSize").(uint)
-	if ok {
-		return size
-	} else {
+	size := key.Get("blockSize")
+	if size == nil {
 		return aes.BlockSize
 	}
+	return uint(size.(float64))
 }
 
 func (key *AESKey) initVector() []byte {

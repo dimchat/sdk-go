@@ -64,7 +64,7 @@ func (address *ETHAddress) Init(string string) *ETHAddress {
 
 //-------- IAddress
 
-func (address *ETHAddress) Network() uint8 {
+func (address *ETHAddress) Network() NetworkType {
 	return MAIN
 }
 

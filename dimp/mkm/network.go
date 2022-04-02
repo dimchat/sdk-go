@@ -100,9 +100,9 @@ func (server *BaseStation) Port() uint16 {
 	if server._port == 0 {
 		doc := server.GetDocument("*")
 		if doc != nil {
-			port, ok := doc.GetProperty("port").(uint16)
-			if ok {
-				server._port = port
+			port := doc.GetProperty("port")
+			if port != nil {
+				server._port = uint16(port.(float64))
 			}
 		}
 		if server._port == 0 {

@@ -55,14 +55,14 @@ import (
 type BTCAddress struct {
 	ConstantString
 
-	_network uint8
+	_network NetworkType
 }
 
-func NewBTCAddress(address string, network uint8) *BTCAddress {
+func NewBTCAddress(address string, network NetworkType) *BTCAddress {
 	return new(BTCAddress).Init(address, network)
 }
 
-func (address *BTCAddress) Init(string string, network uint8) *BTCAddress {
+func (address *BTCAddress) Init(string string, network NetworkType) *BTCAddress {
 	if address.ConstantString.Init(string) != nil {
 		address._network = network
 	}
@@ -71,7 +71,7 @@ func (address *BTCAddress) Init(string string, network uint8) *BTCAddress {
 
 //-------- IAddress
 
-func (address *BTCAddress) Network() uint8 {
+func (address *BTCAddress) Network() NetworkType {
 	return address._network
 }
 
@@ -94,12 +94,12 @@ func (address *BTCAddress) IsBroadcast() bool {
  * @param network - address type
  * @return Address object
  */
-func BTCAddressGenerate(fingerprint []byte, network uint8) *BTCAddress {
+func BTCAddressGenerate(fingerprint []byte, network NetworkType) *BTCAddress {
 	// 1. digest = ripemd160(sha256(fingerprint))
 	digest := RIPEMD160(SHA256(fingerprint))
 	// 2. head = network + digest
 	head := make([]byte, 21)
-	head[0] = network
+	head[0] = uint8(network)
 	BytesCopy(digest, 0, head, 1, 20)
 	// 3. cc = sha256(sha256(head)).prefix(4)
 	cc := checkCode(head)
@@ -131,7 +131,7 @@ func BTCAddressParse(base58 string) *BTCAddress {
 	BytesCopy(data, 21, suffix, 0, 4)
 	cc := checkCode(prefix)
 	if BytesEqual(cc, suffix) {
-		network := data[0]
+		network := NetworkType(data[0])
 		return NewBTCAddress(base58, network)
 	} else {
 		//panic("address check code error")

@@ -48,7 +48,7 @@ type BaseProcessorCreator struct {
 
 //-------- IProcessorCreator
 
-func (factory *BaseProcessorCreator) CreateContentProcessor(msgType uint8) ContentProcessor {
+func (factory *BaseProcessorCreator) CreateContentProcessor(msgType ContentType) ContentProcessor {
 	// core contents
 	if msgType == FORWARD {
 		return NewForwardContentProcessor(factory.Facebook(), factory.Messenger())
@@ -57,7 +57,7 @@ func (factory *BaseProcessorCreator) CreateContentProcessor(msgType uint8) Conte
 	return nil
 }
 
-func (factory *BaseProcessorCreator) CreateCommandProcessor(msgType uint8, cmdName string) CommandProcessor {
+func (factory *BaseProcessorCreator) CreateCommandProcessor(msgType ContentType, cmdName string) CommandProcessor {
 	// meta
 	if cmdName == META {
 		return NewMetaCommandProcessor(factory.Facebook(), factory.Messenger())

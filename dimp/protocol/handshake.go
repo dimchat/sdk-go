@@ -31,6 +31,7 @@
 package protocol
 
 import (
+	"fmt"
 	. "github.com/dimchat/core-go/protocol"
 )
 
@@ -43,6 +44,23 @@ const (
 	HandshakeRestart  // C -> S, with new session key
 	HandshakeSuccess  // S -> C, handshake accepted
 )
+
+func (state HandshakeState) String() string {
+	switch state {
+	case HandshakeInit:
+		return "HandshakeInit"
+	case HandshakeStart:
+		return "HandshakeStart"
+	case HandshakeAgain:
+		return "HandshakeAgain"
+	case HandshakeRestart:
+		return "HandshakeRestart"
+	case HandshakeSuccess:
+		return "HandshakeSuccess"
+	default:
+		return fmt.Sprintf("HandshakeState(%d)", state)
+	}
+}
 
 /**
  *  Command message: {

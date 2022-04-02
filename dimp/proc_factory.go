@@ -43,7 +43,7 @@ type ProcessorCreator interface {
 	 * @param msgType - content type
 	 * @return ContentProcessor
 	 */
-	CreateContentProcessor(msgType uint8) ContentProcessor
+	CreateContentProcessor(msgType ContentType) ContentProcessor
 
 	/**
 	 *  Create command processor with name
@@ -52,7 +52,7 @@ type ProcessorCreator interface {
 	 * @param cmdName - command name
 	 * @return CommandProcessor
 	 */
-	CreateCommandProcessor(msgType uint8, cmdName string) CommandProcessor
+	CreateCommandProcessor(msgType ContentType, cmdName string) CommandProcessor
 }
 
 type ProcessorFactory interface {
@@ -65,12 +65,12 @@ type ProcessorFactory interface {
 	/**
 	 *  Get processor for content type
 	 */
-	GetContentProcessor(msgType uint8) ContentProcessor
+	GetContentProcessor(msgType ContentType) ContentProcessor
 
 	/**
 	 *  Get processor for command name
 	 */
-	GetCommandProcessor(msgType uint8, cmdName string) CommandProcessor
+	GetCommandProcessor(msgType ContentType, cmdName string) CommandProcessor
 }
 
 type CPUFactory struct {
@@ -78,13 +78,13 @@ type CPUFactory struct {
 
 	_creator ProcessorCreator
 
-	_contentProcessors map[uint8]ContentProcessor
+	_contentProcessors map[ContentType]ContentProcessor
 	_commandProcessors map[string]CommandProcessor
 }
 
 func (factory *CPUFactory) Init(facebook IFacebook, messenger IMessenger) *CPUFactory {
 	if factory.TwinsHelper.Init(facebook, messenger) != nil {
-		factory._contentProcessors = make(map[uint8]ContentProcessor)
+		factory._contentProcessors = make(map[ContentType]ContentProcessor)
 		factory._commandProcessors = make(map[string]CommandProcessor)
 		factory._creator = nil
 	}
@@ -110,10 +110,10 @@ func (factory *CPUFactory) SetCreator(self ProcessorCreator) {
 	factory._creator = self
 }
 
-func (factory *CPUFactory) ContentProcessorByType(msgType uint8) ContentProcessor {
+func (factory *CPUFactory) ContentProcessorByType(msgType ContentType) ContentProcessor {
 	return factory._contentProcessors[msgType]
 }
-func (factory *CPUFactory) SetContentProcessorByTag(msgType uint8, cpu ContentProcessor) {
+func (factory *CPUFactory) SetContentProcessorByTag(msgType ContentType, cpu ContentProcessor) {
 	factory._contentProcessors[msgType] = cpu
 }
 
@@ -135,7 +135,7 @@ func (factory *CPUFactory) GetProcessor(content Content) ContentProcessor {
 	}
 }
 
-func (factory *CPUFactory) GetContentProcessor(msgType uint8) ContentProcessor {
+func (factory *CPUFactory) GetContentProcessor(msgType ContentType) ContentProcessor {
 	cpu := factory.ContentProcessorByType(msgType)
 	if cpu == nil {
 		cpu = factory.Creator().CreateContentProcessor(msgType)
@@ -146,7 +146,7 @@ func (factory *CPUFactory) GetContentProcessor(msgType uint8) ContentProcessor {
 	return cpu
 }
 
-func (factory *CPUFactory) GetCommandProcessor(msgType uint8, cmdName string) CommandProcessor {
+func (factory *CPUFactory) GetCommandProcessor(msgType ContentType, cmdName string) CommandProcessor {
 	cpu := factory.CommandProcessorByName(cmdName)
 	if cpu == nil {
 		cpu = factory.Creator().CreateCommandProcessor(msgType, cmdName)

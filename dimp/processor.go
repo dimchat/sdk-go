@@ -32,7 +32,6 @@ package dimp
 
 import (
 	. "github.com/dimchat/dkd-go/protocol"
-	"time"
 )
 
 type MessageProcessor struct {
@@ -69,10 +68,10 @@ func (processor *MessageProcessor) SetFactory(factory ProcessorFactory) {
 func (processor *MessageProcessor) GetProcessor(content Content) ContentProcessor {
 	return processor.Factory().GetProcessor(content)
 }
-func (processor *MessageProcessor) GetContentProcessor(msgType uint8) ContentProcessor {
+func (processor *MessageProcessor) GetContentProcessor(msgType ContentType) ContentProcessor {
 	return processor.Factory().GetContentProcessor(msgType)
 }
-func (processor *MessageProcessor) GetCommandProcessor(msgType uint8, cmdName string) CommandProcessor {
+func (processor *MessageProcessor) GetCommandProcessor(msgType ContentType, cmdName string) CommandProcessor {
 	return processor.Factory().GetCommandProcessor(msgType, cmdName)
 }
 
@@ -175,7 +174,7 @@ func (processor *MessageProcessor) ProcessInstantMessage(iMsg InstantMessage, rM
 	// 3. pack messages
 	messages := make([]InstantMessage, 0, len(responses))
 	for _, item := range responses {
-		env := EnvelopeCreate(user.ID(), sender, time.Time{})
+		env := EnvelopeCreate(user.ID(), sender, nil)
 		msg := InstantMessageCreate(env, item)
 		messages = append(messages, msg)
 	}

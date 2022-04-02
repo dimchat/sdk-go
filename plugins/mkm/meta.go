@@ -52,26 +52,26 @@ type DefaultMeta struct {
 	BaseMeta
 
 	// caches
-	_addresses map[uint8]Address
+	_addresses map[NetworkType]Address
 }
 
 func (meta *DefaultMeta) Init(dict map[string]interface{}) *DefaultMeta {
 	if meta.BaseMeta.Init(dict) != nil {
-		meta._addresses = make(map[uint8]Address)
+		meta._addresses = make(map[NetworkType]Address)
 	}
 	return meta
 }
 
-func (meta *DefaultMeta) InitWithType(version uint8, key VerifyKey, seed string, fingerprint []byte) *DefaultMeta {
+func (meta *DefaultMeta) InitWithType(version MetaType, key VerifyKey, seed string, fingerprint []byte) *DefaultMeta {
 	if meta.BaseMeta.InitWithType(version, key, seed, fingerprint) != nil {
-		meta._addresses = make(map[uint8]Address)
+		meta._addresses = make(map[NetworkType]Address)
 	}
 	return meta
 }
 
 //-------- IMeta
 
-func (meta *DefaultMeta) GenerateAddress(network uint8) Address {
+func (meta *DefaultMeta) GenerateAddress(network NetworkType) Address {
 	// check caches
 	address := meta._addresses[network]
 	if address == nil {
@@ -109,7 +109,7 @@ func (meta *BTCMeta) Init(dict map[string]interface{}) *BTCMeta {
 	return meta
 }
 
-func (meta *BTCMeta) InitWithType(version uint8, key VerifyKey, seed string, fingerprint []byte) *BTCMeta {
+func (meta *BTCMeta) InitWithType(version MetaType, key VerifyKey, seed string, fingerprint []byte) *BTCMeta {
 	if meta.BaseMeta.InitWithType(version, key, seed, fingerprint) != nil {
 		meta._address = nil
 	}
@@ -118,7 +118,7 @@ func (meta *BTCMeta) InitWithType(version uint8, key VerifyKey, seed string, fin
 
 //-------- IMeta
 
-func (meta *BTCMeta) GenerateAddress(network uint8) Address {
+func (meta *BTCMeta) GenerateAddress(network NetworkType) Address {
 	if network != BTCMain {
 		return nil
 	}
@@ -159,7 +159,7 @@ func (meta *ETHMeta) Init(dict map[string]interface{}) *ETHMeta {
 	return meta
 }
 
-func (meta *ETHMeta) InitWithType(version uint8, key VerifyKey, seed string, fingerprint []byte) *ETHMeta {
+func (meta *ETHMeta) InitWithType(version MetaType, key VerifyKey, seed string, fingerprint []byte) *ETHMeta {
 	if meta.BaseMeta.InitWithType(version, key, seed, fingerprint) != nil {
 		meta._address = nil
 	}
@@ -168,7 +168,7 @@ func (meta *ETHMeta) InitWithType(version uint8, key VerifyKey, seed string, fin
 
 //-------- IMeta
 
-func (meta *ETHMeta) GenerateAddress(network uint8) Address {
+func (meta *ETHMeta) GenerateAddress(network NetworkType) Address {
 	if network != MAIN {
 		return nil
 	}
@@ -195,7 +195,7 @@ func ParseDefaultMeta(dict map[string]interface{}) Meta {
 	return new(DefaultMeta).Init(dict)
 }
 
-func NewBTCMeta(version uint8, key VerifyKey, seed string, fingerprint []byte) Meta {
+func NewBTCMeta(version MetaType, key VerifyKey, seed string, fingerprint []byte) Meta {
 	return new(BTCMeta).InitWithType(version, key, seed, fingerprint)
 }
 
@@ -203,7 +203,7 @@ func ParseBTCMeta(dict map[string]interface{}) Meta {
 	return new(BTCMeta).Init(dict)
 }
 
-func NewETHMeta(version uint8, key VerifyKey, seed string, fingerprint []byte) Meta {
+func NewETHMeta(version MetaType, key VerifyKey, seed string, fingerprint []byte) Meta {
 	return new(ETHMeta).InitWithType(version, key, seed, fingerprint)
 }
 

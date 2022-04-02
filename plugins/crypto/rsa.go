@@ -72,7 +72,7 @@ func (key *RSAPublicKey) getPublicKey() *rsa.PublicKey {
 		data, _ := key.Get("data").(string)
 		block, _ := pem.Decode(UTF8Encode(data))
 		pub, err := x509.ParsePKIXPublicKey(block.Bytes)
-		if err !=  nil {
+		if err != nil {
 			panic(err)
 		}
 		key._rsaPublicKey = pub.(*rsa.PublicKey)
@@ -163,11 +163,15 @@ func (key *RSAPrivateKey) getPrivateKey() *rsa.PrivateKey {
 			key._rsaPrivateKey, _ = key.generate(1024)
 		} else {
 			block, _ := pem.Decode(UTF8Encode(data))
-			pri, err := x509.ParsePKCS8PrivateKey(block.Bytes)
-			if err !=  nil {
-				panic(err)
+			pri, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+			if err != nil {
+				pkcs8, err := x509.ParsePKCS8PrivateKey(block.Bytes)
+				if err != nil {
+					panic(err)
+				}
+				pri, _ = pkcs8.(*rsa.PrivateKey)
 			}
-			key._rsaPrivateKey = pri.(*rsa.PrivateKey)
+			key._rsaPrivateKey = pri
 		}
 	}
 	return key._rsaPrivateKey

@@ -43,14 +43,14 @@ import (
  */
 type GeneralMetaFactory struct {
 
-	_type uint8
+	_type MetaType
 }
 
-func NewGeneralMetaFactory(version uint8) *GeneralMetaFactory {
+func NewGeneralMetaFactory(version MetaType) *GeneralMetaFactory {
 	return new(GeneralMetaFactory).Init(version)
 }
 
-func (factory *GeneralMetaFactory) Init(version uint8) *GeneralMetaFactory {
+func (factory *GeneralMetaFactory) Init(version MetaType) *GeneralMetaFactory {
 	factory._type = version
 	return factory
 }
