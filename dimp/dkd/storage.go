@@ -104,17 +104,17 @@ func (cmd *BaseStorageCommand) SetID(identifier ID) {
 
 func (cmd *BaseStorageCommand) Title() string {
 	if cmd._title == "" {
-		text, ok := cmd.Get("title").(string)
-		if !ok {
+		text := cmd.Get("title")
+		if text == nil {
 			// (compatible with v1.0)
 			//  contacts command: {
 			//      command : 'contacts',
 			//      data    : '...',
 			//      key     : '...'
 			//  }
-			text, _ = cmd.Get("command").(string)
+			text = cmd.Get("command")
 		}
-		cmd._title = text
+		cmd._title, _ = text.(string)
 	}
 	return cmd._title
 }

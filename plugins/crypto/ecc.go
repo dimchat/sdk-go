@@ -47,7 +47,9 @@ type ECCPublicKey struct {
 }
 
 func NewECCPublicKey(dict map[string]interface{}) *ECCPublicKey {
-	return new(ECCPublicKey).Init(dict)
+	key := new(ECCPublicKey)
+	key.Init(dict)
+	return key
 }
 
 func (key *ECCPublicKey) Init(dict map[string]interface{}) *ECCPublicKey {
@@ -104,7 +106,9 @@ type ECCPrivateKey struct {
 }
 
 func NewECCPrivateKey(dict map[string]interface{}) *ECCPrivateKey {
-	return new(ECCPrivateKey).Init(dict)
+	key := new(ECCPrivateKey)
+	key.Init(dict)
+	return key
 }
 
 func (key *ECCPrivateKey) Init(dict map[string]interface{}) *ECCPrivateKey {

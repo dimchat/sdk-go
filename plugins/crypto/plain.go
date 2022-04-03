@@ -40,7 +40,9 @@ type PlainKey struct {
 func NewPlainKey() *PlainKey {
 	dict := make(map[string]interface{})
 	dict["algorithm"] = PLAIN
-	return new(PlainKey).Init(dict)
+	key := new(PlainKey)
+	key.Init(dict)
+	return key
 }
 
 func (key *PlainKey) Init(dict map[string]interface{}) *PlainKey {

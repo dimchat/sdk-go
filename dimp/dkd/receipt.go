@@ -75,7 +75,7 @@ func (cmd *BaseReceiptCommand) InitWithMessage(text string) *BaseReceiptCommand 
 	return cmd
 }
 
-func (cmd *BaseReceiptCommand) InitWithEnvelope(env Envelope, sn uint32, text string) *BaseReceiptCommand {
+func (cmd *BaseReceiptCommand) InitWithEnvelope(env Envelope, sn uint64, text string) *BaseReceiptCommand {
 	if cmd.BaseCommand.InitWithCommand(RECEIPT) != nil {
 		// envelope of the message responding to
 		cmd.SetEnvelope(env)
@@ -93,12 +93,11 @@ func (cmd *BaseReceiptCommand) InitWithEnvelope(env Envelope, sn uint32, text st
 //-------- IReceiptCommand
 
 func (cmd *BaseReceiptCommand) Message() string {
-	text, ok := cmd.Get("message").(string)
-	if ok {
-		return text
-	} else {
+	text := cmd.Get("message")
+	if text == nil {
 		return ""
 	}
+	return text.(string)
 }
 
 func (cmd *BaseReceiptCommand) Envelope() Envelope {

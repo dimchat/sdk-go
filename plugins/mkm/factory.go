@@ -47,7 +47,9 @@ type GeneralMetaFactory struct {
 }
 
 func NewGeneralMetaFactory(version MetaType) *GeneralMetaFactory {
-	return new(GeneralMetaFactory).Init(version)
+	factory := new(GeneralMetaFactory)
+	factory.Init(version)
+	return factory
 }
 
 func (factory *GeneralMetaFactory) Init(version MetaType) *GeneralMetaFactory {
@@ -121,7 +123,9 @@ type GeneralDocumentFactory struct {
 }
 
 func NewGeneralDocumentFactory(docType string) *GeneralDocumentFactory {
-	return new(GeneralDocumentFactory).Init(docType)
+	factory := new(GeneralDocumentFactory)
+	factory.Init(docType)
+	return factory
 }
 
 func (factory *GeneralDocumentFactory) Init(docType string) *GeneralDocumentFactory {
@@ -184,25 +188,37 @@ func (factory *GeneralDocumentFactory) ParseDocument(doc map[string]interface{})
 //
 
 func NewDocument(identifier ID, data []byte, signature []byte) Document {
-	return new(BaseDocument).InitWithData(identifier, data, signature)
+	doc := new(BaseDocument)
+	doc.InitWithData(identifier, data, signature)
+	return doc
 }
 
 func ParseDocument(dict map[string]interface{}) Document {
-	return new(BaseDocument).Init(dict)
+	doc := new(BaseDocument)
+	doc.Init(dict)
+	return doc
 }
 
 func NewVisa(identifier ID, data []byte, signature []byte) Visa {
-	return new(BaseVisa).InitWithData(identifier, data, signature)
+	doc := new(BaseVisa)
+	doc.InitWithData(identifier, data, signature)
+	return doc
 }
 
 func ParseVisa(dict map[string]interface{}) Visa {
-	return new(BaseVisa).Init(dict)
+	doc := new(BaseVisa)
+	doc.Init(dict)
+	return doc
 }
 
 func NewBulletin(identifier ID, data []byte, signature []byte) Bulletin {
-	return new(BaseBulletin).InitWithData(identifier, data, signature)
+	doc := new(BaseBulletin)
+	doc.InitWithData(identifier, data, signature)
+	return doc
 }
 
 func ParseBulletin(dict map[string]interface{}) Bulletin {
-	return new(BaseBulletin).Init(dict)
+	doc := new(BaseBulletin)
+	doc.Init(dict)
+	return doc
 }

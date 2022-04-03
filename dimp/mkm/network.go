@@ -43,11 +43,11 @@ type BaseRobot struct {
 	BaseUser
 }
 
-func (user *BaseRobot) Init(identifier ID) *BaseRobot {
-	if user.BaseUser.Init(identifier) != nil {
-	}
-	return user
-}
+//func (user *BaseRobot) Init(identifier ID) *BaseRobot {
+//	if user.BaseUser.Init(identifier) != nil {
+//	}
+//	return user
+//}
 
 //-------- IRobot
 
@@ -84,9 +84,9 @@ func (server *BaseStation) Host() string {
 	if server._host == "" {
 		doc := server.GetDocument("*")
 		if doc != nil {
-			host, ok := doc.GetProperty("host").(string)
-			if ok {
-				server._host = host
+			host := doc.GetProperty("host")
+			if host != nil {
+				server._host = host.(string)
 			}
 		}
 		if server._host == "" {
@@ -120,11 +120,11 @@ type ServiceProvider struct {
 	BaseGroup
 }
 
-func (sp *ServiceProvider) Init(identifier ID) *ServiceProvider {
-	if sp.BaseGroup.Init(identifier) != nil {
-	}
-	return sp
-}
+//func (sp *ServiceProvider) Init(identifier ID) *ServiceProvider {
+//	if sp.BaseGroup.Init(identifier) != nil {
+//	}
+//	return sp
+//}
 
 //-------- IServiceProvider
 

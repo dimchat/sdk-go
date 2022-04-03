@@ -26,8 +26,8 @@
 package types
 
 import (
+	. "github.com/dimchat/mkm-go/types"
 	"math/rand"
-	"time"
 )
 
 func BytesEqual(array1, array2 []byte) bool {
@@ -75,8 +75,8 @@ func BytesSplit(data []byte, width int) [][]byte {
 }
 
 func RandomBytes(size uint) []byte {
-	now := time.Now().UnixNano()
-	random := rand.New(rand.NewSource(now))
+	seed := TimestampNano(TimeNow())
+	random := rand.New(rand.NewSource(seed))
 	array := make([]byte, size)
 	var index uint
 	for index = 0; index < size; index++ {

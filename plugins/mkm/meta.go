@@ -188,25 +188,37 @@ func (meta *ETHMeta) GenerateAddress(network NetworkType) Address {
 //
 
 func NewDefaultMeta(key VerifyKey, seed string, fingerprint []byte) Meta {
-	return new(DefaultMeta).InitWithType(MKM, key, seed, fingerprint)
+	meta := new(DefaultMeta)
+	meta.InitWithType(MKM, key, seed, fingerprint)
+	return meta
 }
 
 func ParseDefaultMeta(dict map[string]interface{}) Meta {
-	return new(DefaultMeta).Init(dict)
+	meta := new(DefaultMeta)
+	meta.Init(dict)
+	return meta
 }
 
 func NewBTCMeta(version MetaType, key VerifyKey, seed string, fingerprint []byte) Meta {
-	return new(BTCMeta).InitWithType(version, key, seed, fingerprint)
+	meta := new(BTCMeta)
+	meta.InitWithType(version, key, seed, fingerprint)
+	return meta
 }
 
 func ParseBTCMeta(dict map[string]interface{}) Meta {
-	return new(BTCMeta).Init(dict)
+	meta := new(BTCMeta)
+	meta.Init(dict)
+	return meta
 }
 
 func NewETHMeta(version MetaType, key VerifyKey, seed string, fingerprint []byte) Meta {
-	return new(ETHMeta).InitWithType(version, key, seed, fingerprint)
+	meta := new(ETHMeta)
+	meta.InitWithType(version, key, seed, fingerprint)
+	return meta
 }
 
 func ParseETHMeta(dict map[string]interface{}) Meta {
-	return new(ETHMeta).Init(dict)
+	meta := new(ETHMeta)
+	meta.Init(dict)
+	return meta
 }

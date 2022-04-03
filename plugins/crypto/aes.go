@@ -51,7 +51,9 @@ type AESKey struct {
 }
 
 func NewAESKey(dict map[string]interface{}) *AESKey {
-	return new(AESKey).Init(dict)
+	key := new(AESKey)
+	key.Init(dict)
+	return key
 }
 
 func (key *AESKey) Init(dict map[string]interface{}) *AESKey {

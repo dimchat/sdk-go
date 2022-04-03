@@ -53,14 +53,16 @@ type ETHAddress struct {
 }
 
 func NewETHAddress(address string) *ETHAddress {
-	return new(ETHAddress).Init(address)
+	eth := new(ETHAddress)
+	eth.Init(address)
+	return eth
 }
 
-func (address *ETHAddress) Init(string string) *ETHAddress {
-	if address.ConstantString.Init(string) != nil {
-	}
-	return address
-}
+//func (address *ETHAddress) Init(string string) *ETHAddress {
+//	if address.ConstantString.Init(string) != nil {
+//	}
+//	return address
+//}
 
 //-------- IAddress
 

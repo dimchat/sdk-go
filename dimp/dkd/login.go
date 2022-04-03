@@ -62,11 +62,11 @@ type BaseLoginCommand struct {
 	BaseCommand
 }
 
-func (cmd *BaseLoginCommand) Init(dict map[string]interface{}) *BaseLoginCommand {
-	if cmd.BaseCommand.Init(dict) != nil {
-	}
-	return cmd
-}
+//func (cmd *BaseLoginCommand) Init(dict map[string]interface{}) *BaseLoginCommand {
+//	if cmd.BaseCommand.Init(dict) != nil {
+//	}
+//	return cmd
+//}
 
 func (cmd *BaseLoginCommand) InitWithID(identifier ID) *BaseLoginCommand {
 	if cmd.BaseCommand.InitWithCommand(LOGIN) != nil {
@@ -82,12 +82,11 @@ func (cmd *BaseLoginCommand) ID() ID {
 }
 
 func (cmd *BaseLoginCommand) Device() string {
-	text, ok := cmd.Get("device").(string)
-	if ok {
-		return text
-	} else {
+	text := cmd.Get("device")
+	if text == nil {
 		return ""
 	}
+	return text.(string)
 }
 func (cmd *BaseLoginCommand) SetDevice(device string) {
 	if device == "" {
@@ -98,12 +97,11 @@ func (cmd *BaseLoginCommand) SetDevice(device string) {
 }
 
 func (cmd *BaseLoginCommand) Agent() string {
-	text, ok := cmd.Get("agent").(string)
-	if ok {
-		return text
-	} else {
+	text := cmd.Get("agent")
+	if text == nil {
 		return ""
 	}
+	return text.(string)
 }
 func (cmd *BaseLoginCommand) SetAgent(agent string) {
 	if agent == "" {

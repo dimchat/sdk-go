@@ -59,7 +59,9 @@ type BTCAddress struct {
 }
 
 func NewBTCAddress(address string, network NetworkType) *BTCAddress {
-	return new(BTCAddress).Init(address, network)
+	btc := new(BTCAddress)
+	btc.Init(address, network)
+	return btc
 }
 
 func (address *BTCAddress) Init(string string, network NetworkType) *BTCAddress {

@@ -84,29 +84,43 @@ type ChatroomDataSource interface {
 //  Creators
 //
 func NewUser(identifier ID) User {
-	return new(BaseUser).Init(identifier)
+	user := new(BaseUser)
+	user.Init(identifier)
+	return user
 }
 
 func NewGroup(identifier ID) Group {
-	return new(BaseGroup).Init(identifier)
+	group := new(BaseGroup)
+	group.Init(identifier)
+	return group
 }
 
 func NewRobot(identifier ID) Robot {
-	return new(BaseRobot).Init(identifier)
+	robot := new(BaseRobot)
+	robot.Init(identifier)
+	return robot
 }
 
 func NewStation(identifier ID, host string, port uint16) Station {
-	return new(BaseStation).Init(identifier, host, port)
+	station := new(BaseStation)
+	station.Init(identifier, host, port)
+	return station
 }
 
 func NewProvider(identifier ID) Provider {
-	return new(ServiceProvider).Init(identifier)
+	sp := new(ServiceProvider)
+	sp.Init(identifier)
+	return sp
 }
 
 func NewPolylogue(identifier ID) Polylogue {
-	return new(SimpleGroup).Init(identifier)
+	group := new(SimpleGroup)
+	group.Init(identifier)
+	return group
 }
 
 func NewChatroom(identifier ID) Chatroom {
-	return new(BigGroup).Init(identifier)
+	group := new(BigGroup)
+	group.Init(identifier)
+	return group
 }

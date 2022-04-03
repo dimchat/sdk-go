@@ -55,7 +55,9 @@ type RSAPublicKey struct {
 }
 
 func NewRSAPublicKey(dict map[string]interface{}) *RSAPublicKey {
-	return new(RSAPublicKey).Init(dict)
+	key := new(RSAPublicKey)
+	key.Init(dict)
+	return key
 }
 
 func (key *RSAPublicKey) Init(dict map[string]interface{}) *RSAPublicKey {
@@ -142,7 +144,9 @@ type RSAPrivateKey struct {
 }
 
 func NewRSAPrivateKey(dict map[string]interface{}) *RSAPrivateKey {
-	return new(RSAPrivateKey).Init(dict)
+	key := new(RSAPrivateKey)
+	key.Init(dict)
+	return key
 }
 
 func (key *RSAPrivateKey) Init(dict map[string]interface{}) *RSAPrivateKey {

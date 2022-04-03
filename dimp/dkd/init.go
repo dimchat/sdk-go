@@ -39,7 +39,7 @@ import (
 	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 
-func NewReceiptCommand(text string, env Envelope, sn uint32, signature []byte) ReceiptCommand {
+func NewReceiptCommand(text string, env Envelope, sn uint64, signature []byte) ReceiptCommand {
 	cmd := new(BaseReceiptCommand)
 	if ValueIsNil(env) {
 		cmd.InitWithMessage(text)
@@ -98,31 +98,47 @@ func BlockCommandRespond(list []ID) BlockCommand {
  */
 func RegisterExtraCommandFactories() {
 	CommandSetFactory(RECEIPT, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseReceiptCommand).Init(dict)
+		cmd := new(BaseReceiptCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 	CommandSetFactory(HANDSHAKE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseHandshakeCommand).Init(dict)
+		cmd := new(BaseHandshakeCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 	CommandSetFactory(LOGIN, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseLoginCommand).Init(dict)
+		cmd := new(BaseLoginCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 
 	CommandSetFactory(MUTE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseMuteCommand).Init(dict)
+		cmd := new(BaseMuteCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 	CommandSetFactory(BLOCK, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseBlockCommand).Init(dict)
+		cmd := new(BaseBlockCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 
 	// storage (contacts, private_key)
 	CommandSetFactory(STORAGE, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseStorageCommand).Init(dict)
+		cmd := new(BaseStorageCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 	CommandSetFactory(CONTACTS, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseStorageCommand).Init(dict)
+		cmd := new(BaseStorageCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 	CommandSetFactory(PRIVATE_KEY, NewGeneralCommandFactory(func(dict map[string]interface{}) Command {
-		return new(BaseStorageCommand).Init(dict)
+		cmd := new(BaseStorageCommand)
+		cmd.Init(dict)
+		return cmd
 	}))
 }
 

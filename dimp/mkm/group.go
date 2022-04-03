@@ -45,11 +45,11 @@ type SimpleGroup struct {
 	BaseGroup
 }
 
-func (group *SimpleGroup) Init(identifier ID) *SimpleGroup {
-	if group.BaseGroup.Init(identifier) != nil {
-	}
-	return group
-}
+//func (group *SimpleGroup) Init(identifier ID) *SimpleGroup {
+//	if group.BaseGroup.Init(identifier) != nil {
+//	}
+//	return group
+//}
 
 //-------- IPolylogue
 
@@ -72,11 +72,11 @@ type BigGroup struct {
 	BaseGroup
 }
 
-func (group *BigGroup) Init(identifier ID) *BigGroup {
-	if group.BaseGroup.Init(identifier) != nil {
-	}
-	return group
-}
+//func (group *BigGroup) Init(identifier ID) *BigGroup {
+//	if group.BaseGroup.Init(identifier) != nil {
+//	}
+//	return group
+//}
 
 //-------- IChatroom
 

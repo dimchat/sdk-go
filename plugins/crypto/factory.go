@@ -38,28 +38,30 @@ type SymmetricKeyParser func(map[string]interface{}) SymmetricKey
 // symmetric key factory
 type GeneralSymmetricKeyFactory struct {
 
-	_generator SymmetricKeyGenerator
-	_parser SymmetricKeyParser
+	_generate SymmetricKeyGenerator
+	_parse SymmetricKeyParser
 }
 
 func NewSymmetricKeyFactory(g SymmetricKeyGenerator, p SymmetricKeyParser) SymmetricKeyFactory {
-	return new(GeneralSymmetricKeyFactory).Init(g, p)
+	factory := new(GeneralSymmetricKeyFactory)
+	factory.Init(g, p)
+	return factory
 }
 
 func (factory *GeneralSymmetricKeyFactory) Init(g SymmetricKeyGenerator, p SymmetricKeyParser) *GeneralSymmetricKeyFactory {
-	factory._generator = g
-	factory._parser = p
+	factory._generate = g
+	factory._parse = p
 	return factory
 }
 
 //-------- ISymmetricKeyFactory
 
 func (factory *GeneralSymmetricKeyFactory) GenerateSymmetricKey() SymmetricKey {
-	return factory._generator()
+	return factory._generate()
 }
 
 func (factory *GeneralSymmetricKeyFactory) ParseSymmetricKey(key map[string]interface{}) SymmetricKey {
-	return factory._parser(key)
+	return factory._parse(key)
 }
 
 func RegisterSymmetricKeyFactories() {
@@ -89,49 +91,53 @@ type PublicKeyParser func(map[string]interface{}) PublicKey
 // private key factory
 type GeneralPrivateKeyFactory struct {
 
-	_generator PrivateKeyGenerator
-	_parser PrivateKeyParser
+	_generate PrivateKeyGenerator
+	_parse PrivateKeyParser
 }
 
 func NewPrivateKeyFactory(g PrivateKeyGenerator, p PrivateKeyParser) PrivateKeyFactory {
-	return new(GeneralPrivateKeyFactory).Init(g, p)
+	factory := new(GeneralPrivateKeyFactory)
+	factory.Init(g, p)
+	return factory
 }
 
 func (factory *GeneralPrivateKeyFactory) Init(g PrivateKeyGenerator, p PrivateKeyParser) *GeneralPrivateKeyFactory {
-	factory._generator = g
-	factory._parser = p
+	factory._generate = g
+	factory._parse = p
 	return factory
 }
 
 //-------- IPrivateKeyFactory
 
 func (factory *GeneralPrivateKeyFactory) GeneratePrivateKey() PrivateKey {
-	return factory._generator()
+	return factory._generate()
 }
 
 func (factory *GeneralPrivateKeyFactory) ParsePrivateKey(key map[string]interface{}) PrivateKey {
-	return factory._parser(key)
+	return factory._parse(key)
 }
 
 // public key factory
 type GeneralPublicKeyFactory struct {
 
-	_parser PublicKeyParser
+	_parse PublicKeyParser
 }
 
 func NewPublicKeyFactory(p PublicKeyParser) PublicKeyFactory {
-	return new(GeneralPublicKeyFactory).Init(p)
+	factory := new(GeneralPublicKeyFactory)
+	factory.Init(p)
+	return factory
 }
 
 func (factory *GeneralPublicKeyFactory) Init(p PublicKeyParser) *GeneralPublicKeyFactory {
-	factory._parser = p
+	factory._parse = p
 	return factory
 }
 
 //-------- IPublicKeyFactory
 
 func (factory *GeneralPublicKeyFactory) ParsePublicKey(key map[string]interface{}) PublicKey {
-	return factory._parser(key)
+	return factory._parse(key)
 }
 
 func RegisterPublicKeyFactories() {

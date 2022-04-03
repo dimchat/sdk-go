@@ -65,8 +65,6 @@ func (factory *BaseProcessorCreator) CreateCommandProcessor(msgType ContentType,
 	// document
 	if cmdName == DOCUMENT {
 		return NewDocumentCommandProcessor(factory.Facebook(), factory.Messenger())
-	} else if cmdName == "profile" || cmdName == "visa" || cmdName == "bulletin" {
-		return NewDocumentCommandProcessor(factory.Facebook(), factory.Messenger())
 	}
 	// group
 	if cmdName == "group" {
