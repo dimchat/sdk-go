@@ -49,26 +49,12 @@ type ContentProcessor interface {
 	Process(content Content, rMsg ReliableMessage) []Content
 }
 
-type ContentProcessorCreator interface {
-
-	/**
-	 *  Create content processor with type
-	 *
-	 * @param msgType - content type
-	 * @return ContentProcessor
-	 */
-	CreateContentProcessor(msgType ContentType) ContentProcessor
-
-	/**
-	 *  Create command processor with name
-	 *
-	 * @param msgType - content type
-	 * @param cmdName - command name
-	 * @return CommandProcessor
-	 */
-	CreateCommandProcessor(msgType ContentType, cmdName string) ContentProcessor
-}
-
+/**
+ *  CPU Factory
+ *  ~~~~~~~~~~~
+ *
+ *  Delegate for Message Processor
+ */
 type ContentProcessorFactory interface {
 
 	/**

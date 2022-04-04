@@ -42,52 +42,72 @@ import (
  *
  *  Delegate for CPU factory
  */
-type CPCreator struct {
+type ContentProcessorCreator interface {
+
+	/**
+	 *  Create content processor with type
+	 *
+	 * @param msgType - content type
+	 * @return ContentProcessor
+	 */
+	CreateContentProcessor(msgType ContentType) ContentProcessor
+
+	/**
+	 *  Create command processor with name
+	 *
+	 * @param msgType - content type
+	 * @param cmdName - command name
+	 * @return CommandProcessor
+	 */
+	CreateCommandProcessor(msgType ContentType, cmdName string) ContentProcessor
+}
+
+type BaseCreator struct {
 	TwinsHelper
 }
 
 //-------- IContentProcessorCreator
 
-func (factory *CPCreator) CreateContentProcessor(msgType ContentType) ContentProcessor {
+func (creator *BaseCreator) CreateContentProcessor(msgType ContentType) ContentProcessor {
 	switch msgType {
 	// forward content
 	case FORWARD:
-		return NewForwardContentProcessor(factory.Facebook(), factory.Messenger())
+		return NewForwardContentProcessor(creator.Facebook(), creator.Messenger())
 	// default commands
 	case COMMAND:
-		return NewBaseCommandProcessor(factory.Facebook(), factory.Messenger())
+		return NewBaseCommandProcessor(creator.Facebook(), creator.Messenger())
 	case HISTORY:
-		return NewHistoryCommandProcessor(factory.Facebook(), factory.Messenger())
+		return NewHistoryCommandProcessor(creator.Facebook(), creator.Messenger())
 	// default contents
 	case 0:
-		return NewBaseContentProcessor(factory.Facebook(), factory.Messenger())
+		return NewBaseContentProcessor(creator.Facebook(), creator.Messenger())
 	// unknown
 	default:
 		return nil
 	}
 }
 
-func (factory *CPCreator) CreateCommandProcessor(_ ContentType, cmdName string) ContentProcessor {
+func (creator *BaseCreator) CreateCommandProcessor(_ ContentType, cmdName string) ContentProcessor {
 	switch cmdName {
 	// meta command
 	case META:
-		return NewMetaCommandProcessor(factory.Facebook(), factory.Messenger())
+		return NewMetaCommandProcessor(creator.Facebook(), creator.Messenger())
 	// document command
 	case DOCUMENT:
-		return NewDocumentCommandProcessor(factory.Facebook(), factory.Messenger())
+		return NewDocumentCommandProcessor(creator.Facebook(), creator.Messenger())
 	// group commands
 	case "group":
-		return NewGroupCommandProcessor(factory.Facebook(), factory.Messenger())
+		return NewGroupCommandProcessor(creator.Facebook(), creator.Messenger())
 	case INVITE:
-		return NewInviteCommandProcessor(factory.Facebook(), factory.Messenger())
+		return NewInviteCommandProcessor(creator.Facebook(), creator.Messenger())
 	case EXPEL:
-		return NewExpelCommandProcessor(factory.Facebook(), factory.Messenger())
+		return NewExpelCommandProcessor(creator.Facebook(), creator.Messenger())
 	case QUIT:
-		return NewQuitCommandProcessor(factory.Facebook(), factory.Messenger())
+		return NewQuitCommandProcessor(creator.Facebook(), creator.Messenger())
 	case RESET:
-		return NewResetCommandProcessor(factory.Facebook(), factory.Messenger())
+		return NewResetCommandProcessor(creator.Facebook(), creator.Messenger())
 	case QUERY:
-		return NewQueryCommandProcessor(factory.Facebook(), factory.Messenger())
+		return NewQueryCommandProcessor(creator.Facebook(), creator.Messenger())
 	// unknown
 	default:
 		return nil
