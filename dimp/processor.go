@@ -37,7 +37,7 @@ import (
 type MessageProcessor struct {
 	TwinsHelper
 
-	_factory ProcessorFactory
+	_factory ContentProcessorFactory
 }
 
 func (processor *MessageProcessor) Init(facebook IFacebook, messenger IMessenger) *MessageProcessor {
@@ -58,10 +58,10 @@ func (processor *MessageProcessor) Clean() {
 
 //-------- CPU Factory
 
-func (processor *MessageProcessor) Factory() ProcessorFactory {
+func (processor *MessageProcessor) Factory() ContentProcessorFactory {
 	return processor._factory
 }
-func (processor *MessageProcessor) SetFactory(factory ProcessorFactory) {
+func (processor *MessageProcessor) SetFactory(factory ContentProcessorFactory) {
 	processor._factory = factory
 }
 

@@ -28,61 +28,60 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package cpu
 
 import (
+	"fmt"
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/mkm-go/types"
+	. "github.com/dimchat/sdk-go/dimp"
+	. "github.com/dimchat/sdk-go/dimp/dkd"
 )
 
-/**
- *  CPU: Content Processing Unit
- */
-type ContentProcessor interface {
+var (
+	FmtContentNotSupport = "Content (type: %d) not support yet!"
+)
 
-	/**
-	 *  Process message content
-	 *
-	 * @param content - content received
-	 * @param message - reliable message
-	 * @return contents responding to msg.sender
-	 */
-	Process(content Content, rMsg ReliableMessage) []Content
+type BaseContentProcessor struct {
+	TwinsHelper
 }
 
-type ContentProcessorCreator interface {
-
-	/**
-	 *  Create content processor with type
-	 *
-	 * @param msgType - content type
-	 * @return ContentProcessor
-	 */
-	CreateContentProcessor(msgType ContentType) ContentProcessor
-
-	/**
-	 *  Create command processor with name
-	 *
-	 * @param msgType - content type
-	 * @param cmdName - command name
-	 * @return CommandProcessor
-	 */
-	CreateCommandProcessor(msgType ContentType, cmdName string) ContentProcessor
+func NewBaseContentProcessor(facebook IFacebook, messenger IMessenger) *BaseContentProcessor {
+	cpu := new(BaseContentProcessor)
+	cpu.Init(facebook, messenger)
+	return cpu
 }
 
-type ContentProcessorFactory interface {
+//-------- IContentProcessor
 
-	/**
-	 *  Get processor for content
-	 */
-	GetProcessor(content Content) ContentProcessor
+func (cpu *BaseContentProcessor) Process(content Content, _ ReliableMessage) []Content {
+	text := fmt.Sprintf(FmtContentNotSupport, content.Type())
+	return cpu.RespondText(text, content.Group())
+}
 
-	/**
-	 *  Get processor for content type
-	 */
-	GetContentProcessor(msgType ContentType) ContentProcessor
+//
+//  Convenient responding
+//
 
-	/**
-	 *  Get processor for command name
-	 */
-	GetCommandProcessor(msgType ContentType, cmdName string) ContentProcessor
+func (cpu *BaseContentProcessor) RespondText(text string, group ID) []Content {
+	res := NewTextContent(text)
+	if group != nil {
+		res.SetGroup(group)
+	}
+	return []Content{res}
+}
+
+func (cpu *BaseContentProcessor) RespondReceipt(text string) []Content {
+	res := NewReceiptCommand(text, nil, 0, nil)
+	return []Content{res}
+}
+
+func (cpu *BaseContentProcessor) RespondContent(content Content) []Content {
+	if ValueIsNil(content) {
+		return nil
+	} else {
+		return []Content{content}
+	}
 }

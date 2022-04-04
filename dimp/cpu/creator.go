@@ -46,12 +46,16 @@ type BaseProcessorCreator struct {
 	TwinsHelper
 }
 
-//-------- IProcessorCreator
+//-------- IContentProcessorCreator
 
 func (factory *BaseProcessorCreator) CreateContentProcessor(msgType ContentType) ContentProcessor {
-	// core contents
+	// forward
 	if msgType == FORWARD {
 		return NewForwardContentProcessor(factory.Facebook(), factory.Messenger())
+	}
+	// default
+	if msgType == 0 {
+		return NewBaseContentProcessor(factory.Facebook(), factory.Messenger())
 	}
 	// unknown
 	return nil
@@ -67,23 +71,25 @@ func (factory *BaseProcessorCreator) CreateCommandProcessor(msgType ContentType,
 		return NewDocumentCommandProcessor(factory.Facebook(), factory.Messenger())
 	}
 	// group
-	if cmdName == "group" {
+	switch cmdName {
+	case "group":
 		return NewGroupCommandProcessor(factory.Facebook(), factory.Messenger())
-	} else if cmdName == INVITE {
+	case INVITE:
 		return NewInviteCommandProcessor(factory.Facebook(), factory.Messenger())
-	} else if cmdName == EXPEL {
+	case EXPEL:
 		return NewExpelCommandProcessor(factory.Facebook(), factory.Messenger())
-	} else if cmdName == QUIT {
+	case QUIT:
 		return NewQuitCommandProcessor(factory.Facebook(), factory.Messenger())
-	} else if cmdName == RESET {
+	case RESET:
 		return NewResetCommandProcessor(factory.Facebook(), factory.Messenger())
-	} else if cmdName == QUERY {
+	case QUERY:
 		return NewQueryCommandProcessor(factory.Facebook(), factory.Messenger())
 	}
 	// others
 	if msgType == COMMAND {
-		return NewCommandProcessor(factory.Facebook(), factory.Messenger())
-	} else if msgType == HISTORY {
+		return NewBaseCommandProcessor(factory.Facebook(), factory.Messenger())
+	}
+	if msgType == HISTORY {
 		return NewHistoryCommandProcessor(factory.Facebook(), factory.Messenger())
 	}
 	// unknown

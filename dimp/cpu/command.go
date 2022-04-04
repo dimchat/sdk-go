@@ -28,12 +28,13 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package cpu
 
 import (
 	"fmt"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp"
 )
 
 var (
@@ -44,7 +45,7 @@ type BaseCommandProcessor struct {
 	BaseContentProcessor
 }
 
-func NewCommandProcessor(facebook IFacebook, messenger IMessenger) *BaseCommandProcessor {
+func NewBaseCommandProcessor(facebook IFacebook, messenger IMessenger) *BaseCommandProcessor {
 	cpu := new(BaseCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu

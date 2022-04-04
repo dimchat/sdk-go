@@ -28,61 +28,24 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package cpu
 
 import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp"
 )
 
-type ProcessorCreator interface {
-
-	/**
-	 *  Create content processor with type
-	 *
-	 * @param msgType - content type
-	 * @return ContentProcessor
-	 */
-	CreateContentProcessor(msgType ContentType) ContentProcessor
-
-	/**
-	 *  Create command processor with name
-	 *
-	 * @param msgType - content type
-	 * @param cmdName - command name
-	 * @return CommandProcessor
-	 */
-	CreateCommandProcessor(msgType ContentType, cmdName string) ContentProcessor
-}
-
-type ProcessorFactory interface {
-
-	/**
-	 *  Get processor for content
-	 */
-	GetProcessor(content Content) ContentProcessor
-
-	/**
-	 *  Get processor for content type
-	 */
-	GetContentProcessor(msgType ContentType) ContentProcessor
-
-	/**
-	 *  Get processor for command name
-	 */
-	GetCommandProcessor(msgType ContentType, cmdName string) ContentProcessor
-}
-
-type CPUFactory struct {
+type CPFactory struct {
 	TwinsHelper
 
-	_creator ProcessorCreator
+	_creator ContentProcessorCreator
 
 	_contentProcessors map[ContentType]ContentProcessor
 	_commandProcessors map[string]ContentProcessor
 }
 
-func (factory *CPUFactory) Init(facebook IFacebook, messenger IMessenger) *CPUFactory {
+func (factory *CPFactory) Init(facebook IFacebook, messenger IMessenger) *CPFactory {
 	if factory.TwinsHelper.Init(facebook, messenger) != nil {
 		factory._contentProcessors = make(map[ContentType]ContentProcessor)
 		factory._commandProcessors = make(map[string]ContentProcessor)
@@ -91,7 +54,7 @@ func (factory *CPUFactory) Init(facebook IFacebook, messenger IMessenger) *CPUFa
 	return factory
 }
 
-func (factory *CPUFactory) Clean() {
+func (factory *CPFactory) Clean() {
 	// remove processor pools
 	factory._contentProcessors = nil
 	factory._commandProcessors = nil
@@ -103,50 +66,70 @@ func (factory *CPUFactory) Clean() {
 	factory.TwinsHelper.Clean()
 }
 
-func (factory *CPUFactory) Creator() ProcessorCreator {
+func (factory *CPFactory) Creator() ContentProcessorCreator {
 	return factory._creator
 }
-func (factory *CPUFactory) SetCreator(self ProcessorCreator) {
+func (factory *CPFactory) SetCreator(self ContentProcessorCreator) {
 	factory._creator = self
 }
 
-func (factory *CPUFactory) ContentProcessorByType(msgType ContentType) ContentProcessor {
+func (factory *CPFactory) ContentProcessorByType(msgType ContentType) ContentProcessor {
 	return factory._contentProcessors[msgType]
 }
-func (factory *CPUFactory) SetContentProcessorByTag(msgType ContentType, cpu ContentProcessor) {
+func (factory *CPFactory) SetContentProcessorByType(msgType ContentType, cpu ContentProcessor) {
 	factory._contentProcessors[msgType] = cpu
 }
 
-func (factory *CPUFactory) CommandProcessorByName(cmdName string) ContentProcessor {
+func (factory *CPFactory) CommandProcessorByName(cmdName string) ContentProcessor {
 	return factory._commandProcessors[cmdName]
 }
-func (factory *CPUFactory) SetCommandProcessorByName(cmdName string, cpu ContentProcessor) {
+func (factory *CPFactory) SetCommandProcessorByName(cmdName string, cpu ContentProcessor) {
 	factory._commandProcessors[cmdName] = cpu
 }
 
-//-------- IProcessorFactory
+//-------- IContentProcessorFactory
 
-func (factory *CPUFactory) GetProcessor(content Content) ContentProcessor {
+func (factory *CPFactory) GetProcessor(content Content) ContentProcessor {
+	var cpu ContentProcessor
+	msgType := content.Type()
 	cmd, ok := content.(Command)
-	if ok {
-		return factory.GetCommandProcessor(content.Type(), cmd.CommandName())
-	} else {
-		return factory.GetContentProcessor(content.Type())
+	if ok /*&& cmd != nil */{
+		cmdName := cmd.CommandName()
+		// command processor
+		cpu = factory.GetCommandProcessor(msgType, cmdName)
+		if cpu != nil {
+			return cpu
+		}
+		_, ok = content.(GroupCommand)
+		if ok {
+			// group command processor
+			cpu = factory.GetCommandProcessor(msgType, "group")
+			if cpu != nil {
+				return cpu
+			}
+		}
 	}
+	// content processor
+	cpu = factory.GetContentProcessor(msgType)
+	if cpu == nil {
+		// default content processor
+		cpu = factory.GetContentProcessor(0)
+	}
+	return cpu
 }
 
-func (factory *CPUFactory) GetContentProcessor(msgType ContentType) ContentProcessor {
+func (factory *CPFactory) GetContentProcessor(msgType ContentType) ContentProcessor {
 	cpu := factory.ContentProcessorByType(msgType)
 	if cpu == nil {
 		cpu = factory.Creator().CreateContentProcessor(msgType)
 		if cpu != nil {
-			factory.SetContentProcessorByTag(msgType, cpu)
+			factory.SetContentProcessorByType(msgType, cpu)
 		}
 	}
 	return cpu
 }
 
-func (factory *CPUFactory) GetCommandProcessor(msgType ContentType, cmdName string) ContentProcessor {
+func (factory *CPFactory) GetCommandProcessor(msgType ContentType, cmdName string) ContentProcessor {
 	cpu := factory.CommandProcessorByName(cmdName)
 	if cpu == nil {
 		cpu = factory.Creator().CreateCommandProcessor(msgType, cmdName)
