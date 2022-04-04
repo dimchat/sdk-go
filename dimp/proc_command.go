@@ -40,27 +40,11 @@ var (
 	FmtCmdNotSupport = "Command (name: %s) not support yet!"
 )
 
-/**
- *  CPU: Command Processing Unit
- */
-type CommandProcessor interface {
-	ContentProcessor
-
-	/**
-	 *  Execute command
-	 *
-	 * @param cmd     - command received
-	 * @param message - reliable message
-	 * @return contents responding to msg.sender
-	 */
-	Execute(cmd Command, rMsg ReliableMessage) []Content
-}
-
 type BaseCommandProcessor struct {
 	BaseContentProcessor
 }
 
-func NewCommandProcessor(facebook IFacebook, messenger IMessenger) CommandProcessor {
+func NewCommandProcessor(facebook IFacebook, messenger IMessenger) *BaseCommandProcessor {
 	cpu := new(BaseCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
@@ -68,14 +52,8 @@ func NewCommandProcessor(facebook IFacebook, messenger IMessenger) CommandProces
 
 //-------- IContentProcessor
 
-func (cpu *BaseCommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
+func (cpu *BaseCommandProcessor) Process(content Content, _ ReliableMessage) []Content {
 	cmd, _ := content.(Command)
-	return cpu.Execute(cmd, rMsg)
-}
-
-//-------- ICommandProcessorExt
-
-func (cpu *BaseCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
 	text := fmt.Sprintf(FmtCmdNotSupport, cmd.CommandName())
 	return cpu.RespondText(text, cmd.Group())
 }

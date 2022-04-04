@@ -68,7 +68,8 @@ func (gpu *GroupCommandProcessor) GetMembers(cmd GroupCommand) []ID {
 
 //-------- ICommandProcessor
 
-func (gpu *GroupCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
+func (gpu *GroupCommandProcessor) Process(content Content, _ ReliableMessage) []Content {
+	cmd, _ := content.(GroupCommand)
 	text := fmt.Sprintf(FmtGrpCmdNotSupport, cmd.CommandName())
 	return gpu.RespondText(text, cmd.Group())
 }

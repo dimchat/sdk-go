@@ -57,7 +57,8 @@ func NewInviteCommandProcessor(facebook IFacebook, messenger IMessenger) *Invite
 
 //-------- ICommandProcessor
 
-func (gpu *InviteCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) []Content {
+func (gpu *InviteCommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
+	cmd, _ := content.(GroupCommand)
 	facebook := gpu.Facebook()
 
 	// 0. check group

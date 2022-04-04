@@ -57,7 +57,8 @@ func NewQueryCommandProcessor(facebook IFacebook, messenger IMessenger) *QueryCo
 
 //-------- ICommandProcessor
 
-func (gpu *QueryCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) []Content {
+func (gpu *QueryCommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
+	cmd, _ := content.(GroupCommand)
 	facebook := gpu.Facebook()
 
 	// 0. check group

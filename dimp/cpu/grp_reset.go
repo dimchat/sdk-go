@@ -95,7 +95,8 @@ func (gpu *ResetCommandProcessor) temporarySave(cmd GroupCommand, sender ID) []C
 
 //-------- ICommandProcessor
 
-func (gpu *ResetCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) []Content {
+func (gpu *ResetCommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
+	cmd, _ := content.(GroupCommand)
 	facebook := gpu.Facebook()
 
 	// 0. check group

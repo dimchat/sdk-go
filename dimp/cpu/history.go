@@ -53,7 +53,8 @@ func NewHistoryCommandProcessor(facebook IFacebook, messenger IMessenger) *Histo
 
 //-------- ICommandProcessor
 
-func (cpu *HistoryCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
+func (cpu *HistoryCommandProcessor) Process(content Content, _ ReliableMessage) []Content {
+	cmd, _ := content.(HistoryCommand)
 	text := fmt.Sprintf(FmtHisCmdNotSupport, cmd.CommandName())
 	return cpu.RespondText(text, cmd.Group())
 }

@@ -57,7 +57,7 @@ func (factory *BaseProcessorCreator) CreateContentProcessor(msgType ContentType)
 	return nil
 }
 
-func (factory *BaseProcessorCreator) CreateCommandProcessor(msgType ContentType, cmdName string) CommandProcessor {
+func (factory *BaseProcessorCreator) CreateCommandProcessor(msgType ContentType, cmdName string) ContentProcessor {
 	// meta
 	if cmdName == META {
 		return NewMetaCommandProcessor(factory.Facebook(), factory.Messenger())

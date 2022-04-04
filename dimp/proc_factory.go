@@ -52,7 +52,7 @@ type ProcessorCreator interface {
 	 * @param cmdName - command name
 	 * @return CommandProcessor
 	 */
-	CreateCommandProcessor(msgType ContentType, cmdName string) CommandProcessor
+	CreateCommandProcessor(msgType ContentType, cmdName string) ContentProcessor
 }
 
 type ProcessorFactory interface {
@@ -70,7 +70,7 @@ type ProcessorFactory interface {
 	/**
 	 *  Get processor for command name
 	 */
-	GetCommandProcessor(msgType ContentType, cmdName string) CommandProcessor
+	GetCommandProcessor(msgType ContentType, cmdName string) ContentProcessor
 }
 
 type CPUFactory struct {
@@ -79,13 +79,13 @@ type CPUFactory struct {
 	_creator ProcessorCreator
 
 	_contentProcessors map[ContentType]ContentProcessor
-	_commandProcessors map[string]CommandProcessor
+	_commandProcessors map[string]ContentProcessor
 }
 
 func (factory *CPUFactory) Init(facebook IFacebook, messenger IMessenger) *CPUFactory {
 	if factory.TwinsHelper.Init(facebook, messenger) != nil {
 		factory._contentProcessors = make(map[ContentType]ContentProcessor)
-		factory._commandProcessors = make(map[string]CommandProcessor)
+		factory._commandProcessors = make(map[string]ContentProcessor)
 		factory._creator = nil
 	}
 	return factory
@@ -117,10 +117,10 @@ func (factory *CPUFactory) SetContentProcessorByTag(msgType ContentType, cpu Con
 	factory._contentProcessors[msgType] = cpu
 }
 
-func (factory *CPUFactory) CommandProcessorByName(cmdName string) CommandProcessor {
+func (factory *CPUFactory) CommandProcessorByName(cmdName string) ContentProcessor {
 	return factory._commandProcessors[cmdName]
 }
-func (factory *CPUFactory) SetCommandProcessorByName(cmdName string, cpu CommandProcessor) {
+func (factory *CPUFactory) SetCommandProcessorByName(cmdName string, cpu ContentProcessor) {
 	factory._commandProcessors[cmdName] = cpu
 }
 
@@ -146,7 +146,7 @@ func (factory *CPUFactory) GetContentProcessor(msgType ContentType) ContentProce
 	return cpu
 }
 
-func (factory *CPUFactory) GetCommandProcessor(msgType ContentType, cmdName string) CommandProcessor {
+func (factory *CPUFactory) GetCommandProcessor(msgType ContentType, cmdName string) ContentProcessor {
 	cpu := factory.CommandProcessorByName(cmdName)
 	if cpu == nil {
 		cpu = factory.Creator().CreateCommandProcessor(msgType, cmdName)

@@ -115,13 +115,13 @@ func (cmd *BaseHandshakeCommand) Message() string {
 }
 
 func (cmd *BaseHandshakeCommand) Session() string {
-	if cmd._message == "" {
+	if cmd._session == "" {
 		text := cmd.Get("session")
 		if text != nil {
 			cmd._session = text.(string)
 		}
 	}
-	return cmd._message
+	return cmd._session
 }
 
 func (cmd *BaseHandshakeCommand) State() HandshakeState {

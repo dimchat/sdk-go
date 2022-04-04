@@ -62,7 +62,8 @@ func (gpu *QuitCommandProcessor) RemoveAssistant(cmd QuitCommand, _ ReliableMess
 
 //-------- ICommandProcessor
 
-func (gpu *QuitCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) []Content {
+func (gpu *QuitCommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
+	cmd, _ := content.(GroupCommand)
 	facebook := gpu.Facebook()
 
 	// 0. check group

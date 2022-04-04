@@ -83,10 +83,10 @@ func (cpu *MetaCommandProcessor) putMeta(identifier ID, meta Meta) []Content {
 
 //-------- ICommandProcessor
 
-func (cpu *MetaCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
-	mCmd, _ := cmd.(MetaCommand)
-	identifier := mCmd.ID()
-	meta := mCmd.Meta()
+func (cpu *MetaCommandProcessor) Process(content Content, _ ReliableMessage) []Content {
+	cmd, _ := content.(MetaCommand)
+	identifier := cmd.ID()
+	meta := cmd.Meta()
 	if identifier == nil {
 		// error
 		return cpu.RespondText(StrMetaCmdError, cmd.Group())

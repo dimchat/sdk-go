@@ -98,10 +98,10 @@ func (cpu *DocumentCommandProcessor) putDocument(identifier ID, meta Meta, doc D
 
 //-------- ICommandProcessor
 
-func (cpu *DocumentCommandProcessor) Execute(cmd Command, _ ReliableMessage) []Content {
-	mCmd, _ := cmd.(DocumentCommand)
-	identifier := mCmd.ID()
-	doc := mCmd.Document()
+func (cpu *DocumentCommandProcessor) Process(content Content, _ ReliableMessage) []Content {
+	cmd, _ := content.(DocumentCommand)
+	identifier := cmd.ID()
+	doc := cmd.Document()
 	if identifier == nil {
 		// error
 		return cpu.RespondText(StrDocCmdError, nil)
@@ -114,6 +114,6 @@ func (cpu *DocumentCommandProcessor) Execute(cmd Command, _ ReliableMessage) []C
 		return cpu.getDocument(identifier, docType)
 	} else {
 		// received a new document for ID
-		return cpu.putDocument(identifier, mCmd.Meta(), doc)
+		return cpu.putDocument(identifier, cmd.Meta(), doc)
 	}
 }

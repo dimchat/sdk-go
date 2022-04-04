@@ -58,7 +58,8 @@ func NewExpelCommandProcessor(facebook IFacebook, messenger IMessenger) *ExpelCo
 
 //-------- ICommandProcessor
 
-func (gpu *ExpelCommandProcessor) Execute(cmd Command, rMsg ReliableMessage) []Content {
+func (gpu *ExpelCommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
+	cmd, _ := content.(GroupCommand)
 	facebook := gpu.Facebook()
 
 	// 0. check group

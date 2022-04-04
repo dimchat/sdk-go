@@ -71,7 +71,7 @@ func (processor *MessageProcessor) GetProcessor(content Content) ContentProcesso
 func (processor *MessageProcessor) GetContentProcessor(msgType ContentType) ContentProcessor {
 	return processor.Factory().GetContentProcessor(msgType)
 }
-func (processor *MessageProcessor) GetCommandProcessor(msgType ContentType, cmdName string) CommandProcessor {
+func (processor *MessageProcessor) GetCommandProcessor(msgType ContentType, cmdName string) ContentProcessor {
 	return processor.Factory().GetCommandProcessor(msgType, cmdName)
 }
 
