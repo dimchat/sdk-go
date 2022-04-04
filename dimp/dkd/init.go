@@ -31,7 +31,7 @@
 package dkd
 
 import (
-	. "github.com/dimchat/core-go/core"
+	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"

@@ -42,36 +42,40 @@ import (
  *
  *  Delegate for CPU factory
  */
-type BaseProcessorCreator struct {
+type CPCreator struct {
 	TwinsHelper
 }
 
 //-------- IContentProcessorCreator
 
-func (factory *BaseProcessorCreator) CreateContentProcessor(msgType ContentType) ContentProcessor {
-	// forward
-	if msgType == FORWARD {
+func (factory *CPCreator) CreateContentProcessor(msgType ContentType) ContentProcessor {
+	switch msgType {
+	// forward content
+	case FORWARD:
 		return NewForwardContentProcessor(factory.Facebook(), factory.Messenger())
-	}
-	// default
-	if msgType == 0 {
+	// default commands
+	case COMMAND:
+		return NewBaseCommandProcessor(factory.Facebook(), factory.Messenger())
+	case HISTORY:
+		return NewHistoryCommandProcessor(factory.Facebook(), factory.Messenger())
+	// default contents
+	case 0:
 		return NewBaseContentProcessor(factory.Facebook(), factory.Messenger())
-	}
 	// unknown
-	return nil
+	default:
+		return nil
+	}
 }
 
-func (factory *BaseProcessorCreator) CreateCommandProcessor(msgType ContentType, cmdName string) ContentProcessor {
-	// meta
-	if cmdName == META {
-		return NewMetaCommandProcessor(factory.Facebook(), factory.Messenger())
-	}
-	// document
-	if cmdName == DOCUMENT {
-		return NewDocumentCommandProcessor(factory.Facebook(), factory.Messenger())
-	}
-	// group
+func (factory *CPCreator) CreateCommandProcessor(_ ContentType, cmdName string) ContentProcessor {
 	switch cmdName {
+	// meta command
+	case META:
+		return NewMetaCommandProcessor(factory.Facebook(), factory.Messenger())
+	// document command
+	case DOCUMENT:
+		return NewDocumentCommandProcessor(factory.Facebook(), factory.Messenger())
+	// group commands
 	case "group":
 		return NewGroupCommandProcessor(factory.Facebook(), factory.Messenger())
 	case INVITE:
@@ -84,14 +88,8 @@ func (factory *BaseProcessorCreator) CreateCommandProcessor(msgType ContentType,
 		return NewResetCommandProcessor(factory.Facebook(), factory.Messenger())
 	case QUERY:
 		return NewQueryCommandProcessor(factory.Facebook(), factory.Messenger())
-	}
-	// others
-	if msgType == COMMAND {
-		return NewBaseCommandProcessor(factory.Facebook(), factory.Messenger())
-	}
-	if msgType == HISTORY {
-		return NewHistoryCommandProcessor(factory.Facebook(), factory.Messenger())
-	}
 	// unknown
-	return nil
+	default:
+		return nil
+	}
 }
