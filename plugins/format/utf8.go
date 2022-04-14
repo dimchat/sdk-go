@@ -1,13 +1,8 @@
 /* license: https://mit-license.org
- *
- *  DIM-SDK : Decentralized Instant Messaging Software Development Kit
- *
- *                                Written in 2021 by Moky <albert.moky@gmail.com>
- *
  * ==============================================================================
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Albert Moky
+ * Copyright (c) 2020 Albert Moky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,65 +23,42 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dkd
+package format
 
 import (
-	. "github.com/dimchat/core-go/dkd"
-	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
-	. "github.com/dimchat/sdk-go/dimp/protocol"
+	. "github.com/dimchat/mkm-go/format"
+	"reflect"
+	"unsafe"
 )
 
-/**
- *  Command message: {
- *      type : 0x88,
- *      sn   : 123,
- *
- *      command : "block",
- *      list    : []      // block-list
- *  }
- */
-type BaseBlockCommand struct {
-	BaseCommand
-
-	// block-list
-	_list []ID
+func StringFromBytes(bytes []byte) string {
+	return *(*string)(unsafe.Pointer(&bytes))
 }
 
-func (cmd *BaseBlockCommand) Init(dict map[string]interface{}) BlockCommand {
-	if cmd.BaseCommand.Init(dict) != nil {
-		// lazy load
-		cmd._list = nil
+func BytesFromString(string string) []byte {
+	stringHeader := (*reflect.StringHeader)(unsafe.Pointer(&string))
+	sliceHeader := reflect.SliceHeader{
+		Data: stringHeader.Data,
+		Len: stringHeader.Len,
+		Cap: stringHeader.Len,
 	}
-	return cmd
+	return *(*[]byte)(unsafe.Pointer(&sliceHeader))
 }
 
-func (cmd *BaseBlockCommand) InitWithList(list []ID) BlockCommand {
-	if cmd.BaseCommand.InitWithCommand(BLOCK) != nil {
-		if !ValueIsNil(list) {
-			cmd.SetBlockList(list)
-		}
-	}
-	return cmd
+type UTF8Coder struct {}
+
+func (coder UTF8Coder) Init() StringCoder {
+	return coder
 }
 
-//-------- IBlockCommand
+//-------- IStringCoder
 
-func (cmd *BaseBlockCommand) BlockList() []ID {
-	if cmd._list == nil {
-		list := cmd.Get("list")
-		if list != nil {
-			cmd._list = IDConvert(list)
-		}
-	}
-	return cmd._list
+func (coder UTF8Coder) Encode(string string) []byte {
+	//return []byte(string)
+	return BytesFromString(string)
 }
 
-func (cmd *BaseBlockCommand) SetBlockList(list []ID) {
-	if ValueIsNil(list) {
-		cmd.Remove("list")
-	} else {
-		cmd.Set("list", IDRevert(list))
-	}
-	cmd._list = list
+func (coder UTF8Coder) Decode(bytes []byte) interface{} {
+	//return string(bytes)
+	return StringFromBytes(bytes)
 }

@@ -45,7 +45,7 @@ type CPFactory struct {
 	_commandProcessors map[string]ContentProcessor
 }
 
-func (factory *CPFactory) Init(facebook IFacebook, messenger IMessenger) *CPFactory {
+func (factory *CPFactory) Init(facebook IFacebook, messenger IMessenger) ContentProcessorFactory {
 	if factory.TwinsHelper.Init(facebook, messenger) != nil {
 		factory._contentProcessors = make(map[ContentType]ContentProcessor)
 		factory._commandProcessors = make(map[string]ContentProcessor)
@@ -69,8 +69,8 @@ func (factory *CPFactory) Clean() {
 func (factory *CPFactory) Creator() ContentProcessorCreator {
 	return factory._creator
 }
-func (factory *CPFactory) SetCreator(self ContentProcessorCreator) {
-	factory._creator = self
+func (factory *CPFactory) SetCreator(creator ContentProcessorCreator) {
+	factory._creator = creator
 }
 
 func (factory *CPFactory) ContentProcessorByType(msgType ContentType) ContentProcessor {

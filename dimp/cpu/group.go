@@ -47,11 +47,17 @@ type GroupCommandProcessor struct {
 	HistoryCommandProcessor
 }
 
-func NewGroupCommandProcessor(facebook IFacebook, messenger IMessenger) *GroupCommandProcessor {
+func NewGroupCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
 	cpu := new(GroupCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
+
+//func (cpu *GroupCommandProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
+//	if cpu.HistoryCommandProcessor.Init(facebook, messenger) != nil {
+//	}
+//	return cpu
+//}
 
 func (gpu *GroupCommandProcessor) GetMembers(cmd GroupCommand) []ID {
 	// get from members
@@ -66,7 +72,7 @@ func (gpu *GroupCommandProcessor) GetMembers(cmd GroupCommand) []ID {
 	return members
 }
 
-//-------- ICommandProcessor
+//-------- IContentProcessor
 
 func (gpu *GroupCommandProcessor) Process(content Content, _ ReliableMessage) []Content {
 	cmd, _ := content.(GroupCommand)

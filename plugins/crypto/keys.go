@@ -34,6 +34,12 @@ type BaseKey struct {
 	Dictionary
 }
 
+//func (key *BaseKey) Init(dict map[string]interface{}) CryptographyKey {
+//	if key.Dictionary.Init(dict) != nil {
+//	}
+//	return key
+//}
+
 //-------- ICryptographyKey
 
 func (key *BaseKey) Algorithm() string {
@@ -41,7 +47,7 @@ func (key *BaseKey) Algorithm() string {
 }
 
 func (key *BaseKey) Data() []byte {
-	panic("not implemented")
+	panic("BaseKey::Data() > override me!")
 }
 
 /**
@@ -52,16 +58,22 @@ type BaseSymmetricKey struct {
 	BaseKey
 }
 
+//func (key *BaseSymmetricKey) Init(dict map[string]interface{}) SymmetricKey {
+//	if key.BaseKey.Init(dict) != nil {
+//	}
+//	return key
+//}
+
 //-------- IEncryptKey
 
-//func (key *BaseSymmetricKey) Encrypt(plaintext []byte) []byte {
-//	panic("not implemented")
+//func (key *BaseSymmetricKey) Encrypt(_ []byte) []byte {
+//	panic("BaseSymmetricKey::Encrypt(plaintext) > override me!")
 //}
 
 //-------- IDecryptKey
 
-func (key *BaseSymmetricKey) Decrypt(ciphertext []byte) []byte {
-	panic("not implemented")
+func (key *BaseSymmetricKey) Decrypt(_ []byte) []byte {
+	panic("BaseSymmetricKey::Decrypt(ciphertext) > override me!")
 }
 
 func (key *BaseSymmetricKey) Match(pKey EncryptKey) bool {
@@ -76,10 +88,16 @@ type BasePublicKey struct {
 	BaseKey
 }
 
+//func (key *BasePublicKey) Init(dict map[string]interface{}) PublicKey {
+//	if key.BaseKey.Init(dict) != nil {
+//	}
+//	return key
+//}
+
 //-------- IVerifyKey
 
-func (key *BasePublicKey) Verify(data []byte, signature []byte) bool {
-	panic("not implemented")
+func (key *BasePublicKey) Verify(_ []byte, _ []byte) bool {
+	panic("BasePublicKey::Verify(data, signature) > override me!")
 }
 
 func (key *BasePublicKey) Match(sKey SignKey) bool {
@@ -94,14 +112,20 @@ type BasePrivateKey struct {
 	BaseKey
 }
 
+//func (key *BasePrivateKey) Init(dict map[string]interface{}) PrivateKey {
+//	if key.BaseKey.Init(dict) != nil {
+//	}
+//	return key
+//}
+
 //-------- IPrivateKey
 
 //func (key *BasePrivateKey) PublicKey() PublicKey {
-//	panic("not implemented")
+//	panic("BasePrivateKey::PublicKey() > override me!")
 //}
 
 //-------- ISignKey
 
-//func (key *BasePrivateKey) Sign(data []byte) []byte {
-//	panic("not implemented")
+//func (key *BasePrivateKey) Sign(_ []byte) []byte {
+//	panic("BasePrivateKey::Sign(data) > override me!")
 //}

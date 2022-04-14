@@ -29,6 +29,7 @@ import (
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
+	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/sdk-go/plugins/types"
 )
@@ -50,17 +51,19 @@ type AESKey struct {
 	_iv []byte
 }
 
-func NewAESKey(dict map[string]interface{}) *AESKey {
+func NewAESKey(dict map[string]interface{}) SymmetricKey {
 	key := new(AESKey)
 	key.Init(dict)
 	return key
 }
 
-func (key *AESKey) Init(dict map[string]interface{}) *AESKey {
+func (key *AESKey) Init(dict map[string]interface{}) SymmetricKey {
 	if key.BaseSymmetricKey.Init(dict) != nil {
 		// TODO: check algorithm parameters
 		// 1. check mode = 'CBC'
 		// 2. check padding = 'PKCS7Padding'
+		key._data = nil
+		key._iv = nil
 	}
 	return key
 }

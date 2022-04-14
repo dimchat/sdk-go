@@ -40,11 +40,17 @@ type ForwardContentProcessor struct {
 	BaseContentProcessor
 }
 
-func NewForwardContentProcessor(facebook IFacebook, messenger IMessenger) *ForwardContentProcessor {
+func NewForwardContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
 	cpu := new(ForwardContentProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
+
+//func (cpu *ForwardContentProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
+//	if cpu.BaseContentProcessor.Init(facebook, messenger) != nil {
+//	}
+//	return cpu
+//}
 
 //-------- IContentProcessor
 

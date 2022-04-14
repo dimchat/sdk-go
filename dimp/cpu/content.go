@@ -48,11 +48,17 @@ type BaseContentProcessor struct {
 	TwinsHelper
 }
 
-func NewBaseContentProcessor(facebook IFacebook, messenger IMessenger) *BaseContentProcessor {
+func NewBaseContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
 	cpu := new(BaseContentProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
+
+//func (cpu *BaseContentProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
+//	if cpu.TwinsHelper.Init(facebook, messenger) != nil {
+//	}
+//	return cpu
+//}
 
 //-------- IContentProcessor
 

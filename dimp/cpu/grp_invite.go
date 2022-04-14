@@ -49,13 +49,19 @@ type InviteCommandProcessor struct {
 	ResetCommandProcessor
 }
 
-func NewInviteCommandProcessor(facebook IFacebook, messenger IMessenger) *InviteCommandProcessor {
+func NewInviteCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
 	cpu := new(InviteCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
 
-//-------- ICommandProcessor
+//func (cpu *InviteCommandProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
+//	if cpu.ResetCommandProcessor.Init(facebook, messenger) != nil {
+//	}
+//	return cpu
+//}
+
+//-------- IContentProcessor
 
 func (gpu *InviteCommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
 	cmd, _ := content.(GroupCommand)

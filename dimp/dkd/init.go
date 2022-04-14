@@ -56,41 +56,57 @@ func NewReceiptCommand(text string, env Envelope, sn uint64, signature []byte) R
 //  Handshake command factories
 //
 func HandshakeCommandStart() HandshakeCommand {
-	return new(BaseHandshakeCommand).InitWithMessage("", "")
+	cmd := new(BaseHandshakeCommand)
+	cmd.InitWithMessage("", "")
+	return cmd
 }
 
 func HandshakeCommandRestart(session string) HandshakeCommand {
-	return new(BaseHandshakeCommand).InitWithMessage("", session)
+	cmd := new(BaseHandshakeCommand)
+	cmd.InitWithMessage("", session)
+	return cmd
 }
 
 func HandshakeCommandAgain(session string) HandshakeCommand {
-	return new(BaseHandshakeCommand).InitWithMessage("DIM?", session)
+	cmd := new(BaseHandshakeCommand)
+	cmd.InitWithMessage("DIM?", session)
+	return cmd
 }
 
 func HandshakeCommandSuccess(session string) HandshakeCommand {
-	return new(BaseHandshakeCommand).InitWithMessage("DIM!", session)
+	cmd := new(BaseHandshakeCommand)
+	cmd.InitWithMessage("DIM!", session)
+	return cmd
 }
 
 //
 //  Mute command factories
 //
 func MuteCommandQuery() MuteCommand {
-	return new(BaseMuteCommand).InitWithList(nil)
+	cmd := new(BaseMuteCommand)
+	cmd.InitWithList(nil)
+	return cmd
 }
 
 func MuteCommandRespond(list []ID) MuteCommand {
-	return new(BaseMuteCommand).InitWithList(list)
+	cmd := new(BaseMuteCommand)
+	cmd.InitWithList(list)
+	return cmd
 }
 
 //
 //  Block command factories
 //
 func BlockCommandQuery() BlockCommand {
-	return new(BaseBlockCommand).InitWithList(nil)
+	cmd := new(BaseBlockCommand)
+	cmd.InitWithList(nil)
+	return cmd
 }
 
 func BlockCommandRespond(list []ID) BlockCommand {
-	return new(BaseBlockCommand).InitWithList(list)
+	cmd := new(BaseBlockCommand)
+	cmd.InitWithList(list)
+	return cmd
 }
 
 /**

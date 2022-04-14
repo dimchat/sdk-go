@@ -147,13 +147,15 @@ type Facebook struct {
 	_groups map[ID]Group
 }
 
-func (facebook *Facebook) Init() *Facebook {
+func (facebook *Facebook) Init() IFacebook {
 	if facebook.Barrack.Init() != nil {
 		facebook._users = make(map[ID]User)
 		facebook._groups = make(map[ID]Group)
 	}
 	return facebook
 }
+
+//-------- ICleanable
 
 func (facebook *Facebook) Clean() {
 	// remove memory caches
@@ -217,17 +219,17 @@ func (facebook *Facebook) cacheGroup(group Group) {
 
 //-------- IFacebookExt
 
-//func (facebook *Facebook) SaveMeta(meta Meta, identifier ID) bool {
-//	panic("not implemented")
-//}
-//
-//func (facebook *Facebook) SaveDocument(doc Document) bool {
-//	panic("not implemented")
-//}
-//
-//func (facebook *Facebook) SaveMembers(members []ID, group ID) bool {
-//	panic("not implemented")
-//}
+func (facebook *Facebook) SaveMeta(_ Meta, _ ID) bool {
+	panic("Facebook::SaveMeta(meta, id) > override me!")
+}
+
+func (facebook *Facebook) SaveDocument(_ Document) bool {
+	panic("Facebook::SaveDocument(doc) > override me!")
+}
+
+func (facebook *Facebook) SaveMembers(_ []ID, _ ID) bool {
+	panic("Facebook::SaveMembers(members, group) > override me!")
+}
 
 func (facebook *Facebook) CheckDocument(doc Document) bool {
 	identifier := doc.ID()
@@ -318,9 +320,9 @@ func (facebook *Facebook) CreateGroup(identifier ID) Group {
 	}
 }
 
-//func (facebook *Facebook) GetLocalUsers() []User {
-//	panic("not implemented")
-//}
+func (facebook *Facebook) GetLocalUsers() []User {
+	panic("Facebook::GetLocalUsers() > override me!")
+}
 
 func (facebook *Facebook) GetCurrentUser() User {
 	users := facebook.self().GetLocalUsers()

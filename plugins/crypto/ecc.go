@@ -46,13 +46,13 @@ type ECCPublicKey struct {
 	_data []byte
 }
 
-func NewECCPublicKey(dict map[string]interface{}) *ECCPublicKey {
+func NewECCPublicKey(dict map[string]interface{}) PublicKey {
 	key := new(ECCPublicKey)
 	key.Init(dict)
 	return key
 }
 
-func (key *ECCPublicKey) Init(dict map[string]interface{}) *ECCPublicKey {
+func (key *ECCPublicKey) Init(dict map[string]interface{}) PublicKey {
 	if key.BasePublicKey.Init(dict) != nil {
 		// lazy load
 		key._data = nil
@@ -105,13 +105,13 @@ type ECCPrivateKey struct {
 	_publicKey PublicKey
 }
 
-func NewECCPrivateKey(dict map[string]interface{}) *ECCPrivateKey {
+func NewECCPrivateKey(dict map[string]interface{}) PrivateKey {
 	key := new(ECCPrivateKey)
 	key.Init(dict)
 	return key
 }
 
-func (key *ECCPrivateKey) Init(dict map[string]interface{}) *ECCPrivateKey {
+func (key *ECCPrivateKey) Init(dict map[string]interface{}) PrivateKey {
 	if key.BasePrivateKey.Init(dict) != nil {
 		// lazy load
 		key._data = nil

@@ -45,14 +45,19 @@ type MessagePacker struct {
 	TwinsHelper
 }
 
+//func (packer *MessagePacker) Init(facebook IFacebook, messenger IMessenger) Packer {
+//	if packer.TwinsHelper.Init(facebook, messenger) != nil {
+//	}
+//	return packer
+//}
+
 //-------- IPacker
 
 func (packer *MessagePacker) GetOvertGroup(content Content) ID {
 	group := content.Group()
 	if group == nil {
 		return nil
-	}
-	if group.IsBroadcast() {
+	} else if group.IsBroadcast() {
 		// broadcast message is always overt
 		return group
 	}
@@ -160,7 +165,8 @@ func (packer *MessagePacker) SignMessage(sMsg SecureMessage) ReliableMessage {
 
 func (packer *MessagePacker) SerializeMessage(rMsg ReliableMessage) []byte {
 	dict := rMsg.GetMap(false)
-	return JSONEncodeMap(dict)
+	json := JSONEncodeMap(dict)
+	return UTF8Encode(json)
 }
 
 //
@@ -168,7 +174,8 @@ func (packer *MessagePacker) SerializeMessage(rMsg ReliableMessage) []byte {
 //
 
 func (packer *MessagePacker) DeserializeMessage(data []byte) ReliableMessage {
-	dict := JSONDecodeMap(data)
+	json := UTF8Decode(data)
+	dict := JSONDecodeMap(json)
 	// TODO: translate short keys
 	//       'S' -> 'sender'
 	//       'R' -> 'receiver'

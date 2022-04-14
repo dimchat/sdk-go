@@ -73,7 +73,7 @@ type BaseHandshakeCommand struct {
 	_state HandshakeState
 }
 
-func (cmd *BaseHandshakeCommand) Init(dict map[string]interface{}) *BaseHandshakeCommand {
+func (cmd *BaseHandshakeCommand) Init(dict map[string]interface{}) HandshakeCommand {
 	if cmd.BaseCommand.Init(dict) != nil {
 		// lazy load
 		cmd._message = ""
@@ -83,7 +83,7 @@ func (cmd *BaseHandshakeCommand) Init(dict map[string]interface{}) *BaseHandshak
 	return cmd
 }
 
-func (cmd *BaseHandshakeCommand) InitWithMessage(message string, session string) *BaseHandshakeCommand {
+func (cmd *BaseHandshakeCommand) InitWithMessage(message string, session string) HandshakeCommand {
 	if cmd.BaseCommand.InitWithCommand(HANDSHAKE) != nil {
 		// message text
 		if message == "" {

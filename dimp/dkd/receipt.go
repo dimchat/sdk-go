@@ -36,6 +36,7 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/types"
+	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 
 /**
@@ -59,7 +60,7 @@ type BaseReceiptCommand struct {
 	_envelope Envelope
 }
 
-func (cmd *BaseReceiptCommand) Init(dict map[string]interface{}) *BaseReceiptCommand {
+func (cmd *BaseReceiptCommand) Init(dict map[string]interface{}) ReceiptCommand {
 	if cmd.BaseCommand.Init(dict) != nil {
 		// lazy load
 		cmd._envelope = nil
@@ -67,7 +68,7 @@ func (cmd *BaseReceiptCommand) Init(dict map[string]interface{}) *BaseReceiptCom
 	return cmd
 }
 
-func (cmd *BaseReceiptCommand) InitWithMessage(text string) *BaseReceiptCommand {
+func (cmd *BaseReceiptCommand) InitWithMessage(text string) ReceiptCommand {
 	if cmd.BaseCommand.InitWithCommand(RECEIPT) != nil {
 		cmd.Set("message", text)
 		cmd._envelope = nil
@@ -75,7 +76,7 @@ func (cmd *BaseReceiptCommand) InitWithMessage(text string) *BaseReceiptCommand 
 	return cmd
 }
 
-func (cmd *BaseReceiptCommand) InitWithEnvelope(env Envelope, sn uint64, text string) *BaseReceiptCommand {
+func (cmd *BaseReceiptCommand) InitWithEnvelope(env Envelope, sn uint64, text string) ReceiptCommand {
 	if cmd.BaseCommand.InitWithCommand(RECEIPT) != nil {
 		// envelope of the message responding to
 		cmd.SetEnvelope(env)

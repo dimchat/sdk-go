@@ -66,7 +66,7 @@ type BaseStorageCommand struct {
 	_password SymmetricKey
 }
 
-func (cmd *BaseStorageCommand) Init(dict map[string]interface{}) *BaseStorageCommand {
+func (cmd *BaseStorageCommand) Init(dict map[string]interface{}) StorageCommand {
 	if cmd.BaseCommand.Init(dict) != nil {
 		// lazy load
 		cmd._title = ""
@@ -78,7 +78,7 @@ func (cmd *BaseStorageCommand) Init(dict map[string]interface{}) *BaseStorageCom
 	return cmd
 }
 
-func (cmd *BaseStorageCommand) InitWithTitle(title string) *BaseStorageCommand {
+func (cmd *BaseStorageCommand) InitWithTitle(title string) StorageCommand {
 	if cmd.BaseCommand.InitWithCommand(STORAGE) != nil {
 		cmd._title = title
 		cmd._data = nil
@@ -170,7 +170,9 @@ func (cmd *BaseStorageCommand) DecryptKey(privateKey DecryptKey) SymmetricKey {
 		//panic("failed to decrypt key")
 		return nil
 	}
-	return SymmetricKeyParse(JSONDecodeMap(key))
+	json := UTF8Decode(key)
+	dict := JSONDecodeMap(json)
+	return SymmetricKeyParse(dict)
 }
 
 func (cmd *BaseStorageCommand) DecryptWithSymmetricKey(password SymmetricKey) []byte {

@@ -49,13 +49,19 @@ type QueryCommandProcessor struct {
 	GroupCommandProcessor
 }
 
-func NewQueryCommandProcessor(facebook IFacebook, messenger IMessenger) *QueryCommandProcessor {
+func NewQueryCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
 	cpu := new(QueryCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
 
-//-------- ICommandProcessor
+//func (cpu *QueryCommandProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
+//	if cpu.GroupCommandProcessor.Init(facebook, messenger) != nil {
+//	}
+//	return cpu
+//}
+
+//-------- IContentProcessor
 
 func (gpu *QueryCommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
 	cmd, _ := content.(GroupCommand)

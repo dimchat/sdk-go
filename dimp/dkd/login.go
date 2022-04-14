@@ -34,6 +34,7 @@ import (
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/protocol"
 )
 
 /**
@@ -62,13 +63,13 @@ type BaseLoginCommand struct {
 	BaseCommand
 }
 
-//func (cmd *BaseLoginCommand) Init(dict map[string]interface{}) *BaseLoginCommand {
+//func (cmd *BaseLoginCommand) Init(dict map[string]interface{}) LoginCommand {
 //	if cmd.BaseCommand.Init(dict) != nil {
 //	}
 //	return cmd
 //}
 
-func (cmd *BaseLoginCommand) InitWithID(identifier ID) *BaseLoginCommand {
+func (cmd *BaseLoginCommand) InitWithID(identifier ID) LoginCommand {
 	if cmd.BaseCommand.InitWithCommand(LOGIN) != nil {
 		cmd.Set("ID", identifier.String())
 	}

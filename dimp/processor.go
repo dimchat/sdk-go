@@ -31,6 +31,7 @@
 package dimp
 
 import (
+	. "github.com/dimchat/core-go/dimp"
 	. "github.com/dimchat/dkd-go/protocol"
 )
 
@@ -40,12 +41,14 @@ type MessageProcessor struct {
 	_factory ContentProcessorFactory
 }
 
-func (processor *MessageProcessor) Init(facebook IFacebook, messenger IMessenger) *MessageProcessor {
+func (processor *MessageProcessor) Init(facebook IFacebook, messenger IMessenger) Processor {
 	if processor.TwinsHelper.Init(facebook, messenger) != nil {
 		processor._factory = nil
 	}
 	return processor
 }
+
+//-------- ICleanable
 
 func (processor *MessageProcessor) Clean() {
 	// clean factory

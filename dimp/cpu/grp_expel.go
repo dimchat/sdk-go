@@ -50,13 +50,19 @@ type ExpelCommandProcessor struct {
 	GroupCommandProcessor
 }
 
-func NewExpelCommandProcessor(facebook IFacebook, messenger IMessenger) *ExpelCommandProcessor {
+func NewExpelCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
 	cpu := new(ExpelCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
 
-//-------- ICommandProcessor
+//func (cpu *ExpelCommandProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
+//	if cpu.GroupCommandProcessor.Init(facebook, messenger) != nil {
+//	}
+//	return cpu
+//}
+
+//-------- IContentProcessor
 
 func (gpu *ExpelCommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
 	cmd, _ := content.(GroupCommand)

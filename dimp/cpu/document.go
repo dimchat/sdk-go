@@ -51,11 +51,17 @@ type DocumentCommandProcessor struct {
 	MetaCommandProcessor
 }
 
-func NewDocumentCommandProcessor(facebook IFacebook, messenger IMessenger) *DocumentCommandProcessor {
+func NewDocumentCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
 	cpu := new(DocumentCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
+
+//func (cpu *DocumentCommandProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
+//	if cpu.MetaCommandProcessor.Init(facebook, messenger) != nil {
+//	}
+//	return cpu
+//}
 
 func (cpu *DocumentCommandProcessor) getDocument(identifier ID, docType string) []Content {
 	facebook := cpu.Facebook()
@@ -96,7 +102,7 @@ func (cpu *DocumentCommandProcessor) putDocument(identifier ID, meta Meta, doc D
 	}
 }
 
-//-------- ICommandProcessor
+//-------- IContentProcessor
 
 func (cpu *DocumentCommandProcessor) Process(content Content, _ ReliableMessage) []Content {
 	cmd, _ := content.(DocumentCommand)

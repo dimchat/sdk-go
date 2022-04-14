@@ -84,22 +84,33 @@ func Cleanup(obj interface{}) {
  *
  *  delegate for messenger
  */
+type Helper interface {
+	Cleanable
+
+	Facebook() IFacebook
+	Messenger() IMessenger
+}
+
 type TwinsHelper struct {
 	_facebook IFacebook
 	_messenger IMessenger
 }
 
-func (helper *TwinsHelper) Init(facebook IFacebook, messenger IMessenger) *TwinsHelper {
+func (helper *TwinsHelper) Init(facebook IFacebook, messenger IMessenger) Helper {
 	helper._facebook = facebook
 	helper._messenger = messenger
 	return helper
 }
+
+//-------- ICleanable
 
 func (helper *TwinsHelper) Clean() {
 	// remove the twins
 	helper._messenger = nil
 	helper._facebook = nil
 }
+
+//-------- IHelper
 
 func (helper *TwinsHelper) Facebook() IFacebook {
 	return helper._facebook

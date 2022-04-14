@@ -111,7 +111,7 @@ type AddressNameServer struct {
 	_caches map[string]ID
 }
 
-func (ans *AddressNameServer) Init() *AddressNameServer {
+func (ans *AddressNameServer) Init() AddressNameService {
 	// reserved names
 	ans._reserved = make(map[string]bool, len(KEYWORDS))
 	for _, item := range KEYWORDS {

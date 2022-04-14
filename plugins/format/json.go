@@ -1,13 +1,8 @@
 /* license: https://mit-license.org
- *
- *  DIM-SDK : Decentralized Instant Messaging Software Development Kit
- *
- *                                Written in 2021 by Moky <albert.moky@gmail.com>
- *
  * ==============================================================================
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Albert Moky
+ * Copyright (c) 2020 Albert Moky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,65 +23,57 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dkd
+package format
 
 import (
-	. "github.com/dimchat/core-go/dkd"
-	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
-	. "github.com/dimchat/sdk-go/dimp/protocol"
+	"encoding/json"
+	. "github.com/dimchat/mkm-go/format"
 )
 
-/**
- *  Command message: {
- *      type : 0x88,
- *      sn   : 123,
- *
- *      command : "block",
- *      list    : []      // block-list
- *  }
- */
-type BaseBlockCommand struct {
-	BaseCommand
+type JSONCoder struct {}
 
-	// block-list
-	_list []ID
+func (coder JSONCoder) Init() ObjectCoder {
+	return coder
 }
 
-func (cmd *BaseBlockCommand) Init(dict map[string]interface{}) BlockCommand {
-	if cmd.BaseCommand.Init(dict) != nil {
-		// lazy load
-		cmd._list = nil
-	}
-	return cmd
-}
+//-------- IObjectCoder
 
-func (cmd *BaseBlockCommand) InitWithList(list []ID) BlockCommand {
-	if cmd.BaseCommand.InitWithCommand(BLOCK) != nil {
-		if !ValueIsNil(list) {
-			cmd.SetBlockList(list)
-		}
-	}
-	return cmd
-}
-
-//-------- IBlockCommand
-
-func (cmd *BaseBlockCommand) BlockList() []ID {
-	if cmd._list == nil {
-		list := cmd.Get("list")
-		if list != nil {
-			cmd._list = IDConvert(list)
-		}
-	}
-	return cmd._list
-}
-
-func (cmd *BaseBlockCommand) SetBlockList(list []ID) {
-	if ValueIsNil(list) {
-		cmd.Remove("list")
+func (coder JSONCoder) Encode(object interface{}) string {
+	bytes, err := json.Marshal(object)
+	if err == nil {
+		return StringFromBytes(bytes)
 	} else {
-		cmd.Set("list", IDRevert(list))
+		//panic("failed to encode to JsON string")
+		return ""
 	}
-	cmd._list = list
+}
+
+func (coder JSONCoder) Decode(str string) interface{} {
+	bytes := BytesFromString(str)
+	for _, ch := range bytes {
+		if ch == '{' {
+			// decode to map
+			var dict map[string]interface{}
+			err := json.Unmarshal(bytes, &dict)
+			if err == nil {
+				return dict
+			} else {
+				return nil
+			}
+		} else if ch == '[' {
+			// decode to array
+			var array []interface{}
+			err := json.Unmarshal(bytes, &array)
+			if err == nil {
+				return array
+			} else {
+				return nil
+			}
+		} else if ch != ' ' && ch != '\t' {
+			// error
+			break
+		}
+	}
+	//panic(bytes)
+	return nil
 }

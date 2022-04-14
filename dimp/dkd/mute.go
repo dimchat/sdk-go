@@ -53,7 +53,7 @@ type BaseMuteCommand struct {
 	_list []ID
 }
 
-func (cmd *BaseMuteCommand) Init(dict map[string]interface{}) *BaseMuteCommand {
+func (cmd *BaseMuteCommand) Init(dict map[string]interface{}) MuteCommand {
 	if cmd.BaseCommand.Init(dict) != nil {
 		// lazy load
 		cmd._list = nil
@@ -61,7 +61,7 @@ func (cmd *BaseMuteCommand) Init(dict map[string]interface{}) *BaseMuteCommand {
 	return cmd
 }
 
-func (cmd *BaseMuteCommand) InitWithList(list []ID) *BaseMuteCommand {
+func (cmd *BaseMuteCommand) InitWithList(list []ID) MuteCommand {
 	if cmd.BaseCommand.InitWithCommand(MUTE) != nil {
 		if !ValueIsNil(list) {
 			cmd.SetMuteList(list)
@@ -69,6 +69,8 @@ func (cmd *BaseMuteCommand) InitWithList(list []ID) *BaseMuteCommand {
 	}
 	return cmd
 }
+
+//-------- IMuteCommand
 
 func (cmd *BaseMuteCommand) MuteList() []ID {
 	if cmd._list == nil {

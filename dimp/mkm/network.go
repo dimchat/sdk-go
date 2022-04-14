@@ -43,7 +43,7 @@ type BaseRobot struct {
 	BaseUser
 }
 
-//func (user *BaseRobot) Init(identifier ID) *BaseRobot {
+//func (user *BaseRobot) Init(identifier ID) Robot {
 //	if user.BaseUser.Init(identifier) != nil {
 //	}
 //	return user
@@ -70,7 +70,7 @@ type BaseStation struct {
 	_port uint16
 }
 
-func (server *BaseStation) Init(identifier ID, host string, port uint16) *BaseStation {
+func (server *BaseStation) Init(identifier ID, host string, port uint16) Station {
 	if server.BaseUser.Init(identifier) != nil {
 		server._host = host
 		server._port = port
@@ -120,7 +120,7 @@ type ServiceProvider struct {
 	BaseGroup
 }
 
-//func (sp *ServiceProvider) Init(identifier ID) *ServiceProvider {
+//func (sp *ServiceProvider) Init(identifier ID) Provider {
 //	if sp.BaseGroup.Init(identifier) != nil {
 //	}
 //	return sp

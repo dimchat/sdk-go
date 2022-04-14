@@ -58,13 +58,13 @@ type BTCAddress struct {
 	_network NetworkType
 }
 
-func NewBTCAddress(address string, network NetworkType) *BTCAddress {
+func NewBTCAddress(address string, network NetworkType) Address {
 	btc := new(BTCAddress)
 	btc.Init(address, network)
 	return btc
 }
 
-func (address *BTCAddress) Init(string string, network NetworkType) *BTCAddress {
+func (address *BTCAddress) Init(string string, network NetworkType) Address {
 	if address.ConstantString.Init(string) != nil {
 		address._network = network
 	}
@@ -96,7 +96,7 @@ func (address *BTCAddress) IsBroadcast() bool {
  * @param network - address type
  * @return Address object
  */
-func BTCAddressGenerate(fingerprint []byte, network NetworkType) *BTCAddress {
+func BTCAddressGenerate(fingerprint []byte, network NetworkType) Address {
 	// 1. digest = ripemd160(sha256(fingerprint))
 	digest := RIPEMD160(SHA256(fingerprint))
 	// 2. head = network + digest
@@ -119,7 +119,7 @@ func BTCAddressGenerate(fingerprint []byte, network NetworkType) *BTCAddress {
  * @param base58 - address string
  * @return null on error
  */
-func BTCAddressParse(base58 string) *BTCAddress {
+func BTCAddressParse(base58 string) Address {
 	// decode
 	data := Base58Decode(base58)
 	if len(data) != 25 {

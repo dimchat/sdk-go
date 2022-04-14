@@ -66,6 +66,12 @@ type BaseCreator struct {
 	TwinsHelper
 }
 
+//func (creator *BaseCreator) Init(facebook IFacebook, messenger IMessenger) ContentProcessorCreator {
+//	if creator.TwinsHelper.Init(facebook, messenger) != nil {
+//	}
+//	return creator
+//}
+
 //-------- IContentProcessorCreator
 
 func (creator *BaseCreator) CreateContentProcessor(msgType ContentType) ContentProcessor {

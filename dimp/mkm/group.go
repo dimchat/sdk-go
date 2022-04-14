@@ -45,7 +45,7 @@ type SimpleGroup struct {
 	BaseGroup
 }
 
-//func (group *SimpleGroup) Init(identifier ID) *SimpleGroup {
+//func (group *SimpleGroup) Init(identifier ID) Polylogue {
 //	if group.BaseGroup.Init(identifier) != nil {
 //	}
 //	return group
@@ -72,7 +72,7 @@ type BigGroup struct {
 	BaseGroup
 }
 
-//func (group *BigGroup) Init(identifier ID) *BigGroup {
+//func (group *BigGroup) Init(identifier ID) Chatroom {
 //	if group.BaseGroup.Init(identifier) != nil {
 //	}
 //	return group

@@ -54,13 +54,13 @@ type RSAPublicKey struct {
 	_data []byte
 }
 
-func NewRSAPublicKey(dict map[string]interface{}) *RSAPublicKey {
+func NewRSAPublicKey(dict map[string]interface{}) PublicKey {
 	key := new(RSAPublicKey)
 	key.Init(dict)
 	return key
 }
 
-func (key *RSAPublicKey) Init(dict map[string]interface{}) *RSAPublicKey {
+func (key *RSAPublicKey) Init(dict map[string]interface{}) PublicKey {
 	if key.BasePublicKey.Init(dict) != nil {
 		// lazy load
 		key._rsaPublicKey = nil
@@ -143,13 +143,13 @@ type RSAPrivateKey struct {
 	_publicKey PublicKey
 }
 
-func NewRSAPrivateKey(dict map[string]interface{}) *RSAPrivateKey {
+func NewRSAPrivateKey(dict map[string]interface{}) PrivateKey {
 	key := new(RSAPrivateKey)
 	key.Init(dict)
 	return key
 }
 
-func (key *RSAPrivateKey) Init(dict map[string]interface{}) *RSAPrivateKey {
+func (key *RSAPrivateKey) Init(dict map[string]interface{}) PrivateKey {
 	if key.BasePrivateKey.Init(dict) != nil {
 		// lazy load
 		key._rsaPrivateKey = nil

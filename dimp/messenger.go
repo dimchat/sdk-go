@@ -66,7 +66,7 @@ type Messenger struct {
 	_processor Processor
 }
 
-func (messenger *Messenger) Init() *Messenger {
+func (messenger *Messenger) Init() IMessenger {
 	if messenger.Transceiver.Init() != nil {
 		messenger._keyCache = nil
 		messenger._packer = nil
@@ -74,6 +74,8 @@ func (messenger *Messenger) Init() *Messenger {
 	}
 	return messenger
 }
+
+//-------- ICleanable
 
 func (messenger Messenger) Clean() {
 	// clean Processor
@@ -93,6 +95,8 @@ func (messenger Messenger) Clean() {
 	messenger.SetEntityDelegate(nil)
 	Cleanup(barrack)
 }
+
+//-------- IMessenger
 
 func (messenger *Messenger) CipherKeyDelegate() CipherKeyDelegate {
 	return messenger._keyCache

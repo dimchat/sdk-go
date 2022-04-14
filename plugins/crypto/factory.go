@@ -48,7 +48,7 @@ func NewSymmetricKeyFactory(g SymmetricKeyGenerator, p SymmetricKeyParser) Symme
 	return factory
 }
 
-func (factory *GeneralSymmetricKeyFactory) Init(g SymmetricKeyGenerator, p SymmetricKeyParser) *GeneralSymmetricKeyFactory {
+func (factory *GeneralSymmetricKeyFactory) Init(g SymmetricKeyGenerator, p SymmetricKeyParser) SymmetricKeyFactory {
 	factory._generate = g
 	factory._parse = p
 	return factory
@@ -101,7 +101,7 @@ func NewPrivateKeyFactory(g PrivateKeyGenerator, p PrivateKeyParser) PrivateKeyF
 	return factory
 }
 
-func (factory *GeneralPrivateKeyFactory) Init(g PrivateKeyGenerator, p PrivateKeyParser) *GeneralPrivateKeyFactory {
+func (factory *GeneralPrivateKeyFactory) Init(g PrivateKeyGenerator, p PrivateKeyParser) PrivateKeyFactory {
 	factory._generate = g
 	factory._parse = p
 	return factory
@@ -129,7 +129,7 @@ func NewPublicKeyFactory(p PublicKeyParser) PublicKeyFactory {
 	return factory
 }
 
-func (factory *GeneralPublicKeyFactory) Init(p PublicKeyParser) *GeneralPublicKeyFactory {
+func (factory *GeneralPublicKeyFactory) Init(p PublicKeyParser) PublicKeyFactory {
 	factory._parse = p
 	return factory
 }

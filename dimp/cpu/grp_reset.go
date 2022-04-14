@@ -51,11 +51,17 @@ type ResetCommandProcessor struct {
 	GroupCommandProcessor
 }
 
-func NewResetCommandProcessor(facebook IFacebook, messenger IMessenger) *ResetCommandProcessor {
+func NewResetCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
 	cpu := new(ResetCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
+
+//func (cpu *ResetCommandProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
+//	if cpu.GroupCommandProcessor.Init(facebook, messenger) != nil {
+//	}
+//	return cpu
+//}
 
 func (gpu *ResetCommandProcessor) QueryOwner(owner, group ID) {
 	// TODO: send QueryCommand to the owner
@@ -93,7 +99,7 @@ func (gpu *ResetCommandProcessor) temporarySave(cmd GroupCommand, sender ID) []C
 	return gpu.RespondContent(NewQueryCommand(group))
 }
 
-//-------- ICommandProcessor
+//-------- IContentProcessor
 
 func (gpu *ResetCommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
 	cmd, _ := content.(GroupCommand)

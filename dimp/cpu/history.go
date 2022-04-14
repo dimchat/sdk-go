@@ -45,13 +45,19 @@ type HistoryCommandProcessor struct {
 	BaseCommandProcessor
 }
 
-func NewHistoryCommandProcessor(facebook IFacebook, messenger IMessenger) *HistoryCommandProcessor {
+func NewHistoryCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
 	cpu := new(HistoryCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
 
-//-------- ICommandProcessor
+//func (cpu *HistoryCommandProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
+//	if cpu.BaseCommandProcessor.Init(facebook, messenger) != nil {
+//	}
+//	return cpu
+//}
+
+//-------- IContentProcessor
 
 func (cpu *HistoryCommandProcessor) Process(content Content, _ ReliableMessage) []Content {
 	cmd, _ := content.(HistoryCommand)

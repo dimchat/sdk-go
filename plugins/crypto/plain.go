@@ -25,6 +25,10 @@
  */
 package crypto
 
+import (
+	. "github.com/dimchat/mkm-go/crypto"
+)
+
 /**
  *  Symmetric key for broadcast message,
  *  which will do nothing when en/decoding message data
@@ -37,7 +41,7 @@ type PlainKey struct {
 	_data []byte
 }
 
-func NewPlainKey() *PlainKey {
+func NewPlainKey() SymmetricKey {
 	dict := make(map[string]interface{})
 	dict["algorithm"] = PLAIN
 	key := new(PlainKey)
@@ -45,7 +49,7 @@ func NewPlainKey() *PlainKey {
 	return key
 }
 
-func (key *PlainKey) Init(dict map[string]interface{}) *PlainKey {
+func (key *PlainKey) Init(dict map[string]interface{}) SymmetricKey {
 	if key.BaseSymmetricKey.Init(dict) != nil {
 		key._data = make([]byte, 0)
 	}
@@ -67,9 +71,9 @@ func (key *PlainKey) Decrypt(ciphertext []byte) []byte {
 //
 //  Singleton
 //
-var sharedPlainKey *PlainKey = nil
+var sharedPlainKey SymmetricKey = nil
 
-func GetPlainKey() *PlainKey {
+func GetPlainKey() SymmetricKey {
 	return sharedPlainKey
 }
 

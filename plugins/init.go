@@ -27,12 +27,23 @@ package plugins
 
 import (
 	. "github.com/dimchat/mkm-go/digest"
+	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/mkm"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/sdk-go/plugins/crypto"
 	. "github.com/dimchat/sdk-go/plugins/digest"
+	. "github.com/dimchat/sdk-go/plugins/format"
 	. "github.com/dimchat/sdk-go/plugins/mkm"
 )
+
+/**
+ *  Data Coders
+ */
+func RegisterDataCoders() {
+	Base58SetCoder(new(Base58Coder))
+	JSONSetCoder(new(JSONCoder))
+	UTF8SetCoder(new(UTF8Coder))
+}
 
 /**
  *  Data Digesters
@@ -82,6 +93,7 @@ func RegisterDocumentFactories() {
 }
 
 func init() {
+	RegisterDataCoders()
 	RegisterDataDigesters()
 
 	RegisterSymmetricKeyFactories()

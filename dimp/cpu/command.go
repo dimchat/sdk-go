@@ -45,11 +45,17 @@ type BaseCommandProcessor struct {
 	BaseContentProcessor
 }
 
-func NewBaseCommandProcessor(facebook IFacebook, messenger IMessenger) *BaseCommandProcessor {
+func NewBaseCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
 	cpu := new(BaseCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
+
+//func (cpu *BaseCommandProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
+//	if cpu.BaseContentProcessor.Init(facebook, messenger) != nil {
+//	}
+//	return cpu
+//}
 
 //-------- IContentProcessor
 

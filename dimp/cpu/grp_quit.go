@@ -49,18 +49,24 @@ type QuitCommandProcessor struct {
 	GroupCommandProcessor
 }
 
-func NewQuitCommandProcessor(facebook IFacebook, messenger IMessenger) *QuitCommandProcessor {
+func NewQuitCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
 	cpu := new(QuitCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
+
+//func (cpu *QuitCommandProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
+//	if cpu.GroupCommandProcessor.Init(facebook, messenger) != nil {
+//	}
+//	return cpu
+//}
 
 func (gpu *QuitCommandProcessor) RemoveAssistant(cmd QuitCommand, _ ReliableMessage) []Content {
 	// NOTICE: group assistant should be retried by the owner
 	return gpu.RespondText(StrAssistantCannotQuit, cmd.Group())
 }
 
-//-------- ICommandProcessor
+//-------- IContentProcessor
 
 func (gpu *QuitCommandProcessor) Process(content Content, rMsg ReliableMessage) []Content {
 	cmd, _ := content.(GroupCommand)

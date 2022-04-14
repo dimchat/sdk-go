@@ -50,11 +50,17 @@ type MetaCommandProcessor struct {
 	BaseCommandProcessor
 }
 
-func NewMetaCommandProcessor(facebook IFacebook, messenger IMessenger) *MetaCommandProcessor {
+func NewMetaCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
 	cpu := new(MetaCommandProcessor)
 	cpu.Init(facebook, messenger)
 	return cpu
 }
+
+//func (cpu *MetaCommandProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
+//	if cpu.BaseCommandProcessor.Init(facebook, messenger) != nil {
+//	}
+//	return cpu
+//}
 
 func (cpu *MetaCommandProcessor) getMeta(identifier ID) []Content {
 	// query meta for ID
@@ -81,7 +87,7 @@ func (cpu *MetaCommandProcessor) putMeta(identifier ID, meta Meta) []Content {
 	}
 }
 
-//-------- ICommandProcessor
+//-------- IContentProcessor
 
 func (cpu *MetaCommandProcessor) Process(content Content, _ ReliableMessage) []Content {
 	cmd, _ := content.(MetaCommand)

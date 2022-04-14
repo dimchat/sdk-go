@@ -55,14 +55,14 @@ type DefaultMeta struct {
 	_addresses map[NetworkType]Address
 }
 
-func (meta *DefaultMeta) Init(dict map[string]interface{}) *DefaultMeta {
+func (meta *DefaultMeta) Init(dict map[string]interface{}) Meta {
 	if meta.BaseMeta.Init(dict) != nil {
 		meta._addresses = make(map[NetworkType]Address)
 	}
 	return meta
 }
 
-func (meta *DefaultMeta) InitWithType(version MetaType, key VerifyKey, seed string, fingerprint []byte) *DefaultMeta {
+func (meta *DefaultMeta) InitWithType(version MetaType, key VerifyKey, seed string, fingerprint []byte) Meta {
 	if meta.BaseMeta.InitWithType(version, key, seed, fingerprint) != nil {
 		meta._addresses = make(map[NetworkType]Address)
 	}
@@ -102,14 +102,14 @@ type BTCMeta struct {
 	_address Address
 }
 
-func (meta *BTCMeta) Init(dict map[string]interface{}) *BTCMeta {
+func (meta *BTCMeta) Init(dict map[string]interface{}) Meta {
 	if meta.BaseMeta.Init(dict) != nil {
 		meta._address = nil
 	}
 	return meta
 }
 
-func (meta *BTCMeta) InitWithType(version MetaType, key VerifyKey, seed string, fingerprint []byte) *BTCMeta {
+func (meta *BTCMeta) InitWithType(version MetaType, key VerifyKey, seed string, fingerprint []byte) Meta {
 	if meta.BaseMeta.InitWithType(version, key, seed, fingerprint) != nil {
 		meta._address = nil
 	}
@@ -152,14 +152,14 @@ type ETHMeta struct {
 	_address Address
 }
 
-func (meta *ETHMeta) Init(dict map[string]interface{}) *ETHMeta {
+func (meta *ETHMeta) Init(dict map[string]interface{}) Meta {
 	if meta.BaseMeta.Init(dict) != nil {
 		meta._address = nil
 	}
 	return meta
 }
 
-func (meta *ETHMeta) InitWithType(version MetaType, key VerifyKey, seed string, fingerprint []byte) *ETHMeta {
+func (meta *ETHMeta) InitWithType(version MetaType, key VerifyKey, seed string, fingerprint []byte) Meta {
 	if meta.BaseMeta.InitWithType(version, key, seed, fingerprint) != nil {
 		meta._address = nil
 	}

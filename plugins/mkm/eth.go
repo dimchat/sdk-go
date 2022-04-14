@@ -52,13 +52,13 @@ type ETHAddress struct {
 	ConstantString
 }
 
-func NewETHAddress(address string) *ETHAddress {
+func NewETHAddress(address string) Address {
 	eth := new(ETHAddress)
 	eth.Init(address)
 	return eth
 }
 
-//func (address *ETHAddress) Init(string string) *ETHAddress {
+//func (address *ETHAddress) Init(string string) Address {
 //	if address.ConstantString.Init(string) != nil {
 //	}
 //	return address
@@ -88,7 +88,7 @@ func (address *ETHAddress) IsBroadcast() bool {
  * @param fingerprint = key.data
  * @return Address object
  */
-func ETHAddressGenerate(fingerprint []byte) *ETHAddress {
+func ETHAddressGenerate(fingerprint []byte) Address {
 	if len(fingerprint) == 65 {
 		fingerprint = fingerprint[1:]
 	}
@@ -105,7 +105,7 @@ func ETHAddressGenerate(fingerprint []byte) *ETHAddress {
  * @param address - address string
  * @return null on error
  */
-func ETHAddressParse(address string) *ETHAddress {
+func ETHAddressParse(address string) Address {
 	if isETH(address) {
 		return NewETHAddress(address)
 	} else {

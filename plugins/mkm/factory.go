@@ -46,13 +46,13 @@ type GeneralMetaFactory struct {
 	_type MetaType
 }
 
-func NewGeneralMetaFactory(version MetaType) *GeneralMetaFactory {
+func NewGeneralMetaFactory(version MetaType) MetaFactory {
 	factory := new(GeneralMetaFactory)
 	factory.Init(version)
 	return factory
 }
 
-func (factory *GeneralMetaFactory) Init(version MetaType) *GeneralMetaFactory {
+func (factory *GeneralMetaFactory) Init(version MetaType) MetaFactory {
 	factory._type = version
 	return factory
 }
@@ -122,13 +122,13 @@ type GeneralDocumentFactory struct {
 	_type string
 }
 
-func NewGeneralDocumentFactory(docType string) *GeneralDocumentFactory {
+func NewGeneralDocumentFactory(docType string) DocumentFactory {
 	factory := new(GeneralDocumentFactory)
 	factory.Init(docType)
 	return factory
 }
 
-func (factory *GeneralDocumentFactory) Init(docType string) *GeneralDocumentFactory {
+func (factory *GeneralDocumentFactory) Init(docType string) DocumentFactory {
 	factory._type = docType
 	return factory
 }
@@ -148,7 +148,7 @@ func (factory *GeneralDocumentFactory) getDocType(identifier ID) string {
 
 //-------- IDocumentFactory
 
-func (factory *GeneralDocumentFactory) CreateDocument(identifier ID, data []byte, signature []byte) Document {
+func (factory *GeneralDocumentFactory) CreateDocument(identifier ID, data string, signature []byte) Document {
 	docType := factory.getDocType(identifier)
 	if docType == VISA {
 		return NewVisa(identifier, data, signature)
@@ -187,7 +187,7 @@ func (factory *GeneralDocumentFactory) ParseDocument(doc map[string]interface{})
 //  Factory methods for Document
 //
 
-func NewDocument(identifier ID, data []byte, signature []byte) Document {
+func NewDocument(identifier ID, data string, signature []byte) Document {
 	doc := new(BaseDocument)
 	doc.InitWithData(identifier, data, signature)
 	return doc
@@ -199,7 +199,7 @@ func ParseDocument(dict map[string]interface{}) Document {
 	return doc
 }
 
-func NewVisa(identifier ID, data []byte, signature []byte) Visa {
+func NewVisa(identifier ID, data string, signature []byte) Visa {
 	doc := new(BaseVisa)
 	doc.InitWithData(identifier, data, signature)
 	return doc
@@ -211,7 +211,7 @@ func ParseVisa(dict map[string]interface{}) Visa {
 	return doc
 }
 
-func NewBulletin(identifier ID, data []byte, signature []byte) Bulletin {
+func NewBulletin(identifier ID, data string, signature []byte) Bulletin {
 	doc := new(BaseBulletin)
 	doc.InitWithData(identifier, data, signature)
 	return doc

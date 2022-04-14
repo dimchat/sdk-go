@@ -1,13 +1,8 @@
 /* license: https://mit-license.org
- *
- *  DIM-SDK : Decentralized Instant Messaging Software Development Kit
- *
- *                                Written in 2021 by Moky <albert.moky@gmail.com>
- *
  * ==============================================================================
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Albert Moky
+ * Copyright (c) 2020 Albert Moky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,65 +23,55 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dkd
+package format
 
 import (
-	. "github.com/dimchat/core-go/dkd"
-	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/mkm-go/types"
-	. "github.com/dimchat/sdk-go/dimp/protocol"
+	"bytes"
+	. "github.com/dimchat/mkm-go/format"
+	"math/big"
 )
 
-/**
- *  Command message: {
- *      type : 0x88,
- *      sn   : 123,
- *
- *      command : "block",
- *      list    : []      // block-list
- *  }
- */
-type BaseBlockCommand struct {
-	BaseCommand
+var base58Alphabets = []byte("123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz")
 
-	// block-list
-	_list []ID
+func ReverseBytes(data []byte) {
+	for i, j := 0, len(data)-1; i < j; i, j = i+1, j-1 {
+		data[i], data[j] = data[j], data[i]
+	}
 }
 
-func (cmd *BaseBlockCommand) Init(dict map[string]interface{}) BlockCommand {
-	if cmd.BaseCommand.Init(dict) != nil {
-		// lazy load
-		cmd._list = nil
-	}
-	return cmd
+type Base58Coder struct {}
+
+func (coder Base58Coder) Init() DataCoder {
+	return coder
 }
 
-func (cmd *BaseBlockCommand) InitWithList(list []ID) BlockCommand {
-	if cmd.BaseCommand.InitWithCommand(BLOCK) != nil {
-		if !ValueIsNil(list) {
-			cmd.SetBlockList(list)
-		}
+//-------- IDataCoder
+
+func (coder Base58Coder) Encode(data []byte) string {
+	x := big.NewInt(0).SetBytes(data)
+	base := big.NewInt(58)
+	zero := big.NewInt(0)
+	mod := &big.Int{}
+	var result []byte
+	for x.Cmp(zero) != 0 {
+		x.DivMod(x, base, mod)
+		result = append(result, base58Alphabets[mod.Int64()])
 	}
-	return cmd
+	ReverseBytes(result)
+	return string(result)
 }
 
-//-------- IBlockCommand
-
-func (cmd *BaseBlockCommand) BlockList() []ID {
-	if cmd._list == nil {
-		list := cmd.Get("list")
-		if list != nil {
-			cmd._list = IDConvert(list)
-		}
+func (coder Base58Coder) Decode(string string) []byte {
+	result := big.NewInt(0)
+	input := []byte(string)
+	for _, b := range input {
+		charIndex := bytes.IndexByte(base58Alphabets, b)
+		result.Mul(result, big.NewInt(58))
+		result.Add(result, big.NewInt(int64(charIndex)))
 	}
-	return cmd._list
-}
-
-func (cmd *BaseBlockCommand) SetBlockList(list []ID) {
-	if ValueIsNil(list) {
-		cmd.Remove("list")
-	} else {
-		cmd.Set("list", IDRevert(list))
+	decoded := result.Bytes()
+	if input[0] == base58Alphabets[0] {
+		decoded = append([]byte{0x00}, decoded...)
 	}
-	cmd._list = list
+	return decoded
 }
