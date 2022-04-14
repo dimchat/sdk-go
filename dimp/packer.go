@@ -164,7 +164,7 @@ func (packer *MessagePacker) SignMessage(sMsg SecureMessage) ReliableMessage {
 }
 
 func (packer *MessagePacker) SerializeMessage(rMsg ReliableMessage) []byte {
-	dict := rMsg.GetMap(false)
+	dict := rMsg.Map()
 	json := JSONEncodeMap(dict)
 	return UTF8Encode(json)
 }

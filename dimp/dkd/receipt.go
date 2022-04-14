@@ -108,7 +108,7 @@ func (cmd *BaseReceiptCommand) Envelope() Envelope {
 			sender := cmd.Get("sender")
 			receiver := cmd.Get("receiver")
 			if sender != nil && receiver != nil {
-				env = cmd.GetMap(false)
+				env = cmd.Map()
 			}
 		}
 		cmd._envelope = EnvelopeParse(env)
