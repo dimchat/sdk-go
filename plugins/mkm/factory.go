@@ -148,7 +148,7 @@ func (factory *GeneralDocumentFactory) getDocType(identifier ID) string {
 
 //-------- IDocumentFactory
 
-func (factory *GeneralDocumentFactory) CreateDocument(identifier ID, data string, signature []byte) Document {
+func (factory *GeneralDocumentFactory) CreateDocument(identifier ID, data string, signature string) Document {
 	docType := factory.getDocType(identifier)
 	if docType == VISA {
 		return NewVisa(identifier, data, signature)
@@ -187,7 +187,7 @@ func (factory *GeneralDocumentFactory) ParseDocument(doc map[string]interface{})
 //  Factory methods for Document
 //
 
-func NewDocument(identifier ID, data string, signature []byte) Document {
+func NewDocument(identifier ID, data string, signature string) Document {
 	doc := new(BaseDocument)
 	doc.InitWithData(identifier, data, signature)
 	return doc
@@ -199,7 +199,7 @@ func ParseDocument(dict map[string]interface{}) Document {
 	return doc
 }
 
-func NewVisa(identifier ID, data string, signature []byte) Visa {
+func NewVisa(identifier ID, data string, signature string) Visa {
 	doc := new(BaseVisa)
 	doc.InitWithData(identifier, data, signature)
 	return doc
@@ -211,7 +211,7 @@ func ParseVisa(dict map[string]interface{}) Visa {
 	return doc
 }
 
-func NewBulletin(identifier ID, data string, signature []byte) Bulletin {
+func NewBulletin(identifier ID, data string, signature string) Bulletin {
 	doc := new(BaseBulletin)
 	doc.InitWithData(identifier, data, signature)
 	return doc

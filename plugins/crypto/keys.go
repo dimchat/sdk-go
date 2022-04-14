@@ -43,7 +43,7 @@ type BaseKey struct {
 //-------- ICryptographyKey
 
 func (key *BaseKey) Algorithm() string {
-	return CryptographyKeyGetAlgorithm(key.GetMap(false))
+	return CryptographyKeyGetAlgorithm(key.Map())
 }
 
 func (key *BaseKey) Data() []byte {

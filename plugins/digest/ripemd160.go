@@ -27,10 +27,15 @@ package digest
 
 import (
 	"crypto"
+	. "github.com/dimchat/mkm-go/digest"
 	_ "golang.org/x/crypto/ripemd160"
 )
 
 type RIPEMD160Digester struct {}
+
+func (digester RIPEMD160Digester) Init() DataDigester {
+	return digester
+}
 
 //-------- IDataDigester
 

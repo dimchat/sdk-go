@@ -26,10 +26,15 @@
 package digest
 
 import (
+	. "github.com/dimchat/mkm-go/digest"
 	"golang.org/x/crypto/sha3"
 )
 
 type KECCAK256Digester struct {}
+
+func (digester KECCAK256Digester) Init() DataDigester {
+	return digester
+}
 
 //-------- IDataDigester
 
