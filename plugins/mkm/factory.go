@@ -189,7 +189,11 @@ func (factory *GeneralDocumentFactory) ParseDocument(doc map[string]interface{})
 
 func NewDocument(identifier ID, data string, signature string) Document {
 	doc := new(BaseDocument)
-	doc.InitWithData(identifier, data, signature)
+	if data == "" || signature == "" {
+		doc.InitWithID(identifier, "")
+	} else {
+		doc.InitWithData(identifier, data, signature)
+	}
 	return doc
 }
 
@@ -201,7 +205,11 @@ func ParseDocument(dict map[string]interface{}) Document {
 
 func NewVisa(identifier ID, data string, signature string) Visa {
 	doc := new(BaseVisa)
-	doc.InitWithData(identifier, data, signature)
+	if data == "" || signature == "" {
+		doc.InitWithID(identifier)
+	} else {
+		doc.InitWithData(identifier, data, signature)
+	}
 	return doc
 }
 
@@ -213,7 +221,11 @@ func ParseVisa(dict map[string]interface{}) Visa {
 
 func NewBulletin(identifier ID, data string, signature string) Bulletin {
 	doc := new(BaseBulletin)
-	doc.InitWithData(identifier, data, signature)
+	if data == "" || signature == "" {
+		doc.InitWithID(identifier)
+	} else {
+		doc.InitWithData(identifier, data, signature)
+	}
 	return doc
 }
 
