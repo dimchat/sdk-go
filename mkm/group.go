@@ -1,13 +1,13 @@
 /* license: https://mit-license.org
  *
- *  DIM-SDK : Decentralized Instant Messaging Software Development Kit
+ *  DIMP : Decentralized Instant Messaging Protocol
  *
- *                                Written in 2021 by Moky <albert.moky@gmail.com>
+ *                                Written in 2020 by Moky <albert.moky@gmail.com>
  *
  * ==============================================================================
  * The MIT License (MIT)
  *
- * Copyright (c) 2021 Albert Moky
+ * Copyright (c) 2020 Albert Moky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,56 +31,131 @@
 package mkm
 
 import (
-	. "github.com/dimchat/core-go/mkm"
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
 /**
- *  Polylogue
- *  ~~~~~~~~~
+ *  Group for organizing users
  *
- *  Simple group chat
+ * <pre>
+ *  roles:
+ *      founder
+ *      owner
+ *      members
+ *      administrators - Optional
+ *  </pre>
  */
-type SimpleGroup struct {
-	BaseGroup
-}
+type Group interface {
+	Entity
 
-//func (group *SimpleGroup) Init(identifier ID) Polylogue {
-//	if group.BaseGroup.Init(identifier) != nil {
-//	}
-//	return group
-//}
+	Founder() ID
 
-//-------- IPolylogue
+	Owner() ID
 
-func (group *SimpleGroup) Owner() ID {
-	owner := group.BaseGroup.Owner()
-	if owner == nil {
-		// polylogue owner is its founder
-		owner = group.Founder()
-	}
-	return owner
+	// NOTICE: the owner must be a member
+	//         (usually the first one)
+	Members() []ID
+
+	//DataSource() GroupDataSource
+	//SetDataSource(facebook GroupDataSource)
 }
 
 /**
- *  Chatroom
- *  ~~~~~~~~
+ *  Group Data Source
  *
- *  Big group with admins
+ *  <pre>
+ *  1. founder has the same public key with the group's meta.key
+ *  2. owner and members should be set complying with consensus algorithm
+ *  </pre>
  */
-type BigGroup struct {
-	BaseGroup
+type GroupDataSource interface {
+	EntityDataSource
+
+	/**
+	 *  Get founder of the group
+	 *
+	 * @param group - group ID
+	 * @return fonder ID
+	 */
+	GetFounder(group ID) ID
+
+	/**
+	 *  Get current owner of the group
+	 *
+	 * @param group - group ID
+	 * @return owner ID
+	 */
+	GetOwner(group ID) ID
+
+	/**
+	 *  Get all members in the group
+	 *
+	 * @param group - group ID
+	 * @return members list (ID)
+	 */
+	GetMembers(group ID) []ID
 }
 
-//func (group *BigGroup) Init(identifier ID) Chatroom {
-//	if group.BaseGroup.Init(identifier) != nil {
+/**
+ *  Base Group
+ *  ~~~~~~~~~~
+ */
+type BaseGroup struct {
+	BaseEntity
+
+	// once the group founder is set, it will never change
+	_founder ID
+}
+
+func (group *BaseGroup) Init(gid ID) Group {
+	if group.BaseEntity.Init(gid) != nil {
+		// lazy load
+		group._founder = nil
+	}
+	return group
+}
+
+//// Override
+//func (group *BaseGroup) DataSource() GroupDataSource {
+//	facebook := group.BaseEntity.DataSource()
+//	if delegate, ok := facebook.(GroupDataSource); ok {
+//		return delegate
 //	}
-//	return group
+//	//panic("not a GroupDataSource")
+//	return nil
 //}
 
-//-------- IChatroom
+// Override
+func (group *BaseGroup) Founder() ID {
+	user := group._founder
+	if user == nil {
+		ds := group.DataSource()
+		if facebook, ok := ds.(GroupDataSource); ok {
+			user = facebook.GetFounder(group.ID())
+			group._founder = user
+		} else {
+			//panic("group datasource not set yet")
+		}
+	}
+	return user
+}
 
-func (group *BigGroup) Admins() []ID {
-	delegate := group.DataSource().(ChatroomDataSource)
-	return delegate.GetAdmins(group.ID())
+// Override
+func (group *BaseGroup) Owner() ID {
+	ds := group.DataSource()
+	if facebook, ok := ds.(GroupDataSource); ok {
+		return facebook.GetOwner(group.ID())
+	}
+	//panic("group datasource not set yet")
+	return nil
+}
+
+// Override
+func (group *BaseGroup) Members() []ID {
+	ds := group.DataSource()
+	if facebook, ok := ds.(GroupDataSource); ok {
+		return facebook.GetMembers(group.ID())
+	}
+	//panic("group datasource not set yet")
+	return nil
 }
