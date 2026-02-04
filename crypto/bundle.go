@@ -31,6 +31,9 @@
 package crypto
 
 import (
+	"fmt"
+	"strings"
+
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/mkm-go/types"
 )
@@ -42,6 +45,8 @@ type EncryptedBundle interface {
 
 	// terminal -> encrypted key.data
 	Map() map[string][]byte
+
+	String() string
 
 	IsEmpty() bool
 
@@ -117,6 +122,22 @@ func (bundle *UserEncryptedBundle) Init() EncryptedBundle {
 // Override
 func (bundle *UserEncryptedBundle) Map() map[string][]byte {
 	return bundle._map
+}
+
+// Override
+func (bundle *UserEncryptedBundle) String() string {
+	clazz := "EncryptedBundle"
+	info := bundle._map
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("<%s count=%d>\n", clazz, len(info)))
+	for target, data := range info {
+		//if target == "" || data == nil {
+		//	continue
+		//}
+		sb.WriteString(fmt.Sprintf("\t\"%s\": %d byte(s)\n", target, len(data)))
+	}
+	sb.WriteString(fmt.Sprintf("</%s>", clazz))
+	return sb.String()
 }
 
 // Override

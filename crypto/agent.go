@@ -33,7 +33,7 @@ package crypto
 import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/mkm-go/crypto"
-	"github.com/dimchat/mkm-go/ext"
+	. "github.com/dimchat/mkm-go/ext"
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
@@ -116,7 +116,7 @@ func (agent DefaultVisaAgent) GetTerminal(doc Document) string {
 	terminal := doc.GetString("terminal", "")
 	if terminal == "" {
 		// get from document ID
-		helper := ext.GetGeneralAccountHelper()
+		helper := GetGeneralAccountHelper()
 		did := helper.GetDocumentID(doc.Map())
 		if did != nil {
 			terminal = did.Terminal()
