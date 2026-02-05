@@ -43,16 +43,13 @@ import (
 type EncryptedMessagePacker struct {
 	//SecureMessagePacker
 
-	_transceiver SecureMessageDelegate
+	// protected
+	Transceiver SecureMessageDelegate
 }
 
 func (packer EncryptedMessagePacker) Init(messenger SecureMessageDelegate) SecureMessagePacker {
-	packer._transceiver = messenger
+	packer.Transceiver = messenger
 	return packer
-}
-
-func (packer EncryptedMessagePacker) Delegate() SecureMessageDelegate {
-	return packer._transceiver
 }
 
 // protected
@@ -69,7 +66,7 @@ func (packer EncryptedMessagePacker) DecodeKey(sMsg SecureMessage, receiver ID) 
 		msgKeys = NewMap()
 		msgKeys[receiver.String()] = base64
 	}
-	transceiver := packer.Delegate()
+	transceiver := packer.Transceiver
 	if transceiver == nil {
 		//panic("secure message delegate not found")
 		return nil
@@ -79,7 +76,7 @@ func (packer EncryptedMessagePacker) DecodeKey(sMsg SecureMessage, receiver ID) 
 
 // Override
 func (packer EncryptedMessagePacker) DecryptMessage(sMsg SecureMessage, receiver ID) InstantMessage {
-	transceiver := packer.Delegate()
+	transceiver := packer.Transceiver
 	if transceiver == nil {
 		//panic("secure message delegate not found")
 		return nil
@@ -170,7 +167,7 @@ func (packer EncryptedMessagePacker) DecryptMessage(sMsg SecureMessage, receiver
 
 // Override
 func (packer EncryptedMessagePacker) SignMessage(sMsg SecureMessage) ReliableMessage {
-	transceiver := packer.Delegate()
+	transceiver := packer.Transceiver
 	if transceiver == nil {
 		//panic("secure message delegate not found")
 		return nil

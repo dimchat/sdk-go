@@ -35,21 +35,18 @@ import . "github.com/dimchat/dkd-go/protocol"
 type NetworkMessagePacker struct {
 	//ReliableMessagePacker
 
-	_transceiver ReliableMessageDelegate
+	// protected
+	Transceiver ReliableMessageDelegate
 }
 
 func (packer NetworkMessagePacker) Init(messenger ReliableMessageDelegate) ReliableMessagePacker {
-	packer._transceiver = messenger
+	packer.Transceiver = messenger
 	return packer
-}
-
-func (packer NetworkMessagePacker) Delegate() ReliableMessageDelegate {
-	return packer._transceiver
 }
 
 // Override
 func (packer NetworkMessagePacker) VerifyMessage(rMsg ReliableMessage) SecureMessage {
-	transceiver := packer.Delegate()
+	transceiver := packer.Transceiver
 	if transceiver == nil {
 		panic("reliable message delegate not found")
 		return nil

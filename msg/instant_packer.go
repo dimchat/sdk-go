@@ -44,23 +44,20 @@ import (
 type PlainMessagePacker struct {
 	//InstantMessagePacker
 
-	_transceiver InstantMessageDelegate
+	// protected
+	Transceiver InstantMessageDelegate
 }
 
 func (packer PlainMessagePacker) Init(messenger InstantMessageDelegate) InstantMessagePacker {
-	packer._transceiver = messenger
+	packer.Transceiver = messenger
 	return packer
-}
-
-func (packer PlainMessagePacker) Delegate() InstantMessageDelegate {
-	return packer._transceiver
 }
 
 // Override
 func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password SymmetricKey, members []ID) SecureMessage {
 	// TODO: check attachment for File/Image/Audio/Video message content
 	//      (do it by application)
-	transceiver := packer.Delegate()
+	transceiver := packer.Transceiver
 	if transceiver == nil {
 		//panic("instant message delegate not found")
 		return nil
@@ -126,8 +123,9 @@ func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password Sy
 	if members == nil {
 		// personal message
 		receiver := iMsg.Receiver()
-		members = make([]ID, 1)
-		members[0] = receiver
+		members = []ID{
+			receiver,
+		}
 	}
 
 	bundleMap := make(map[ID]EncryptedBundle, len(members))
@@ -164,7 +162,7 @@ func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password Sy
 
 // protected
 func (packer PlainMessagePacker) EncodeKeys(bundleMap map[ID]EncryptedBundle, iMsg InstantMessage) StringKeyMap {
-	transceiver := packer.Delegate()
+	transceiver := packer.Transceiver
 	if transceiver == nil {
 		//panic("instant message delegate not found")
 		return nil

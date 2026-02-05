@@ -127,3 +127,50 @@ type CipherKeyDelegate interface {
 	 */
 	CacheCipherKey(sender, receiver ID, key SymmetricKey)
 }
+
+/**
+ *  Wrapper for CipherKeyDelegate
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+type ICipherKeyManager interface {
+	GetEncryptKey(iMsg InstantMessage) SymmetricKey
+	GetDecryptKey(sMsg SecureMessage) SymmetricKey
+	CacheDecryptKey(key SymmetricKey, sMsg SecureMessage)
+}
+
+func NewCipherKeyManager(delegate CipherKeyDelegate) ICipherKeyManager {
+	return &CipherKeyManager{
+		CipherKeyDelegate: delegate,
+	}
+}
+
+type CipherKeyManager struct {
+	//ICipherKeyManager
+
+	// protected
+	CipherKeyDelegate CipherKeyDelegate
+}
+
+// Override
+func (manager *CipherKeyManager) GetEncryptKey(iMsg InstantMessage) SymmetricKey {
+	sender := iMsg.Sender()
+	target := CipherKeyDestinationForMessage(iMsg)
+	db := manager.CipherKeyDelegate
+	return db.GetCipherKey(sender, target, true)
+}
+
+// Override
+func (manager *CipherKeyManager) GetDecryptKey(sMsg SecureMessage) SymmetricKey {
+	sender := sMsg.Sender()
+	target := CipherKeyDestinationForMessage(sMsg)
+	db := manager.CipherKeyDelegate
+	return db.GetCipherKey(sender, target, false)
+}
+
+// Override
+func (manager *CipherKeyManager) CacheDecryptKey(key SymmetricKey, sMsg SecureMessage) {
+	sender := sMsg.Sender()
+	target := CipherKeyDestinationForMessage(sMsg)
+	db := manager.CipherKeyDelegate
+	db.CacheCipherKey(sender, target, key)
+}

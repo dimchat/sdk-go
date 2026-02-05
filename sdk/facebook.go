@@ -45,37 +45,39 @@ type IFacebook interface {
 	/**
 	 *  Select local user for receiver
 	 *
-	 * @param receiver - user/group ID
+	 * @param receiver - user/broadcast ID
 	 * @return local user
 	 */
-	SelectLocalUser(receiver ID) ID
+	SelectUser(receiver ID) ID
+
+	/**
+	 *  Select local user for group members
+	 *
+	 * @param members - group members
+	 * @return local user
+	 */
+	SelectMember(members []ID) ID
 }
 
 type Facebook struct {
 	//IFacebook
 
-	Tee AccountTee
+	// protected
+	Barrack Barrack
+	// public
+	Archivist Archivist
 }
 
-func (facebook *Facebook) Self() IFacebook {
-	return facebook.Tee.Facebook()
-}
-
-func (facebook *Facebook) Archivist() Archivist {
-	return facebook.Tee.Archivist()
-}
-
-func (facebook *Facebook) Barrack() Barrack {
-	return facebook.Tee.Barrack()
-}
+//func (facebook *Facebook) Init(archivist Archivist, barrack Barrack) IFacebook {
+//	facebook.Barrack = barrack
+//	facebook.Archivist = archivist
+//	return facebook
+//}
 
 // Override
-func (facebook *Facebook) SelectLocalUser(receiver ID) ID {
-	archivist := facebook.Archivist()
+func (facebook *Facebook) SelectUser(receiver ID) ID {
+	archivist := facebook.Archivist
 	users := archivist.LocalUsers()
-	//
-	//  1.
-	//
 	if users == nil || len(users) == 0 {
 		//panic("local users should not be empty")
 		return nil
@@ -84,40 +86,35 @@ func (facebook *Facebook) SelectLocalUser(receiver ID) ID {
 		// just return current user here
 		return users[0]
 	}
-	//
-	//  2.
-	//
-	if receiver.IsUser() {
-		// personal message
-		for _, item := range users {
-			if receiver.Equal(item) {
+	// personal message
+	for _, item := range users {
+		if receiver.Equal(item) {
+			// DISCUSS: set this item to be current user?
+			return item
+		}
+	}
+	// not for me?
+	return nil
+}
+
+// Override
+func (facebook *Facebook) SelectMember(members []ID) ID {
+	archivist := facebook.Archivist
+	users := archivist.LocalUsers()
+	if users == nil || len(users) == 0 {
+		//panic("local users should not be empty")
+		return nil
+	}
+	// group message (recipient not designated)
+	for _, item := range users {
+		for _, m := range members {
+			if m.Equal(item) {
 				// DISCUSS: set this item to be current user?
 				return item
 			}
 		}
-	} else if receiver.IsGroup() {
-		// group message (recipient not designated)
-		//
-		// the messenger will check group info before decrypting message,
-		// so we can trust that the group's meta & members MUST exist here.
-		self := facebook.Self()
-		members := self.GetMembers(receiver)
-		if members == nil || len(members) == 0 {
-			//panic("members not found")
-			return nil
-		}
-		for _, item := range users {
-			for _, mem := range members {
-				if mem.Equal(item) {
-					// DISCUSS: set this item to be current user?
-					return item
-				}
-			}
-		}
-	} else {
-		//panic("receiver error")
 	}
-	// not me?
+	// not for me?
 	return nil
 }
 
@@ -125,7 +122,7 @@ func (facebook *Facebook) SelectLocalUser(receiver ID) ID {
 
 // Override
 func (facebook *Facebook) GetUser(uid ID) User {
-	barrack := facebook.Barrack()
+	barrack := facebook.Barrack
 	if barrack == nil {
 		//panic("barrack not ready")
 		return nil
@@ -144,7 +141,7 @@ func (facebook *Facebook) GetUser(uid ID) User {
 
 // Override
 func (facebook *Facebook) GetGroup(gid ID) Group {
-	barrack := facebook.Barrack()
+	barrack := facebook.Barrack
 	if barrack == nil {
 		//panic("barrack not ready")
 		return nil

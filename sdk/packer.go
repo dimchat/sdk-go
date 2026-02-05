@@ -40,16 +40,17 @@ type MessagePacker struct {
 	//Packer
 	TwinsHelper
 
-	_instantPacker  InstantMessagePacker
-	_securePacker   SecureMessagePacker
-	_reliablePacker ReliableMessagePacker
+	// protected
+	InstantPacker  InstantMessagePacker
+	SecurePacker   SecureMessagePacker
+	ReliablePacker ReliableMessagePacker
 }
 
 func (packer *MessagePacker) Init(facebook IFacebook, messenger IMessenger) Packer {
 	if packer.TwinsHelper.Init(facebook, messenger) != nil {
-		packer._instantPacker = CreateInstantMessagePacker(messenger)
-		packer._securePacker = CreateSecureMessagePacker(messenger)
-		packer._reliablePacker = CreateReliableMessagePacker(messenger)
+		packer.InstantPacker = CreateInstantMessagePacker(messenger)
+		packer.SecurePacker = CreateSecureMessagePacker(messenger)
+		packer.ReliablePacker = CreateReliableMessagePacker(messenger)
 	}
 	return packer
 }
@@ -63,8 +64,8 @@ func (packer *MessagePacker) EncryptMessage(iMsg InstantMessage) SecureMessage {
 	// TODO: check receiver before calling this, make sure the visa.key exists;
 	//       otherwise, suspend this message for waiting receiver's visa/meta;
 	//       if receiver is a group, query all members' visa too!
-	facebook := packer.Facebook()
-	messenger := packer.Messenger()
+	facebook := packer.Facebook
+	messenger := packer.Messenger
 
 	var sMsg SecureMessage
 	// NOTICE: before sending group message, you can decide whether expose the group ID
@@ -102,10 +103,10 @@ func (packer *MessagePacker) EncryptMessage(iMsg InstantMessage) SecureMessage {
 		// a station will never send group message, so here must be a client;
 		// the client messenger should check the group's meta & members before encrypting,
 		// so we can trust that the group members MUST exist here.
-		sMsg = packer._instantPacker.EncryptMessage(iMsg, password, members)
+		sMsg = packer.InstantPacker.EncryptMessage(iMsg, password, members)
 	} else {
 		// personal message (or split group message)
-		sMsg = packer._instantPacker.EncryptMessage(iMsg, password, nil)
+		sMsg = packer.InstantPacker.EncryptMessage(iMsg, password, nil)
 	}
 	if sMsg == nil {
 		// public key for encryption not found
@@ -126,7 +127,8 @@ func (packer *MessagePacker) EncryptMessage(iMsg InstantMessage) SecureMessage {
 // Override
 func (packer *MessagePacker) SignMessage(sMsg SecureMessage) ReliableMessage {
 	// sign 'data' by sender
-	return packer._securePacker.SignMessage(sMsg)
+	delegate := packer.SecurePacker
+	return delegate.SignMessage(sMsg)
 }
 
 /*/
@@ -154,7 +156,8 @@ func (packer *MessagePacker) DeserializeMessage(data []byte) ReliableMessage {
 // Override
 func (packer *MessagePacker) VerifyMessage(rMsg ReliableMessage) SecureMessage {
 	// verify 'data' with 'signature'
-	return packer._reliablePacker.VerifyMessage(rMsg)
+	delegate := packer.ReliablePacker
+	return delegate.VerifyMessage(rMsg)
 }
 
 // Override
@@ -163,8 +166,7 @@ func (packer *MessagePacker) DecryptMessage(sMsg SecureMessage) InstantMessage {
 	//       or you are a member of the group when this is a group message,
 	//       so that you will have a private key (decrypt key) to decrypt it.
 	receiver := sMsg.Receiver()
-	facebook := packer.Facebook()
-	user := facebook.SelectLocalUser(receiver)
+	user := packer.SelectLocalUser(receiver)
 	if user == nil {
 		// not for you?
 		sender := sMsg.Sender()
@@ -172,7 +174,8 @@ func (packer *MessagePacker) DecryptMessage(sMsg SecureMessage) InstantMessage {
 		return nil
 	}
 	// decrypt 'data' to 'content'
-	return packer._securePacker.DecryptMessage(sMsg, user)
+	delegate := packer.SecurePacker
+	return delegate.DecryptMessage(sMsg, user.ID())
 	// TODO: check top-secret message
 	//       (do it by application)
 }

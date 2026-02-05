@@ -30,90 +30,56 @@
  */
 package sdk
 
-import . "github.com/dimchat/sdk-go/dimp/core"
+import (
+	. "github.com/dimchat/mkm-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/mkm"
+)
 
-type Cleanable interface {
-
-	/**
-	 *  Remove foreign pointers to break circular references
-	 */
-	Clean()
-}
-
-func Cleanup(obj interface{}) {
-	target, ok := obj.(Cleanable)
-	if ok && target != nil {
-		target.Clean()
-	}
-}
-
-/**
- *  Hooks for Facebook
- *  ~~~~~~~~~~~~~~~~~~
- */
-type AccountTee interface {
-	Cleanable
-
-	// primary
-	Facebook() IFacebook
-
-	// secondary
-	Archivist() Archivist
-	Barrack() Barrack
-}
-
-/**
- *  Hooks for Messenger
- *  ~~~~~~~~~~~~~~~~~~~
- */
-type MessageTee interface {
-	Cleanable
-
-	// primary
-	Messenger() IMessenger
-
-	// secondary
-	Packer() Packer
-	Processor() Processor
-
-	CipherKeyDelegate() CipherKeyDelegate
-}
-
-/**
- *  Hooks for Facebook & Messenger
- *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- */
-type IHelper interface {
-	Cleanable
-
-	Facebook() IFacebook
-	Messenger() IMessenger
+type ITwinsHelper interface {
+	SelectLocalUser(receiver ID) User
 }
 
 type TwinsHelper struct {
-	_facebook  IFacebook
-	_messenger IMessenger
+	//ITwinsHelper
+
+	// protected
+	Facebook  IFacebook
+	Messenger IMessenger
 }
 
-func (helper *TwinsHelper) Init(facebook IFacebook, messenger IMessenger) IHelper {
-	helper._facebook = facebook
-	helper._messenger = messenger
+func (helper *TwinsHelper) Init(facebook IFacebook, messenger IMessenger) ITwinsHelper {
+	helper.Facebook = facebook
+	helper.Messenger = messenger
 	return helper
 }
 
-// Override
-func (helper *TwinsHelper) Clean() {
-	// remove the twins
-	helper._messenger = nil
-	helper._facebook = nil
-}
-
-// Override
-func (helper *TwinsHelper) Facebook() IFacebook {
-	return helper._facebook
-}
-
-// Override
-func (helper *TwinsHelper) Messenger() IMessenger {
-	return helper._messenger
+// protected
+func (helper *TwinsHelper) SelectLocalUser(receiver ID) User {
+	facebook := helper.Facebook
+	var me ID
+	if receiver.IsBroadcast() {
+		// broadcast message can be decrypted by anyone
+		me = facebook.SelectUser(receiver)
+	} else if receiver.IsUser() {
+		// check local users
+		me = facebook.SelectUser(receiver)
+	} else if receiver.IsGroup() {
+		// check local users for the group members
+		members := facebook.GetMembers(receiver)
+		// the messenger will check group info before decrypting message,
+		// so we can trust that the group's meta & members MUST exist here.
+		if members == nil || len(members) == 0 {
+			//panic("failed to get group members")
+			return nil
+		}
+		me = facebook.SelectMember(members)
+	} else {
+		//panic("unknown receiver")
+		return nil
+	}
+	if me == nil {
+		// not for me?
+		return nil
+	}
+	return facebook.GetUser(me)
 }
