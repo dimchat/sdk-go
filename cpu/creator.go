@@ -36,32 +36,6 @@ import (
 	. "github.com/dimchat/sdk-go/dimp"
 )
 
-/**
- *  CPU Creator
- *  ~~~~~~~~~~~
- *
- *  Delegate for CPU factory
- */
-type ContentProcessorCreator interface {
-
-	/**
-	 *  Create content processor with type
-	 *
-	 * @param msgType - content type
-	 * @return ContentProcessor
-	 */
-	CreateContentProcessor(msgType ContentType) ContentProcessor
-
-	/**
-	 *  Create command processor with name
-	 *
-	 * @param msgType - content type
-	 * @param cmdName - command name
-	 * @return CommandProcessor
-	 */
-	CreateCommandProcessor(msgType ContentType, cmdName string) ContentProcessor
-}
-
 type BaseCreator struct {
 	TwinsHelper
 }

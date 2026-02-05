@@ -28,47 +28,92 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package sdk
 
-import (
-	. "github.com/dimchat/dkd-go/protocol"
-)
+import . "github.com/dimchat/sdk-go/dimp/core"
 
-/**
- *  CPU: Content Processing Unit
- */
-type ContentProcessor interface {
+type Cleanable interface {
 
 	/**
-	 *  Process message content
-	 *
-	 * @param content - content received
-	 * @param message - reliable message
-	 * @return contents responding to msg.sender
+	 *  Remove foreign pointers to break circular references
 	 */
-	Process(content Content, rMsg ReliableMessage) []Content
+	Clean()
+}
+
+func Cleanup(obj interface{}) {
+	target, ok := obj.(Cleanable)
+	if ok && target != nil {
+		target.Clean()
+	}
 }
 
 /**
- *  CPU Factory
- *  ~~~~~~~~~~~
- *
- *  Delegate for Message Processor
+ *  Hooks for Facebook
+ *  ~~~~~~~~~~~~~~~~~~
  */
-type ContentProcessorFactory interface {
+type AccountTee interface {
+	Cleanable
 
-	/**
-	 *  Get processor for content
-	 */
-	GetProcessor(content Content) ContentProcessor
+	// primary
+	Facebook() IFacebook
 
-	/**
-	 *  Get processor for content type
-	 */
-	GetContentProcessor(msgType ContentType) ContentProcessor
+	// secondary
+	Archivist() Archivist
+	Barrack() Barrack
+}
 
-	/**
-	 *  Get processor for command name
-	 */
-	GetCommandProcessor(msgType ContentType, cmdName string) ContentProcessor
+/**
+ *  Hooks for Messenger
+ *  ~~~~~~~~~~~~~~~~~~~
+ */
+type MessageTee interface {
+	Cleanable
+
+	// primary
+	Messenger() IMessenger
+
+	// secondary
+	Packer() Packer
+	Processor() Processor
+
+	CipherKeyDelegate() CipherKeyDelegate
+}
+
+/**
+ *  Hooks for Facebook & Messenger
+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ */
+type IHelper interface {
+	Cleanable
+
+	Facebook() IFacebook
+	Messenger() IMessenger
+}
+
+type TwinsHelper struct {
+	_facebook  IFacebook
+	_messenger IMessenger
+}
+
+func (helper *TwinsHelper) Init(facebook IFacebook, messenger IMessenger) IHelper {
+	helper._facebook = facebook
+	helper._messenger = messenger
+	return helper
+}
+
+// Override
+func (helper *TwinsHelper) Clean() {
+	// remove the twins
+	helper._messenger = nil
+	helper._facebook = nil
+}
+
+// Override
+func (helper *TwinsHelper) Facebook() IFacebook {
+	return helper._facebook
+}
+
+// Override
+func (helper *TwinsHelper) Messenger() IMessenger {
+	return helper._messenger
 }

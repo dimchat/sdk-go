@@ -45,46 +45,62 @@ type ITransceiver interface {
 	InstantMessageDelegate
 	SecureMessageDelegate
 	ReliableMessageDelegate
+
+	/**
+	 *  Serialize network message
+	 *
+	 * @param rMsg - network message
+	 * @return data package
+	 */
+	SerializeMessage(rMsg ReliableMessage) []byte
+
+	/**
+	 *  Deserialize network message
+	 *
+	 * @param data - data package
+	 * @return network message
+	 */
+	DeserializeMessage(data []byte) ReliableMessage
 }
 
 /**
  *  Message Transceiver
- *  ~~~~~~~~~~~~~~~~~~~
+ *  <p>
+ *      Converting message format between PlainMessage and NetworkMessage
+ *  </p>
  */
 type Transceiver struct {
 	//ITransceiver
 
 	// protected
-	EntityDelegate EntityDelegate // facebook
-	Compressor     Compressor
+	_delegate   EntityDelegate // facebook
+	_compressor Compressor
 }
 
 func (transceiver *Transceiver) Init(facebook EntityDelegate) ITransceiver {
-	transceiver.EntityDelegate = facebook
-	transceiver.Compressor = CreateCompressor()
+	transceiver._delegate = facebook
+	transceiver._compressor = CreateCompressor()
 	return transceiver
 }
 
-/**
- *  Serialize network message
- *
- * @param rMsg - network message
- * @return data package
- */
+func (transceiver *Transceiver) EntityDelegate() EntityDelegate {
+	return transceiver._delegate
+}
+
+func (transceiver *Transceiver) Compressor() Compressor {
+	return transceiver._compressor
+}
+
+// Override
 func (transceiver *Transceiver) SerializeMessage(rMsg ReliableMessage) []byte {
-	compressor := transceiver.Compressor
+	compressor := transceiver.Compressor()
 	info := rMsg.Map()
 	return compressor.CompressReliableMessage(info)
 }
 
-/**
- *  Deserialize network message
- *
- * @param data - data package
- * @return network message
- */
+// Override
 func (transceiver *Transceiver) DeserializeMessage(data []byte) ReliableMessage {
-	compressor := transceiver.Compressor
+	compressor := transceiver.Compressor()
 	info := compressor.ExtractReliableMessage(data)
 	return ParseReliableMessage(info)
 }
@@ -95,7 +111,7 @@ func (transceiver *Transceiver) DeserializeMessage(data []byte) ReliableMessage 
 func (transceiver *Transceiver) SerializeContent(content Content, password SymmetricKey, _ InstantMessage) []byte {
 	// NOTICE: check attachment for File/Image/Audio/Video message content
 	//         before serialize content, this job should be done in subclass
-	compressor := transceiver.Compressor
+	compressor := transceiver.Compressor()
 	info := content.Map()
 	dict := password.Map()
 	return compressor.CompressContent(info, dict)
@@ -128,7 +144,7 @@ func (transceiver *Transceiver) SerializeKey(password SymmetricKey, iMsg Instant
 		// broadcast message has no key
 		return nil
 	}
-	compressor := transceiver.Compressor
+	compressor := transceiver.Compressor()
 	dict := password.Map()
 	return compressor.CompressSymmetricKey(dict)
 }
@@ -136,7 +152,7 @@ func (transceiver *Transceiver) SerializeKey(password SymmetricKey, iMsg Instant
 // Override
 func (transceiver *Transceiver) EncryptKey(data []byte, receiver ID, _ InstantMessage) EncryptedBundle {
 	// TODO: make sure the receiver's public key exists
-	facebook := transceiver.EntityDelegate
+	facebook := transceiver.EntityDelegate()
 	contact := facebook.GetUser(receiver)
 	if contact == nil {
 		//panic("failed to encrypt message key for contact")
@@ -158,7 +174,7 @@ func (transceiver *Transceiver) EncodeKey(bundle EncryptedBundle, receiver ID, _
 
 // Override
 func (transceiver *Transceiver) DecodeKey(msgKeys StringKeyMap, receiver ID, _ SecureMessage) EncryptedBundle {
-	facebook := transceiver.EntityDelegate
+	facebook := transceiver.EntityDelegate()
 	user := facebook.GetUser(receiver)
 	if user == nil {
 		//panic("failed to decode key")
@@ -192,7 +208,7 @@ func (transceiver *Transceiver) DecodeKey(msgKeys StringKeyMap, receiver ID, _ S
 func (transceiver *Transceiver) DecryptKey(bundle EncryptedBundle, receiver ID, _ SecureMessage) []byte {
 	// NOTICE: the receiver must be a member ID
 	//         if it's a group message
-	facebook := transceiver.EntityDelegate
+	facebook := transceiver.EntityDelegate()
 	user := facebook.GetUser(receiver)
 	if user == nil {
 		//panic("failed to decrypt key")
@@ -208,7 +224,7 @@ func (transceiver *Transceiver) DeserializeKey(key []byte, _ SecureMessage) Symm
 		//panic("reused key? get it from local cache")
 		return nil
 	}
-	compressor := transceiver.Compressor
+	compressor := transceiver.Compressor()
 	info := compressor.ExtractSymmetricKey(key)
 	return ParseSymmetricKey(info)
 }
@@ -240,7 +256,7 @@ func (transceiver *Transceiver) DecryptContent(data []byte, password SymmetricKe
 
 // Override
 func (transceiver *Transceiver) DeserializeContent(data []byte, password SymmetricKey, _ SecureMessage) Content {
-	compressor := transceiver.Compressor
+	compressor := transceiver.Compressor()
 	dict := password.Map()
 	info := compressor.ExtractContent(data, dict)
 	return ParseContent(info)
@@ -250,7 +266,7 @@ func (transceiver *Transceiver) DeserializeContent(data []byte, password Symmetr
 
 // Override
 func (transceiver *Transceiver) SignData(data []byte, sMsg SecureMessage) []byte {
-	facebook := transceiver.EntityDelegate
+	facebook := transceiver.EntityDelegate()
 	sender := sMsg.Sender()
 	user := facebook.GetUser(sender)
 	if user == nil {
@@ -280,7 +296,7 @@ func (transceiver *Transceiver) DecodeSignature(signature interface{}, _ Reliabl
 
 // Override
 func (transceiver *Transceiver) VerifyDataSignature(data []byte, signature []byte, rMsg ReliableMessage) bool {
-	facebook := transceiver.EntityDelegate
+	facebook := transceiver.EntityDelegate()
 	sender := rMsg.Sender()
 	contact := facebook.GetUser(sender)
 	if contact == nil {

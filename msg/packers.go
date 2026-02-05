@@ -141,19 +141,57 @@ type ReliableMessagePacker interface {
 //  Factories
 //
 
-func NewInstantMessagePacker(messenger InstantMessageDelegate) InstantMessagePacker {
+func CreateInstantMessagePacker(messenger InstantMessageDelegate) InstantMessagePacker {
+	factory := GetMessagePackerFactory()
+	return factory.CreateInstantMessagePacker(messenger)
+}
+
+func CreateSecureMessagePacker(messenger SecureMessageDelegate) SecureMessagePacker {
+	factory := GetMessagePackerFactory()
+	return factory.CreateSecureMessagePacker(messenger)
+}
+
+func CreateReliableMessagePacker(messenger ReliableMessageDelegate) ReliableMessagePacker {
+	factory := GetMessagePackerFactory()
+	return factory.CreateReliableMessagePacker(messenger)
+}
+
+type MessagePackerFactory interface {
+	CreateInstantMessagePacker(messenger InstantMessageDelegate) InstantMessagePacker
+	CreateSecureMessagePacker(messenger SecureMessageDelegate) SecureMessagePacker
+	CreateReliableMessagePacker(messenger ReliableMessageDelegate) ReliableMessagePacker
+}
+
+var sharedMessagePackerFactory MessagePackerFactory = &msgPackerFactory{}
+
+func SetMessagePackerFactory(factory MessagePackerFactory) {
+	sharedMessagePackerFactory = factory
+}
+
+func GetMessagePackerFactory() MessagePackerFactory {
+	return sharedMessagePackerFactory
+}
+
+type msgPackerFactory struct {
+	//MessagePackerFactory
+}
+
+// Override
+func (factory msgPackerFactory) CreateInstantMessagePacker(messenger InstantMessageDelegate) InstantMessagePacker {
 	return &PlainMessagePacker{
 		_transceiver: messenger,
 	}
 }
 
-func NewSecureMessagePacker(messenger SecureMessageDelegate) SecureMessagePacker {
+// Override
+func (factory msgPackerFactory) CreateSecureMessagePacker(messenger SecureMessageDelegate) SecureMessagePacker {
 	return &EncryptedMessagePacker{
 		_transceiver: messenger,
 	}
 }
 
-func NewReliableMessagePacker(messenger ReliableMessageDelegate) ReliableMessagePacker {
+// Override
+func (factory msgPackerFactory) CreateReliableMessagePacker(messenger ReliableMessageDelegate) ReliableMessagePacker {
 	return &NetworkMessagePacker{
 		_transceiver: messenger,
 	}

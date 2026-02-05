@@ -28,11 +28,13 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package dimp
+package sdk
 
 import (
-	. "github.com/dimchat/core-go/dimp"
+	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
+	. "github.com/dimchat/sdk-go/dimp/core"
+	. "github.com/dimchat/sdk-go/dimp/dkd"
 )
 
 type MessageProcessor struct {
@@ -43,53 +45,23 @@ type MessageProcessor struct {
 
 func (processor *MessageProcessor) Init(facebook IFacebook, messenger IMessenger) Processor {
 	if processor.TwinsHelper.Init(facebook, messenger) != nil {
-		processor._factory = nil
+		helper := GetContentProcessorHelper()
+		processor._factory = helper.CreateContentProcessorFactory(facebook, messenger)
 	}
 	return processor
 }
 
-//-------- ICleanable
-
-func (processor *MessageProcessor) Clean() {
-	// clean factory
-	factory := processor.Factory()
-	processor.SetFactory(nil)
-	Cleanup(factory)
-	// clean twins
-	processor.TwinsHelper.Clean()
-}
-
-//-------- CPU Factory
-
-func (processor *MessageProcessor) Factory() ContentProcessorFactory {
-	return processor._factory
-}
-func (processor *MessageProcessor) SetFactory(factory ContentProcessorFactory) {
-	processor._factory = factory
-}
-
-func (processor *MessageProcessor) GetProcessor(content Content) ContentProcessor {
-	return processor.Factory().GetProcessor(content)
-}
-func (processor *MessageProcessor) GetContentProcessor(msgType ContentType) ContentProcessor {
-	return processor.Factory().GetContentProcessor(msgType)
-}
-func (processor *MessageProcessor) GetCommandProcessor(msgType ContentType, cmdName string) ContentProcessor {
-	return processor.Factory().GetCommandProcessor(msgType, cmdName)
-}
-
-//-------- IProcessor
-
+// Override
 func (processor *MessageProcessor) ProcessPackage(data []byte) [][]byte {
-	messenger := processor.Messenger()
+	transceiver := processor.Messenger()
 	// 1. deserialize message
-	rMsg := messenger.DeserializeMessage(data)
+	rMsg := transceiver.DeserializeMessage(data)
 	if rMsg == nil {
 		// no valid message received
 		return nil
 	}
 	// 2. process message
-	responses := messenger.ProcessReliableMessage(rMsg)
+	responses := transceiver.ProcessReliableMessage(rMsg)
 	if responses == nil || len(responses) == 0 {
 		// nothing to respond
 		return nil
@@ -97,26 +69,29 @@ func (processor *MessageProcessor) ProcessPackage(data []byte) [][]byte {
 	// 3. serialize message
 	packages := make([][]byte, 0, len(responses))
 	for _, item := range responses {
-		pack := messenger.SerializeMessage(item)
-		if pack != nil {
-			packages = append(packages, pack)
+		pack := transceiver.SerializeMessage(item)
+		if pack == nil || len(pack) == 0 {
+			// should not happen
+			continue
 		}
+		packages = append(packages, pack)
 	}
 	return packages
 }
 
+// Override
 func (processor *MessageProcessor) ProcessReliableMessage(rMsg ReliableMessage) []ReliableMessage {
-	// NOTICE: override to check broadcast message before calling it
-	messenger := processor.Messenger()
+	// TODO: override to check broadcast message before calling it
+	transceiver := processor.Messenger()
 
 	// 1. verify message
-	sMsg := messenger.VerifyMessage(rMsg)
+	sMsg := transceiver.VerifyMessage(rMsg)
 	if sMsg == nil {
-		// waiting for sender's meta if not exists
+		// TODO: suspend and waiting for sender's meta if not exists
 		return nil
 	}
 	// 2. process message
-	responses := messenger.ProcessSecureMessage(sMsg, rMsg)
+	responses := transceiver.ProcessSecureMessage(sMsg, rMsg)
 	if responses == nil || len(responses) == 0 {
 		// nothing to respond
 		return nil
@@ -124,26 +99,29 @@ func (processor *MessageProcessor) ProcessReliableMessage(rMsg ReliableMessage) 
 	// 3. sign message
 	messages := make([]ReliableMessage, 0, len(responses))
 	for _, item := range responses {
-		msg := messenger.SignMessage(item)
-		if msg != nil {
-			messages = append(messages, msg)
+		msg := transceiver.SignMessage(item)
+		if msg == nil {
+			// should not happen
+			continue
 		}
+		messages = append(messages, msg)
 	}
 	return messages
-	// NOTICE: override to deliver to the receiver when catch exception "receiver error ..."
+	// TODO: override to deliver to the receiver when catch exception "receiver error ..."
 }
 
+// Override
 func (processor *MessageProcessor) ProcessSecureMessage(sMsg SecureMessage, rMsg ReliableMessage) []SecureMessage {
-	messenger := processor.Messenger()
+	transceiver := processor.Messenger()
 	// 1. decrypt message
-	iMsg := messenger.DecryptMessage(sMsg)
+	iMsg := transceiver.DecryptMessage(sMsg)
 	if iMsg == nil {
 		// cannot decrypt this message, not for you?
 		// delivering message to other receiver?
 		return nil
 	}
 	// 2. process message
-	responses := messenger.ProcessInstantMessage(iMsg, rMsg)
+	responses := transceiver.ProcessInstantMessage(iMsg, rMsg)
 	if responses == nil || len(responses) == 0 {
 		// nothing to respond
 		return nil
@@ -151,42 +129,74 @@ func (processor *MessageProcessor) ProcessSecureMessage(sMsg SecureMessage, rMsg
 	// 3. encrypt message
 	messages := make([]SecureMessage, 0, len(responses))
 	for _, item := range responses {
-		msg := messenger.EncryptMessage(item)
-		if msg != nil {
-			messages = append(messages, msg)
+		msg := transceiver.EncryptMessage(item)
+		if msg == nil {
+			// should not happen
+			continue
 		}
-	}
-	return messages
-}
-
-func (processor *MessageProcessor) ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) []InstantMessage {
-	messenger := processor.Messenger()
-	// 1. process content
-	responses := messenger.ProcessContent(iMsg.Content(), rMsg)
-	if responses == nil || len(responses) == 0 {
-		// nothing to respond
-		return nil
-	}
-
-	// 2. select a local user to build message
-	facebook := processor.Facebook()
-	sender := iMsg.Sender()
-	receiver := iMsg.Receiver()
-	user := facebook.SelectLocalUser(receiver)
-
-	// 3. pack messages
-	messages := make([]InstantMessage, 0, len(responses))
-	for _, item := range responses {
-		env := EnvelopeCreate(user.ID(), sender, nil)
-		msg := InstantMessageCreate(env, item)
 		messages = append(messages, msg)
 	}
 	return messages
 }
 
+// Override
+func (processor *MessageProcessor) ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) []InstantMessage {
+	facebook := processor.Facebook()
+	transceiver := processor.Messenger()
+	// 1. process content
+	responses := transceiver.ProcessContent(iMsg.Content(), rMsg)
+	if responses == nil || len(responses) == 0 {
+		// nothing to respond
+		return nil
+	}
+	// 2. select a local user to build message
+	sender := iMsg.Sender()
+	receiver := iMsg.Receiver()
+	me := facebook.SelectLocalUser(receiver)
+	if me == nil {
+		//panic("receiver error")
+		return nil
+	}
+	// 3. pack messages
+	messages := make([]InstantMessage, 0, len(responses))
+	for _, item := range responses {
+		env := CreateEnvelope(me, sender, nil)
+		msg := CreateInstantMessage(env, item)
+		messages = append(messages, msg)
+	}
+	return messages
+}
+
+// Override
 func (processor *MessageProcessor) ProcessContent(content Content, rMsg ReliableMessage) []Content {
 	// TODO: override to check group
-	cpu := processor.GetProcessor(content)
-	return cpu.Process(content, rMsg)
+	cpu := processor._factory.GetContentProcessor(content)
+	if cpu == nil {
+		// default content processor
+		cpu = processor._factory.GetContentProcessorForType(ContentType.ANY)
+		if cpu == nil {
+			panic("failed to get default CPU")
+			return nil
+		}
+	}
+	return cpu.ProcessContent(content, rMsg)
 	// TODO: override to filter the response
+}
+
+//
+//  CPU Factory Helper
+//
+
+type ContentProcessorHelper interface {
+	CreateContentProcessorFactory(facebook IFacebook, messenger IMessenger) ContentProcessorFactory
+}
+
+var sharedContentProcessorHelper ContentProcessorHelper = nil
+
+func SetContentProcessorHelper(helper ContentProcessorHelper) {
+	sharedContentProcessorHelper = helper
+}
+
+func GetContentProcessorHelper() ContentProcessorHelper {
+	return sharedContentProcessorHelper
 }

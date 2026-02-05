@@ -2,12 +2,12 @@
  *
  *  DIM-SDK : Decentralized Instant Messaging Software Development Kit
  *
- *                                Written in 2020 by Moky <albert.moky@gmail.com>
+ *                                Written in 2021 by Moky <albert.moky@gmail.com>
  *
  * ==============================================================================
  * The MIT License (MIT)
  *
- * Copyright (c) 2020 Albert Moky
+ * Copyright (c) 2021 Albert Moky
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,76 +28,60 @@
  * SOFTWARE.
  * ==============================================================================
  */
-package sdk
+package cpu
 
-import (
-	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp/mkm"
-)
+import . "github.com/dimchat/dkd-go/protocol"
 
 /**
- *  Database Access
+ *  CPU: Content Processing Unit
  */
-type Archivist interface {
+type ContentProcessor interface {
 
 	/**
-	 *  Save meta for entity ID (must verify first)
+	 *  Process message content
 	 *
-	 * @param did  - entity ID
-	 * @param meta - entity meta
-	 * @return true on success
+	 * @param content - content received
+	 * @param rMsg    - reliable message
+	 * @return {Content} response to sender
 	 */
-	SaveMeta(meta Meta, did ID) bool
-
-	/**
-	 *  Save entity document with ID (must verify first)
-	 *
-	 * @param did      - entity ID
-	 * @param document - entity document
-	 * @return true on success
-	 */
-	SaveDocument(document Document, did ID) bool
-
-	//
-	//  Local Users
-	//
-
-	/**
-	 *  Get all local users (for decrypting received message)
-	 *
-	 * @return users with private key
-	 */
-	LocalUsers() []ID
+	ProcessContent(content Content, rMsg ReliableMessage) []Content
 }
 
 /**
- *  Entity Factory
- *  <p>
- *      Entity pool to manage User/Group instances
- *  </p>
+ *  CPU Creator
  */
-type Barrack interface {
-
-	// memory cache
-	CacheUser(user User)
-	CacheGroup(group Group)
-
-	GetUser(uid ID) User
-	GetGroup(gid ID) Group
+type ContentProcessorCreator interface {
 
 	/**
-	 *  Create user when visa.key exists
+	 *  Create content processor with type
 	 *
-	 * @param uid - user ID
-	 * @return user, null on not ready
+	 * @param msgType - content type
+	 * @return ContentProcessor
 	 */
-	CreateUser(uid ID) User
+	CreateContentProcessor(msgType MessageType) ContentProcessor
 
 	/**
-	 *  Create group when members exist
+	 *  Create command processor with name
 	 *
-	 * @param gid - group ID
-	 * @return group, null on not ready
+	 * @param msgType - content type
+	 * @param cmdName - command name
+	 * @return CommandProcessor
 	 */
-	CreateGroup(gid ID) Group
+	CreateCommandProcessor(msgType MessageType, cmdName string) ContentProcessor
+}
+
+/**
+ *  CPU Factory
+ */
+type ContentProcessorFactory interface {
+
+	/**
+	 *  Get content/command processor
+	 *
+	 * @param content - Content/Command
+	 * @return ContentProcessor
+	 */
+	GetContentProcessor(content Content) ContentProcessor
+
+	GetContentProcessorForType(msgType MessageType) ContentProcessor
 }
