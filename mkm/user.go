@@ -114,74 +114,6 @@ type User interface {
 	//
 	SignVisa(visa Visa) Visa
 	VerifyVisa(visa Visa) bool
-
-	//DataSource() UserDataSource
-	//SetDataSource(facebook UserDataSource)
-}
-
-/**
- *  User Data Source
- *
- *  <pre>
- *  (Encryption/decryption)
- *  1. public key for encryption
- *     if visa.key not exists, means it is the same key with meta.key
- *  2. private keys for decryption
- *     the private keys paired with [visa.key, meta.key]
- *
- *  (Signature/Verification)
- *  3. private key for signature
- *     the private key paired with visa.key or meta.key
- *  4. public keys for verification
- *     [visa.key, meta.key]
- *
- *  (Visa Document)
- *  5. private key for visa signature
- *     the private key pared with meta.key
- *  6. public key for visa verification
- *     meta.key only
- *  </pre>
- */
-type UserDataSource interface {
-	EntityDataSource
-
-	/**
-	 *  Get contacts list
-	 *
-	 * @param user - user ID
-	 * @return contacts list (ID)
-	 */
-	GetContacts(user ID) []ID
-
-	/**
-	 *  Get user's private keys for decryption
-	 *  <blockquote>
-	 *      (which paired with [visa.key, meta.key])
-	 *  </blockquote>
-	 *
-	 * @param user - user ID
-	 * @return private keys
-	 */
-	GetPrivateKeysForDecryption(user ID) []DecryptKey
-
-	/**
-	 *  Get user's private key for signature
-	 *  <blockquote>
-	 *      (which paired with visa.key or meta.key)
-	 *  </blockquote>
-	 *
-	 * @param user - user ID
-	 * @return private key
-	 */
-	GetPrivateKeyForSignature(user ID) SignKey
-
-	/**
-	 *  Get user's private key for signing visa
-	 *
-	 * @param user - user ID
-	 * @return private key
-	 */
-	GetPrivateKeyForVisaSignature(user ID) SignKey
 }
 
 /**
@@ -198,24 +130,14 @@ func (user *BaseUser) Init(identifier ID) User {
 	return user
 }
 
-//// Override
-//func (user *BaseUser) DataSource() UserDataSource {
-//	facebook := user.BaseEntity.DataSource()
-//	if delegate, ok := facebook.(UserDataSource); ok {
-//		return delegate
-//	}
-//	//panic("not a UserDataSource")
-//	return nil
-//}
-
 // Override
 func (user *BaseUser) Contacts() []ID {
-	ds := user.DataSource()
-	if facebook, ok := ds.(UserDataSource); ok {
-		return facebook.GetContacts(user.ID())
+	facebook := user.DataSource()
+	if facebook == nil {
+		//panic("user datasource not set yet")
+		return nil
 	}
-	//panic("user datasource not set yet")
-	return nil
+	return facebook.GetContacts(user.ID())
 }
 
 // Override
@@ -367,9 +289,8 @@ func (user *BaseUser) VerifyVisa(visa Visa) bool {
 
 // protected
 func (user *BaseUser) GetPrivateKeysForDecryption(terminal string) []DecryptKey {
-	ds := user.DataSource()
-	facebook, ok := ds.(UserDataSource)
-	if !ok || facebook == nil {
+	facebook := user.DataSource()
+	if facebook == nil {
 		//panic("user datasource not set yet")
 		return nil
 	}
@@ -383,9 +304,8 @@ func (user *BaseUser) GetPrivateKeysForDecryption(terminal string) []DecryptKey 
 
 // protected
 func (user *BaseUser) GetPrivateKeyForSignature() SignKey {
-	ds := user.DataSource()
-	facebook, ok := ds.(UserDataSource)
-	if !ok || facebook == nil {
+	facebook := user.DataSource()
+	if facebook == nil {
 		//panic("user datasource not set yet")
 		return nil
 	}
@@ -395,9 +315,8 @@ func (user *BaseUser) GetPrivateKeyForSignature() SignKey {
 
 // protected
 func (user *BaseUser) GetPrivateKeyForVisaSignature() SignKey {
-	ds := user.DataSource()
-	facebook, ok := ds.(UserDataSource)
-	if !ok || facebook == nil {
+	facebook := user.DataSource()
+	if facebook == nil {
 		//panic("user datasource not set yet")
 		return nil
 	}

@@ -37,10 +37,10 @@ import (
 )
 
 type IFacebook interface {
-	IEntityDelegate
-	IEntityDataSource
-	IUserDataSource
-	IGroupDataSource
+	EntityDelegate
+	EntityDataSource
+	//UserDataSource
+	//GroupDataSource
 
 	/**
 	 *  Select local user for receiver

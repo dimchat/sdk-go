@@ -55,45 +55,6 @@ type Group interface {
 	// NOTICE: the owner must be a member
 	//         (usually the first one)
 	Members() []ID
-
-	//DataSource() GroupDataSource
-	//SetDataSource(facebook GroupDataSource)
-}
-
-/**
- *  Group Data Source
- *
- *  <pre>
- *  1. founder has the same public key with the group's meta.key
- *  2. owner and members should be set complying with consensus algorithm
- *  </pre>
- */
-type GroupDataSource interface {
-	EntityDataSource
-
-	/**
-	 *  Get founder of the group
-	 *
-	 * @param group - group ID
-	 * @return fonder ID
-	 */
-	GetFounder(group ID) ID
-
-	/**
-	 *  Get current owner of the group
-	 *
-	 * @param group - group ID
-	 * @return owner ID
-	 */
-	GetOwner(group ID) ID
-
-	/**
-	 *  Get all members in the group
-	 *
-	 * @param group - group ID
-	 * @return members list (ID)
-	 */
-	GetMembers(group ID) []ID
 }
 
 /**
@@ -115,47 +76,37 @@ func (group *BaseGroup) Init(gid ID) Group {
 	return group
 }
 
-//// Override
-//func (group *BaseGroup) DataSource() GroupDataSource {
-//	facebook := group.BaseEntity.DataSource()
-//	if delegate, ok := facebook.(GroupDataSource); ok {
-//		return delegate
-//	}
-//	//panic("not a GroupDataSource")
-//	return nil
-//}
-
 // Override
 func (group *BaseGroup) Founder() ID {
 	user := group._founder
 	if user == nil {
-		ds := group.DataSource()
-		if facebook, ok := ds.(GroupDataSource); ok {
-			user = facebook.GetFounder(group.ID())
-			group._founder = user
-		} else {
+		facebook := group.DataSource()
+		if facebook == nil {
 			//panic("group datasource not set yet")
+			return nil
 		}
+		user = facebook.GetFounder(group.ID())
+		group._founder = user
 	}
 	return user
 }
 
 // Override
 func (group *BaseGroup) Owner() ID {
-	ds := group.DataSource()
-	if facebook, ok := ds.(GroupDataSource); ok {
-		return facebook.GetOwner(group.ID())
+	facebook := group.DataSource()
+	if facebook == nil {
+		//panic("group datasource not set yet")
+		return nil
 	}
-	//panic("group datasource not set yet")
-	return nil
+	return facebook.GetOwner(group.ID())
 }
 
 // Override
 func (group *BaseGroup) Members() []ID {
-	ds := group.DataSource()
-	if facebook, ok := ds.(GroupDataSource); ok {
-		return facebook.GetMembers(group.ID())
+	facebook := group.DataSource()
+	if facebook == nil {
+		//panic("group datasource not set yet")
+		return nil
 	}
-	//panic("group datasource not set yet")
-	return nil
+	return facebook.GetMembers(group.ID())
 }
