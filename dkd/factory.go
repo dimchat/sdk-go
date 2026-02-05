@@ -35,22 +35,22 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 )
 
-/**
- *  General ContentProcessor Factory
- */
+type ContentProcessorMap = map[string]ContentProcessor
+
+// General ContentProcessor Factory
 type GeneralContentProcessorFactory struct {
 	//ContentProcessorFactory
 
 	_creator ContentProcessorCreator
 
-	_contentProcessors map[string]ContentProcessor
-	_commandProcessors map[string]ContentProcessor
+	_contentProcessors ContentProcessorMap
+	_commandProcessors ContentProcessorMap
 }
 
 func (factory *GeneralContentProcessorFactory) Init(creator ContentProcessorCreator) ContentProcessorFactory {
 	factory._creator = creator
-	factory._contentProcessors = make(map[string]ContentProcessor, 32)
-	factory._commandProcessors = make(map[string]ContentProcessor, 32)
+	factory._contentProcessors = NewContentProcessorMap()
+	factory._commandProcessors = NewContentProcessorMap()
 	return factory
 }
 

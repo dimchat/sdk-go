@@ -33,10 +33,15 @@ package cpu
 import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp"
+	. "github.com/dimchat/sdk-go/dkd"
+	. "github.com/dimchat/sdk-go/sdk"
 )
 
+/**
+ *  Base ContentProcessor Creator
+ */
 type BaseCreator struct {
+	//ContentProcessorCreator
 	TwinsHelper
 }
 
@@ -46,50 +51,58 @@ type BaseCreator struct {
 //	return creator
 //}
 
-//-------- IContentProcessorCreator
-
-func (creator *BaseCreator) CreateContentProcessor(msgType ContentType) ContentProcessor {
+// Override
+func (creator *BaseCreator) CreateContentProcessor(msgType MessageType) ContentProcessor {
 	switch msgType {
 	// forward content
-	case FORWARD:
-		return NewForwardContentProcessor(creator.Facebook(), creator.Messenger())
+	case ContentType.FORWARD:
+		return NewForwardContentProcessor(creator.Facebook, creator.Messenger)
+	// array content
+	case ContentType.ARRAY:
+		return NewArrayContentProcessor(creator.Facebook, creator.Messenger)
 	// default commands
-	case COMMAND:
-		return NewBaseCommandProcessor(creator.Facebook(), creator.Messenger())
-	case HISTORY:
-		return NewHistoryCommandProcessor(creator.Facebook(), creator.Messenger())
+	case ContentType.COMMON:
+		return NewBaseCommandProcessor(creator.Facebook, creator.Messenger)
 	// default contents
-	case 0:
-		return NewBaseContentProcessor(creator.Facebook(), creator.Messenger())
+	case ContentType.ANY:
+		return NewBaseContentProcessor(creator.Facebook, creator.Messenger)
+	case "*":
+		// must return a default processor for unknown type
+		return NewBaseContentProcessor(creator.Facebook, creator.Messenger)
 	// unknown
 	default:
 		return nil
 	}
 }
 
-func (creator *BaseCreator) CreateCommandProcessor(_ ContentType, cmdName string) ContentProcessor {
+func (creator *BaseCreator) CreateCommandProcessor(_ MessageType, cmdName string) ContentProcessor {
 	switch cmdName {
-	// meta command
-	case META:
-		return NewMetaCommandProcessor(creator.Facebook(), creator.Messenger())
-	// document command
-	case DOCUMENT:
-		return NewDocumentCommandProcessor(creator.Facebook(), creator.Messenger())
-	// group commands
-	case "group":
-		return NewGroupCommandProcessor(creator.Facebook(), creator.Messenger())
-	case INVITE:
-		return NewInviteCommandProcessor(creator.Facebook(), creator.Messenger())
-	case EXPEL:
-		return NewExpelCommandProcessor(creator.Facebook(), creator.Messenger())
-	case QUIT:
-		return NewQuitCommandProcessor(creator.Facebook(), creator.Messenger())
-	case RESET:
-		return NewResetCommandProcessor(creator.Facebook(), creator.Messenger())
-	case QUERY:
-		return NewQueryCommandProcessor(creator.Facebook(), creator.Messenger())
 	// unknown
 	default:
 		return nil
 	}
+}
+
+//
+//  Initialize base creator for CPU factory
+//
+
+type cpuHelper struct {
+	//ContentProcessorHelper
+}
+
+// Override
+func (helper cpuHelper) CreateContentProcessorFactory(facebook IFacebook, messenger IMessenger) ContentProcessorFactory {
+	creator := &BaseCreator{
+		TwinsHelper{
+			Facebook:  facebook,
+			Messenger: messenger,
+		},
+	}
+	return NewContentProcessorFactory(creator)
+}
+
+func init() {
+	helper := &cpuHelper{}
+	SetContentProcessorHelper(helper)
 }
