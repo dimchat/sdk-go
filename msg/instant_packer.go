@@ -38,7 +38,7 @@ import (
 	. "github.com/dimchat/mkm-go/format"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/mkm-go/types"
-	. "github.com/dimchat/sdk-go/dimp/crypto"
+	. "github.com/dimchat/sdk-go/crypto"
 )
 
 type PlainMessagePacker struct {

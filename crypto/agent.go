@@ -132,7 +132,11 @@ func (agent DefaultVisaAgent) GetTerminal(doc Document) string {
 func (agent DefaultVisaAgent) EncryptBundle(plaintext []byte, meta Meta, documents []Document) EncryptedBundle {
 	// NOTICE: meta.key will never be changed, so use Visa.key to encrypt message
 	//         is a better way
-	bundle := NewEncryptedBundle()
+	capacity := len(documents)
+	if capacity < 1 {
+		capacity = 1
+	}
+	bundle := NewEncryptedBundle(capacity)
 	var terminal string
 	var pubKey EncryptKey
 	var ciphertext []byte
@@ -174,7 +178,11 @@ func (agent DefaultVisaAgent) EncryptBundle(plaintext []byte, meta Meta, documen
 
 // Override
 func (agent DefaultVisaAgent) GetVerifyKeys(meta Meta, documents []Document) []VerifyKey {
-	keys := make([]VerifyKey, 0)
+	size := len(documents)
+	if size < 1 {
+		size = 1
+	}
+	keys := make([]VerifyKey, 0, size)
 	var pubKey VerifyKey
 	// the sender may use communication key to sign message.data,
 	// try to verify it with visa.key first;
@@ -200,7 +208,11 @@ func (agent DefaultVisaAgent) GetVerifyKeys(meta Meta, documents []Document) []V
 
 // Override
 func (agent DefaultVisaAgent) GetTerminals(documents []Document) []string {
-	devices := make([]string, 0)
+	size := len(documents)
+	if size < 1 {
+		size = 1
+	}
+	devices := make([]string, 0, size)
 	var terminal string
 	for _, doc := range documents {
 		terminal = agent.GetTerminal(doc)

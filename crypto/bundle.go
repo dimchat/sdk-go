@@ -98,9 +98,9 @@ func DecodeEncryptedBundle(encodedKeys StringKeyMap, did ID, terminals []string)
 	return helper.DecodeBundle(encodedKeys, did, terminals)
 }
 
-func NewEncryptedBundle() EncryptedBundle {
+func NewEncryptedBundle(capacity int) EncryptedBundle {
 	return &UserEncryptedBundle{
-		_map: make(map[string][]byte),
+		_map: make(map[string][]byte, capacity),
 	}
 }
 
@@ -115,7 +115,7 @@ type UserEncryptedBundle struct {
 }
 
 func (bundle *UserEncryptedBundle) Init() EncryptedBundle {
-	bundle._map = make(map[string][]byte)
+	bundle._map = make(map[string][]byte, 2)
 	return bundle
 }
 

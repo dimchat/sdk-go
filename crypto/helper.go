@@ -86,7 +86,11 @@ func (helper DefaultBundleHelper) EncodeBundle(bundle EncryptedBundle, did ID) S
 
 // Override
 func (helper DefaultBundleHelper) DecodeBundle(encodedKeys StringKeyMap, did ID, terminals []string) EncryptedBundle {
-	bundle := NewEncryptedBundle()
+	capacity := len(terminals)
+	if capacity < 1 {
+		capacity = 1
+	}
+	bundle := NewEncryptedBundle(capacity)
 	//
 	//  0. ID string without terminal
 	//

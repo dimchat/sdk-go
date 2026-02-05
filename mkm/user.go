@@ -33,9 +33,9 @@ package mkm
 import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/mkm-go/crypto"
-	"github.com/dimchat/mkm-go/ext"
+	. "github.com/dimchat/mkm-go/ext"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp/crypto"
+	. "github.com/dimchat/sdk-go/crypto"
 )
 
 /**
@@ -235,7 +235,7 @@ func (user *BaseUser) DecryptBundle(bundle EncryptedBundle) []byte {
 // Override
 func (user *BaseUser) SignVisa(visa Visa) Visa {
 	identifier := user.ID()
-	helper := ext.GetGeneralAccountHelper()
+	helper := GetGeneralAccountHelper()
 	docID := helper.GetDocumentID(visa.Map())
 	if docID == nil {
 		//panic("visa ID not found")
@@ -262,7 +262,7 @@ func (user *BaseUser) VerifyVisa(visa Visa) bool {
 	// NOTICE: only verify visa with meta.key
 	//         (if meta not exists, user won't be created)
 	identifier := user.ID()
-	helper := ext.GetGeneralAccountHelper()
+	helper := GetGeneralAccountHelper()
 	docID := helper.GetDocumentID(visa.Map())
 	if docID == nil {
 		//panic("visa ID not found")

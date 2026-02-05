@@ -33,7 +33,7 @@ package sdk
 import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/crypto"
-	. "github.com/dimchat/sdk-go/dimp/core"
+	. "github.com/dimchat/sdk-go/core"
 )
 
 type IMessenger interface {

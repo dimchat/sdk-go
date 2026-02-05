@@ -33,8 +33,8 @@ package sdk
 import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp/core"
-	. "github.com/dimchat/sdk-go/dimp/dkd"
+	. "github.com/dimchat/sdk-go/core"
+	. "github.com/dimchat/sdk-go/dkd"
 )
 
 type MessageProcessor struct {

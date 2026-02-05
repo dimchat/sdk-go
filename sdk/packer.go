@@ -32,8 +32,8 @@ package sdk
 
 import (
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp/core"
-	. "github.com/dimchat/sdk-go/dimp/msg"
+	. "github.com/dimchat/sdk-go/core"
+	. "github.com/dimchat/sdk-go/msg"
 )
 
 type MessagePacker struct {

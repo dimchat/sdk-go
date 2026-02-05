@@ -32,7 +32,7 @@ package sdk
 
 import (
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp/mkm"
+	. "github.com/dimchat/sdk-go/mkm"
 )
 
 type ITwinsHelper interface {
