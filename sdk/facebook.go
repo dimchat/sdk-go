@@ -42,6 +42,9 @@ type IFacebook interface {
 	//UserDataSource
 	//GroupDataSource
 
+	SaveMeta(meta Meta, did ID) bool
+	SaveDocument(document Document, did ID) bool
+
 	/**
 	 *  Select local user for receiver
 	 *
@@ -73,6 +76,18 @@ type Facebook struct {
 //	facebook.Archivist = archivist
 //	return facebook
 //}
+
+// Override
+func (facebook *Facebook) SaveMeta(meta Meta, did ID) bool {
+	archivist := facebook.Archivist
+	return archivist.SaveMeta(meta, did)
+}
+
+// Override
+func (facebook *Facebook) SaveDocument(document Document, did ID) bool {
+	archivist := facebook.Archivist
+	return archivist.SaveDocument(document, did)
+}
 
 // Override
 func (facebook *Facebook) SelectUser(receiver ID) ID {

@@ -40,20 +40,19 @@ import (
 /**
  *  Base ContentProcessor Creator
  */
-type BaseCreator struct {
+type BaseContentProcessorCreator struct {
 	//ContentProcessorCreator
 	TwinsHelper
 }
 
-//func (creator *BaseCreator) Init(facebook IFacebook, messenger IMessenger) ContentProcessorCreator {
-//	if creator.TwinsHelper.Init(facebook, messenger) != nil {
-//	}
-//	return creator
-//}
-
 // Override
-func (creator *BaseCreator) CreateContentProcessor(msgType MessageType) ContentProcessor {
+func (creator *BaseContentProcessorCreator) CreateContentProcessor(msgType MessageType) ContentProcessor {
 	switch msgType {
+	// application customized
+	case ContentType.APPLICATION:
+		return NewCustomizedContentProcessor(creator.Facebook, creator.Messenger)
+	case ContentType.CUSTOMIZED:
+		return NewCustomizedContentProcessor(creator.Facebook, creator.Messenger)
 	// forward content
 	case ContentType.FORWARD:
 		return NewForwardContentProcessor(creator.Facebook, creator.Messenger)
@@ -61,25 +60,117 @@ func (creator *BaseCreator) CreateContentProcessor(msgType MessageType) ContentP
 	case ContentType.ARRAY:
 		return NewArrayContentProcessor(creator.Facebook, creator.Messenger)
 	// default commands
-	case ContentType.COMMON:
+	case ContentType.COMMAND:
 		return NewBaseCommandProcessor(creator.Facebook, creator.Messenger)
 	// default contents
 	case ContentType.ANY:
-		return NewBaseContentProcessor(creator.Facebook, creator.Messenger)
-	case "*":
 		// must return a default processor for unknown type
 		return NewBaseContentProcessor(creator.Facebook, creator.Messenger)
 	// unknown
 	default:
+		//panic("unsupported content type")
 		return nil
 	}
 }
 
-func (creator *BaseCreator) CreateCommandProcessor(_ MessageType, cmdName string) ContentProcessor {
+// Override
+func (creator *BaseContentProcessorCreator) CreateCommandProcessor(_ MessageType, cmdName string) ContentProcessor {
 	switch cmdName {
+	// meta command
+	case META:
+		return NewMetaCommandProcessor(creator.Facebook, creator.Messenger)
+	// documents command
+	case DOCUMENTS:
+		return NewDocumentCommandProcessor(creator.Facebook, creator.Messenger)
 	// unknown
 	default:
+		//panic("unsupported command: " + cmdName)
 		return nil
+	}
+}
+
+//
+//  Factories
+//
+
+func NewBaseContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+	return &BaseContentProcessor{
+		TwinsHelper: TwinsHelper{
+			Facebook:  facebook,
+			Messenger: messenger,
+		},
+	}
+}
+
+func NewBaseCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+	return &BaseCommandProcessor{
+		BaseContentProcessor{
+			TwinsHelper: TwinsHelper{
+				Facebook:  facebook,
+				Messenger: messenger,
+			},
+		},
+	}
+}
+
+func NewForwardContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+	return &ForwardContentProcessor{
+		BaseContentProcessor{
+			TwinsHelper{
+				Facebook:  facebook,
+				Messenger: messenger,
+			},
+		},
+	}
+}
+
+func NewArrayContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+	return &ArrayContentProcessor{
+		BaseContentProcessor{
+			TwinsHelper{
+				Facebook:  facebook,
+				Messenger: messenger,
+			},
+		},
+	}
+}
+
+func NewMetaCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+	return &MetaCommandProcessor{
+		BaseCommandProcessor{
+			BaseContentProcessor{
+				TwinsHelper{
+					Facebook:  facebook,
+					Messenger: messenger,
+				},
+			},
+		},
+	}
+}
+
+func NewDocumentCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+	return &DocumentCommandProcessor{
+		MetaCommandProcessor{
+			BaseCommandProcessor{
+				BaseContentProcessor{
+					TwinsHelper{
+						Facebook:  facebook,
+						Messenger: messenger,
+					},
+				},
+			},
+		},
+	}
+}
+
+func NewCustomizedContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+	return &CustomizedContentProcessor{
+		BaseContentProcessor{
+			TwinsHelper{
+				Facebook:  facebook,
+				Messenger: messenger,
+			},
+		},
 	}
 }
 
@@ -93,7 +184,7 @@ type cpuHelper struct {
 
 // Override
 func (helper cpuHelper) CreateContentProcessorFactory(facebook IFacebook, messenger IMessenger) ContentProcessorFactory {
-	creator := &BaseCreator{
+	creator := &BaseContentProcessorCreator{
 		TwinsHelper{
 			Facebook:  facebook,
 			Messenger: messenger,

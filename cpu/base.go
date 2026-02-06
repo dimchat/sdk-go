@@ -35,7 +35,6 @@ import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/types"
-	. "github.com/dimchat/sdk-go/dkd"
 	. "github.com/dimchat/sdk-go/sdk"
 )
 
@@ -46,12 +45,6 @@ type BaseContentProcessor struct {
 	//ContentProcessor
 	TwinsHelper
 }
-
-//func (cpu *BaseContentProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
-//	if cpu.TwinsHelper.Init(facebook, messenger) != nil {
-//	}
-//	return cpu
-//}
 
 // Override
 func (cpu *BaseContentProcessor) ProcessContent(content Content, rMsg ReliableMessage) []Content {
@@ -109,12 +102,6 @@ type BaseCommandProcessor struct {
 	BaseContentProcessor
 }
 
-//func (cpu *BaseCommandProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
-//	if cpu.BaseContentProcessor.Init(facebook, messenger) != nil {
-//	}
-//	return cpu
-//}
-
 // Override
 func (cpu *BaseCommandProcessor) ProcessContent(content Content, rMsg ReliableMessage) []Content {
 	command, ok := content.(Command)
@@ -128,28 +115,4 @@ func (cpu *BaseCommandProcessor) ProcessContent(content Content, rMsg ReliableMe
 			"command": command.CMD(),
 		},
 	})
-}
-
-//
-//  Factories
-//
-
-func NewBaseContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
-	return &BaseContentProcessor{
-		TwinsHelper: TwinsHelper{
-			Facebook:  facebook,
-			Messenger: messenger,
-		},
-	}
-}
-
-func NewBaseCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
-	return &BaseCommandProcessor{
-		BaseContentProcessor{
-			TwinsHelper: TwinsHelper{
-				Facebook:  facebook,
-				Messenger: messenger,
-			},
-		},
-	}
 }

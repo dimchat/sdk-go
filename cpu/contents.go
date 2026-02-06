@@ -34,10 +34,12 @@ import (
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/sdk-go/dkd"
-	. "github.com/dimchat/sdk-go/sdk"
 )
 
+/**
+ *  CPU for ForwardContent
+ *  ~~~~~~~~~~~~~~~~~~~~~~
+ */
 type ForwardContentProcessor struct {
 	BaseContentProcessor
 }
@@ -73,6 +75,10 @@ func (cpu *ForwardContentProcessor) ProcessContent(content Content, _ ReliableMe
 	return responses
 }
 
+/**
+ *  CPU for ArrayContent
+ *  ~~~~~~~~~~~~~~~~~~~~
+ */
 type ArrayContentProcessor struct {
 	BaseContentProcessor
 }
@@ -106,30 +112,4 @@ func (cpu *ArrayContentProcessor) ProcessContent(content Content, rMsg ReliableM
 		responses = append(responses, res)
 	}
 	return responses
-}
-
-//
-//  Factories
-//
-
-func NewForwardContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
-	return &ForwardContentProcessor{
-		BaseContentProcessor{
-			TwinsHelper{
-				Facebook:  facebook,
-				Messenger: messenger,
-			},
-		},
-	}
-}
-
-func NewArrayContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
-	return &ArrayContentProcessor{
-		BaseContentProcessor{
-			TwinsHelper{
-				Facebook:  facebook,
-				Messenger: messenger,
-			},
-		},
-	}
 }

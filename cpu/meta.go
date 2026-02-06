@@ -31,76 +31,113 @@
 package cpu
 
 import (
-	"fmt"
 	. "github.com/dimchat/core-go/dkd"
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
-	. "github.com/dimchat/sdk-go/dimp"
+	. "github.com/dimchat/mkm-go/types"
 )
 
-var (
-	StrMetaCmdError = "Meta command error."
-	FmtMetaNotFound = "Sorry, meta not found for ID: %s"
-	FmtMetaNotAccepted = "Meta not accepted: %s"
-	FmtMetaAccepted = "Meta received: %s"
-)
-
+/**
+ *  CPU for MetaCommand
+ *  ~~~~~~~~~~~~~~~~~~~
+ */
 type MetaCommandProcessor struct {
 	BaseCommandProcessor
 }
 
-func NewMetaCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
-	cpu := new(MetaCommandProcessor)
-	cpu.Init(facebook, messenger)
-	return cpu
-}
-
-//func (cpu *MetaCommandProcessor) Init(facebook IFacebook, messenger IMessenger) ContentProcessor {
-//	if cpu.BaseCommandProcessor.Init(facebook, messenger) != nil {
-//	}
-//	return cpu
-//}
-
-func (cpu *MetaCommandProcessor) getMeta(identifier ID) []Content {
-	// query meta for ID
-	meta := cpu.Facebook().GetMeta(identifier)
-	if meta == nil {
-		text := fmt.Sprintf(FmtMetaNotFound, identifier.String())
-		return cpu.RespondText(text, nil)
-	} else {
-		res := MetaCommandRespond(identifier, meta)
-		return cpu.RespondContent(res)
+// Override
+func (cpu *MetaCommandProcessor) ProcessContent(content Content, rMsg ReliableMessage) []Content {
+	command, ok := content.(MetaCommand)
+	if !ok {
+		//panic("meta command error")
+		return nil
 	}
-}
-
-func (cpu *MetaCommandProcessor) putMeta(identifier ID, meta Meta) []Content {
-	// received a meta for ID
-	if cpu.Facebook().SaveMeta(meta, identifier) {
-		// meta saved
-		text := fmt.Sprintf(FmtMetaAccepted, identifier.String())
-		return cpu.RespondReceipt(text)
-	} else {
-		// save meta failed
-		text := fmt.Sprintf(FmtMetaNotAccepted, identifier.String())
-		return cpu.RespondText(text, nil)
-	}
-}
-
-//-------- IContentProcessor
-
-func (cpu *MetaCommandProcessor) Process(content Content, _ ReliableMessage) []Content {
-	cmd, _ := content.(MetaCommand)
-	identifier := cmd.ID()
-	meta := cmd.Meta()
-	if identifier == nil {
+	did := command.ID()
+	meta := command.Meta()
+	if did == nil {
 		// error
-		return cpu.RespondText(StrMetaCmdError, cmd.Group())
+		return cpu.RespondReceipt("Meta command error.", rMsg.Envelope(), content, nil)
 	} else if meta == nil {
 		// query meta for ID
-		return cpu.getMeta(identifier)
-	} else {
-		// received a meta for ID
-		return cpu.putMeta(identifier, meta)
+		return cpu.getMeta(did, rMsg.Envelope(), command)
 	}
+	// received a meta for ID
+	return cpu.putMeta(meta, did, rMsg.Envelope(), command)
+}
+
+func (cpu *MetaCommandProcessor) getMeta(did ID, envelope Envelope, content MetaCommand) []Content {
+	facebook := cpu.Facebook
+	meta := facebook.GetMeta(did)
+	if meta == nil {
+		return cpu.RespondReceipt("Meta not found.", envelope, content, StringKeyMap{
+			"template": "Meta not found: ${did}.",
+			"replacements": StringKeyMap{
+				"did": did.String(),
+			},
+		})
+	}
+	// meta got
+	return cpu.respondMeta(did, meta, envelope.Sender())
+}
+
+// protected
+func (cpu *MetaCommandProcessor) respondMeta(did ID, meta Meta, receiver ID) []Content {
+	if receiver.Equal(did) {
+		panic("cycled response: " + receiver.String())
+	}
+	// TODO: check response expired
+	res := NewCommandForRespondMeta(did, meta)
+	return []Content{res}
+}
+
+func (cpu *MetaCommandProcessor) putMeta(meta Meta, did ID, envelope Envelope, content MetaCommand) []Content {
+	var errors []Content
+	// 1. try to save meta
+	errors = cpu.saveMeta(meta, did, envelope, content)
+	if errors != nil {
+		return errors
+	}
+	// 2. success
+	return cpu.RespondReceipt("Meta received.", envelope, content, StringKeyMap{
+		"template": "Meta received: ${did}.",
+		"replacements": StringKeyMap{
+			"did": did.String(),
+		},
+	})
+}
+
+// protected
+func (cpu *MetaCommandProcessor) saveMeta(meta Meta, did ID, envelope Envelope, content MetaCommand) []Content {
+	facebook := cpu.Facebook
+	// check meta
+	if !cpu.checkMeta(meta, did) {
+		// meta invalid
+		return cpu.RespondReceipt("Meta not valid.", envelope, content, StringKeyMap{
+			"template": "Meta not valid: ${did}.",
+			"replacements": StringKeyMap{
+				"did": did.String(),
+			},
+		})
+	} else if !facebook.SaveMeta(meta, did) {
+		// DB error?
+		return cpu.RespondReceipt("Meta not accepted.", envelope, content, StringKeyMap{
+			"template": "Meta not accepted: ${did}.",
+			"replacements": StringKeyMap{
+				"did": did.String(),
+			},
+		})
+	}
+	// meta saved, return no error
+	return nil
+}
+
+// protected
+func (cpu *MetaCommandProcessor) checkMeta(meta Meta, did ID) bool {
+	if !meta.IsValid() {
+		return false
+	}
+	old := did.Address()
+	gen := GenerateAddress(meta, old.Network())
+	return old.Equal(gen)
 }
