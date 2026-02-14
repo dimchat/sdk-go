@@ -1,5 +1,5 @@
-github.com/dimchat/core-go v0.4.1-0.20260206181553-8767009017ab h1:HvX9LJHwQtoVAkKAZ+tF+hvqsxU7Wf/ejElA+0qKmwA=
-github.com/dimchat/core-go v0.4.1-0.20260206181553-8767009017ab/go.mod h1:3lCoumGJJJBCaa+Z3wPYjjlsZklvDiHD+5oDXgbQykA=
+github.com/dimchat/core-go v0.4.1-0.20260207173006-2219482479b9 h1:fsRiiRUnvrhbSnKa92WD0igGJNFA/SjDDTkL9PWv1Oc=
+github.com/dimchat/core-go v0.4.1-0.20260207173006-2219482479b9/go.mod h1:3lCoumGJJJBCaa+Z3wPYjjlsZklvDiHD+5oDXgbQykA=
 github.com/dimchat/dkd-go v0.4.1-0.20260131194623-66282771cb1b h1:POt8SAUJBQKUrv6Ptvum+fCGW5IOYGUvDfev4d9dvTo=
 github.com/dimchat/dkd-go v0.4.1-0.20260131194623-66282771cb1b/go.mod h1:hwKy0oYEL+vdcws9rBqOMkUr+y3NUgwUpn+w1pZpi6E=
 github.com/dimchat/mkm-go v0.3.1-0.20260131165850-455224233aeb h1:z1ucd0uXI0cQls9mly2t5Ugia8Z1J6w63DqJt2YD234=

@@ -36,6 +36,9 @@ import (
 )
 
 type ITwinsHelper interface {
+	GetFacebook() IFacebook
+	GetMessenger() IMessenger
+
 	SelectLocalUser(receiver ID) User
 }
 
@@ -51,6 +54,16 @@ func (helper *TwinsHelper) Init(facebook IFacebook, messenger IMessenger) ITwins
 	helper.Facebook = facebook
 	helper.Messenger = messenger
 	return helper
+}
+
+// protected
+func (helper *TwinsHelper) GetFacebook() IFacebook {
+	return helper.Facebook
+}
+
+// protected
+func (helper *TwinsHelper) GetMessenger() IMessenger {
+	return helper.Messenger
 }
 
 // protected

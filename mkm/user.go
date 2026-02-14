@@ -116,6 +116,11 @@ type User interface {
 	VerifyVisa(visa Visa) bool
 }
 
+func NewUser(uid ID) User {
+	user := &BaseUser{}
+	return user.Init(uid)
+}
+
 /**
  *  Base User
  *  ~~~~~~~~~
@@ -124,8 +129,8 @@ type BaseUser struct {
 	BaseEntity
 }
 
-func (user *BaseUser) Init(identifier ID) User {
-	if user.BaseEntity.Init(identifier) != nil {
+func (user *BaseUser) Init(uid ID) User {
+	if user.BaseEntity.Init(uid) != nil {
 	}
 	return user
 }
@@ -234,12 +239,12 @@ func (user *BaseUser) DecryptBundle(bundle EncryptedBundle) []byte {
 
 // Override
 func (user *BaseUser) SignVisa(visa Visa) Visa {
-	identifier := user.ID()
+	uid := user.ID()
 	helper := GetGeneralAccountHelper()
 	docID := helper.GetDocumentID(visa.Map())
 	if docID == nil {
 		//panic("visa ID not found")
-	} else if !docID.Address().Equal(identifier.Address()) {
+	} else if !docID.Address().Equal(uid.Address()) {
 		//panic("visa ID not matched")
 		return nil
 	}
@@ -261,12 +266,12 @@ func (user *BaseUser) SignVisa(visa Visa) Visa {
 func (user *BaseUser) VerifyVisa(visa Visa) bool {
 	// NOTICE: only verify visa with meta.key
 	//         (if meta not exists, user won't be created)
-	identifier := user.ID()
+	uid := user.ID()
 	helper := GetGeneralAccountHelper()
 	docID := helper.GetDocumentID(visa.Map())
 	if docID == nil {
 		//panic("visa ID not found")
-	} else if !docID.Address().Equal(identifier.Address()) {
+	} else if !docID.Address().Equal(uid.Address()) {
 		//panic("visa ID not matched")
 		return false
 	}
@@ -294,12 +299,12 @@ func (user *BaseUser) GetPrivateKeysForDecryption(terminal string) []DecryptKey 
 		//panic("user datasource not set yet")
 		return nil
 	}
-	identifier := user.ID()
+	uid := user.ID()
 	if terminal == "" || terminal == "*" {
-		return facebook.GetPrivateKeysForDecryption(identifier)
+		return facebook.GetPrivateKeysForDecryption(uid)
 	}
-	uid := CreateID(identifier.Name(), identifier.Address(), terminal)
-	return facebook.GetPrivateKeysForDecryption(uid)
+	did := CreateID(uid.Name(), uid.Address(), terminal)
+	return facebook.GetPrivateKeysForDecryption(did)
 }
 
 // protected
@@ -309,8 +314,8 @@ func (user *BaseUser) GetPrivateKeyForSignature() SignKey {
 		//panic("user datasource not set yet")
 		return nil
 	}
-	identifier := user.ID()
-	return facebook.GetPrivateKeyForSignature(identifier)
+	uid := user.ID()
+	return facebook.GetPrivateKeyForSignature(uid)
 }
 
 // protected
@@ -320,6 +325,6 @@ func (user *BaseUser) GetPrivateKeyForVisaSignature() SignKey {
 		//panic("user datasource not set yet")
 		return nil
 	}
-	identifier := user.ID()
-	return facebook.GetPrivateKeyForVisaSignature(identifier)
+	uid := user.ID()
+	return facebook.GetPrivateKeyForVisaSignature(uid)
 }

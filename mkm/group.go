@@ -57,6 +57,11 @@ type Group interface {
 	Members() []ID
 }
 
+func NewGroup(gid ID) Group {
+	group := &BaseGroup{}
+	return group.Init(gid)
+}
+
 /**
  *  Base Group
  *  ~~~~~~~~~~

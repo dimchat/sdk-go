@@ -33,7 +33,6 @@ package cpu
 import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/mkm-go/types"
 	. "github.com/dimchat/sdk-go/sdk"
 )

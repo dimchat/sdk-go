@@ -38,9 +38,15 @@ import (
 
 type IMessenger interface {
 	ITransceiver
-	ICipherKeyManager // Interfaces for Cipher Key
 	Packer
 	Processor
+
+	//
+	//  Interfaces for Cipher Key
+	//
+	GetEncryptKey(iMsg InstantMessage) SymmetricKey
+	GetDecryptKey(sMsg SecureMessage) SymmetricKey
+	CacheDecryptKey(key SymmetricKey, sMsg SecureMessage)
 }
 
 type Messenger struct {
@@ -48,14 +54,14 @@ type Messenger struct {
 	Transceiver
 
 	// protected
-	Packer           Packer
-	Processor        Processor
-	CipherKeyManager ICipherKeyManager
+	CipherKeyDelegate CipherKeyDelegate
+	Packer            Packer
+	Processor         Processor
 }
 
 //func (messenger *Messenger) Init(facebook EntityDelegate, delegate CipherKeyDelegate, packer Packer, processor Processor) IMessenger {
 //	if messenger.Transceiver.Init(facebook) != nil {
-//		messenger.CipherKeyManager = NewCipherKeyManager(delegate)
+//		messenger.CipherKeyDelegate = delegate
 //		messenger.Packer = packer
 //		messenger.Processor = processor
 //	}
@@ -68,37 +74,40 @@ type Messenger struct {
 func (messenger *Messenger) DeserializeKey(key []byte, sMsg SecureMessage) SymmetricKey {
 	if key == nil || len(key) == 0 {
 		// get key from cache with direction: sender -> receiver(group)
-		manager := messenger.CipherKeyManager
-		return manager.GetDecryptKey(sMsg)
+		return messenger.GetDecryptKey(sMsg)
 	}
 	password := messenger.Transceiver.DeserializeKey(key, sMsg)
 	// cache decrypt key when success
 	if password != nil {
 		// cache the key with direction: sender -> receiver(group)
-		manager := messenger.CipherKeyManager
-		manager.CacheDecryptKey(password, sMsg)
+		messenger.CacheDecryptKey(password, sMsg)
 	}
 	return password
 }
 
-//-------- ICipherKeyManager
+//
+//  Interfaces for Cipher Key
+//
 
-// Override
 func (messenger *Messenger) GetEncryptKey(iMsg InstantMessage) SymmetricKey {
-	manager := messenger.CipherKeyManager
-	return manager.GetEncryptKey(iMsg)
+	sender := iMsg.Sender()
+	target := CipherKeyDestinationForMessage(iMsg)
+	db := messenger.CipherKeyDelegate
+	return db.GetCipherKey(sender, target, true)
 }
 
-// Override
 func (messenger *Messenger) GetDecryptKey(sMsg SecureMessage) SymmetricKey {
-	manager := messenger.CipherKeyManager
-	return manager.GetDecryptKey(sMsg)
+	sender := sMsg.Sender()
+	target := CipherKeyDestinationForMessage(sMsg)
+	db := messenger.CipherKeyDelegate
+	return db.GetCipherKey(sender, target, false)
 }
 
-// Override
 func (messenger *Messenger) CacheDecryptKey(key SymmetricKey, sMsg SecureMessage) {
-	manager := messenger.CipherKeyManager
-	manager.CacheDecryptKey(key, sMsg)
+	sender := sMsg.Sender()
+	target := CipherKeyDestinationForMessage(sMsg)
+	db := messenger.CipherKeyDelegate
+	db.CacheCipherKey(sender, target, key)
 }
 
 //-------- IPacker

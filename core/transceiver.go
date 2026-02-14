@@ -46,6 +46,9 @@ type ITransceiver interface {
 	SecureMessageDelegate
 	ReliableMessageDelegate
 
+	GetEntityDelegate() EntityDelegate
+	GetCompressor() Compressor
+
 	/**
 	 *  Serialize network message
 	 *
@@ -83,14 +86,22 @@ func (transceiver *Transceiver) Init(facebook EntityDelegate) ITransceiver {
 	return transceiver
 }
 
-// Override
+// protected
+func (transceiver *Transceiver) GetEntityDelegate() EntityDelegate {
+	return transceiver.EntityDelegate
+}
+
+// protected
+func (transceiver *Transceiver) GetCompressor() Compressor {
+	return transceiver.Compressor
+}
+
 func (transceiver *Transceiver) SerializeMessage(rMsg ReliableMessage) []byte {
 	compressor := transceiver.Compressor
 	info := rMsg.Map()
 	return compressor.CompressReliableMessage(info)
 }
 
-// Override
 func (transceiver *Transceiver) DeserializeMessage(data []byte) ReliableMessage {
 	compressor := transceiver.Compressor
 	info := compressor.ExtractReliableMessage(data)
