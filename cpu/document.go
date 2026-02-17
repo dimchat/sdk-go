@@ -70,7 +70,7 @@ func (cpu *DocumentCommandProcessor) ProcessContent(content Content, rMsg Reliab
 func (cpu *DocumentCommandProcessor) getDocuments(did ID, envelope Envelope, content DocumentCommand) []Content {
 	facebook := cpu.Facebook
 	documents := facebook.GetDocuments(did)
-	if documents == nil || len(documents) == 0 {
+	if len(documents) == 0 {
 		return cpu.RespondReceipt("Document not found.", envelope, content, StringKeyMap{
 			"template": "Document not found: ${did}",
 			"replacements": StringKeyMap{
@@ -126,7 +126,7 @@ func (cpu *DocumentCommandProcessor) lastDocument(documents []Document) Document
 		} else if lastTime == nil {
 			// the first document has no time (old version),
 			// if this document has time, use the new one
-			if docTime != nil {
+			if !TimeIsNil(docTime) {
 				// first document with time
 				lastDoc = doc
 				lastTime = docTime

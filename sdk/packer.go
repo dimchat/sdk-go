@@ -46,7 +46,7 @@ type MessagePacker struct {
 	ReliablePacker ReliableMessagePacker
 }
 
-func (packer *MessagePacker) Init(facebook IFacebook, messenger IMessenger) Packer {
+func (packer *MessagePacker) Init(facebook Facebook, messenger Messenger) Packer {
 	if packer.TwinsHelper.Init(facebook, messenger) != nil {
 		packer.InstantPacker = CreateInstantMessagePacker(messenger)
 		packer.SecurePacker = CreateSecureMessagePacker(messenger)
@@ -96,7 +96,7 @@ func (packer *MessagePacker) EncryptMessage(iMsg InstantMessage) SecureMessage {
 	if receiver.IsGroup() {
 		// group message
 		members := facebook.GetMembers(receiver)
-		if members == nil || len(members) == 0 {
+		if len(members) == 0 {
 			//panic("group not ready")
 			return nil
 		}

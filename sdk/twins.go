@@ -36,8 +36,8 @@ import (
 )
 
 type ITwinsHelper interface {
-	GetFacebook() IFacebook
-	GetMessenger() IMessenger
+	GetFacebook() Facebook
+	GetMessenger() Messenger
 
 	SelectLocalUser(receiver ID) User
 }
@@ -46,23 +46,23 @@ type TwinsHelper struct {
 	//ITwinsHelper
 
 	// protected
-	Facebook  IFacebook
-	Messenger IMessenger
+	Facebook  Facebook
+	Messenger Messenger
 }
 
-func (helper *TwinsHelper) Init(facebook IFacebook, messenger IMessenger) ITwinsHelper {
+func (helper *TwinsHelper) Init(facebook Facebook, messenger Messenger) ITwinsHelper {
 	helper.Facebook = facebook
 	helper.Messenger = messenger
 	return helper
 }
 
 // protected
-func (helper *TwinsHelper) GetFacebook() IFacebook {
+func (helper *TwinsHelper) GetFacebook() Facebook {
 	return helper.Facebook
 }
 
 // protected
-func (helper *TwinsHelper) GetMessenger() IMessenger {
+func (helper *TwinsHelper) GetMessenger() Messenger {
 	return helper.Messenger
 }
 
@@ -81,7 +81,7 @@ func (helper *TwinsHelper) SelectLocalUser(receiver ID) User {
 		members := facebook.GetMembers(receiver)
 		// the messenger will check group info before decrypting message,
 		// so we can trust that the group's meta & members MUST exist here.
-		if members == nil || len(members) == 0 {
+		if len(members) == 0 {
 			//panic("failed to get group members")
 			return nil
 		}

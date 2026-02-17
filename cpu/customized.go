@@ -50,7 +50,7 @@ type CustomizedContentHandler interface {
 	 * @param messenger - message transceiver
 	 * @return responses
 	 */
-	HandleContent(content CustomizedContent, rMsg ReliableMessage, messenger IMessenger) []Content
+	HandleContent(content CustomizedContent, rMsg ReliableMessage, messenger Messenger) []Content
 }
 
 /**
@@ -61,7 +61,7 @@ type BaseCustomizedHandler struct {
 }
 
 // Override
-func (handler BaseCustomizedHandler) HandleContent(content CustomizedContent, rMsg ReliableMessage, _ IMessenger) []Content {
+func (handler BaseCustomizedHandler) HandleContent(content CustomizedContent, rMsg ReliableMessage, _ Messenger) []Content {
 	app := content.Application()
 	mod := content.Module()
 	act := content.Action()

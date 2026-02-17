@@ -31,12 +31,13 @@
 package sdk
 
 import (
+	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/sdk-go/core"
 	. "github.com/dimchat/sdk-go/mkm"
 )
 
-type IFacebook interface {
+type Facebook interface {
 	EntityDelegate
 	EntityDataSource
 	//UserDataSource
@@ -62,34 +63,37 @@ type IFacebook interface {
 	SelectMember(members []ID) ID
 }
 
-type Facebook struct {
-	//IFacebook
+type BaseFacebook struct {
+	//Facebook
 
-	// protected
-	Barrack Barrack
 	// public
 	Archivist Archivist
+	// protected
+	Barrack Barrack
+	// private
+	DataSource EntityDataSource
 }
 
-//func (facebook *Facebook) Init(archivist Archivist, barrack Barrack) IFacebook {
-//	facebook.Barrack = barrack
-//	facebook.Archivist = archivist
-//	return facebook
-//}
+func (facebook *BaseFacebook) Init(db EntityDataSource) Facebook {
+	facebook.DataSource = db
+	facebook.Archivist = nil
+	facebook.Barrack = nil
+	return facebook
+}
 
 // protected
-func (facebook *Facebook) GetBarrack() Barrack {
+func (facebook *BaseFacebook) GetBarrack() Barrack {
 	return facebook.Barrack
 }
 
-func (facebook *Facebook) GetArchivist() Archivist {
+func (facebook *BaseFacebook) GetArchivist() Archivist {
 	return facebook.Archivist
 }
 
-func (facebook *Facebook) SelectUser(receiver ID) ID {
+func (facebook *BaseFacebook) SelectUser(receiver ID) ID {
 	archivist := facebook.Archivist
 	users := archivist.LocalUsers()
-	if users == nil || len(users) == 0 {
+	if len(users) == 0 {
 		//panic("local users should not be empty")
 		return nil
 	} else if receiver.IsBroadcast() {
@@ -108,10 +112,10 @@ func (facebook *Facebook) SelectUser(receiver ID) ID {
 	return nil
 }
 
-func (facebook *Facebook) SelectMember(members []ID) ID {
+func (facebook *BaseFacebook) SelectMember(members []ID) ID {
 	archivist := facebook.Archivist
 	users := archivist.LocalUsers()
-	if users == nil || len(users) == 0 {
+	if len(users) == 0 {
 		//panic("local users should not be empty")
 		return nil
 	}
@@ -128,10 +132,10 @@ func (facebook *Facebook) SelectMember(members []ID) ID {
 	return nil
 }
 
-//-------- IEntityDelegate
+//-------- EntityDelegate
 
 // Override
-func (facebook *Facebook) GetUser(uid ID) User {
+func (facebook *BaseFacebook) GetUser(uid ID) User {
 	barrack := facebook.Barrack
 	if barrack == nil {
 		//panic("barrack not ready")
@@ -150,7 +154,7 @@ func (facebook *Facebook) GetUser(uid ID) User {
 }
 
 // Override
-func (facebook *Facebook) GetGroup(gid ID) Group {
+func (facebook *BaseFacebook) GetGroup(gid ID) Group {
 	barrack := facebook.Barrack
 	if barrack == nil {
 		//panic("barrack not ready")
@@ -166,4 +170,64 @@ func (facebook *Facebook) GetGroup(gid ID) Group {
 		}
 	}
 	return group
+}
+
+//-------- EntityDataSource
+
+// Override
+func (facebook *BaseFacebook) GetMeta(did ID) Meta {
+	db := facebook.DataSource
+	return db.GetMeta(did)
+}
+
+// Override
+func (facebook *BaseFacebook) GetDocuments(did ID) []Document {
+	db := facebook.DataSource
+	return db.GetDocuments(did)
+}
+
+//-------- GroupDataSource
+
+// Override
+func (facebook *BaseFacebook) GetFounder(gid ID) ID {
+	db := facebook.DataSource
+	return db.GetFounder(gid)
+}
+
+// Override
+func (facebook *BaseFacebook) GetOwner(gid ID) ID {
+	db := facebook.DataSource
+	return db.GetOwner(gid)
+}
+
+// Override
+func (facebook *BaseFacebook) GetMembers(gid ID) []ID {
+	db := facebook.DataSource
+	return db.GetMembers(gid)
+}
+
+//-------- UserDataSource
+
+// Override
+func (facebook *BaseFacebook) GetContacts(uid ID) []ID {
+	db := facebook.DataSource
+	return db.GetContacts(uid)
+}
+
+// Override
+func (facebook *BaseFacebook) GetPrivateKeysForDecryption(uid ID) []DecryptKey {
+	db := facebook.DataSource
+	return db.GetPrivateKeysForDecryption(uid)
+}
+
+// Override
+func (facebook *BaseFacebook) GetPrivateKeyForSignature(uid ID) SignKey {
+	db := facebook.DataSource
+	return db.GetPrivateKeyForSignature(uid)
+}
+
+// Override
+func (facebook *BaseFacebook) GetPrivateKeyForVisaSignature(uid ID) SignKey {
+	db := facebook.DataSource
+	return db.GetPrivateKeyForVisaSignature(uid)
 }

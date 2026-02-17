@@ -45,7 +45,7 @@ type MessageProcessor struct {
 	Factory ContentProcessorFactory
 }
 
-func (processor *MessageProcessor) Init(facebook IFacebook, messenger IMessenger) Processor {
+func (processor *MessageProcessor) Init(facebook Facebook, messenger Messenger) Processor {
 	if processor.TwinsHelper.Init(facebook, messenger) != nil {
 		processor.Factory = CreateContentProcessorFactory(facebook, messenger)
 	}
@@ -63,7 +63,7 @@ func (processor *MessageProcessor) ProcessPackage(data []byte) [][]byte {
 	}
 	// 2. process message
 	responses := messenger.ProcessReliableMessage(rMsg)
-	if responses == nil || len(responses) == 0 {
+	if len(responses) == 0 {
 		// nothing to respond
 		return nil
 	}
@@ -71,7 +71,7 @@ func (processor *MessageProcessor) ProcessPackage(data []byte) [][]byte {
 	packages := make([][]byte, 0, len(responses))
 	for _, res := range responses {
 		pack := messenger.SerializeMessage(res)
-		if pack == nil || len(pack) == 0 {
+		if len(pack) == 0 {
 			// should not happen
 			continue
 		}
@@ -92,7 +92,7 @@ func (processor *MessageProcessor) ProcessReliableMessage(rMsg ReliableMessage) 
 	}
 	// 2. process message
 	responses := messenger.ProcessSecureMessage(sMsg, rMsg)
-	if responses == nil || len(responses) == 0 {
+	if len(responses) == 0 {
 		// nothing to respond
 		return nil
 	}
@@ -122,7 +122,7 @@ func (processor *MessageProcessor) ProcessSecureMessage(sMsg SecureMessage, rMsg
 	}
 	// 2. process message
 	responses := messenger.ProcessInstantMessage(iMsg, rMsg)
-	if responses == nil || len(responses) == 0 {
+	if len(responses) == 0 {
 		// nothing to respond
 		return nil
 	}
@@ -144,7 +144,7 @@ func (processor *MessageProcessor) ProcessInstantMessage(iMsg InstantMessage, rM
 	messenger := processor.Messenger
 	// 1. process content
 	responses := messenger.ProcessContent(iMsg.Content(), rMsg)
-	if responses == nil || len(responses) == 0 {
+	if len(responses) == 0 {
 		// nothing to respond
 		return nil
 	}
@@ -187,13 +187,13 @@ func (processor *MessageProcessor) ProcessContent(content Content, rMsg Reliable
 //  CPU Factory Helper
 //
 
-func CreateContentProcessorFactory(facebook IFacebook, messenger IMessenger) ContentProcessorFactory {
+func CreateContentProcessorFactory(facebook Facebook, messenger Messenger) ContentProcessorFactory {
 	helper := GetContentProcessorHelper()
 	return helper.CreateContentProcessorFactory(facebook, messenger)
 }
 
 type ContentProcessorHelper interface {
-	CreateContentProcessorFactory(facebook IFacebook, messenger IMessenger) ContentProcessorFactory
+	CreateContentProcessorFactory(facebook Facebook, messenger Messenger) ContentProcessorFactory
 }
 
 var sharedContentProcessorHelper ContentProcessorHelper = nil

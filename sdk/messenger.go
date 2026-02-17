@@ -34,10 +34,11 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/crypto"
 	. "github.com/dimchat/sdk-go/core"
+	. "github.com/dimchat/sdk-go/mkm"
 )
 
-type IMessenger interface {
-	ITransceiver
+type Messenger interface {
+	Transceiver
 	Packer
 	Processor
 
@@ -49,9 +50,9 @@ type IMessenger interface {
 	CacheDecryptKey(key SymmetricKey, sMsg SecureMessage)
 }
 
-type Messenger struct {
-	//IMessenger
-	Transceiver
+type BaseMessenger struct {
+	//Messenger
+	MessageTransceiver
 
 	// protected
 	CipherKeyDelegate CipherKeyDelegate
@@ -59,24 +60,24 @@ type Messenger struct {
 	Processor         Processor
 }
 
-//func (messenger *Messenger) Init(facebook EntityDelegate, delegate CipherKeyDelegate, packer Packer, processor Processor) IMessenger {
-//	if messenger.Transceiver.Init(facebook) != nil {
-//		messenger.CipherKeyDelegate = delegate
-//		messenger.Packer = packer
-//		messenger.Processor = processor
-//	}
-//	return messenger
-//}
+func (messenger *BaseMessenger) Init(facebook EntityDelegate, delegate CipherKeyDelegate) Messenger {
+	if messenger.MessageTransceiver.Init(facebook) != nil {
+		messenger.CipherKeyDelegate = delegate
+		messenger.Packer = nil
+		messenger.Processor = nil
+	}
+	return messenger
+}
 
 //-------- SecureMessageDelegate
 
 // Override
-func (messenger *Messenger) DeserializeKey(key []byte, sMsg SecureMessage) SymmetricKey {
-	if key == nil || len(key) == 0 {
+func (messenger *BaseMessenger) DeserializeKey(key []byte, sMsg SecureMessage) SymmetricKey {
+	if len(key) == 0 {
 		// get key from cache with direction: sender -> receiver(group)
 		return messenger.GetDecryptKey(sMsg)
 	}
-	password := messenger.Transceiver.DeserializeKey(key, sMsg)
+	password := messenger.MessageTransceiver.DeserializeKey(key, sMsg)
 	// cache decrypt key when success
 	if password != nil {
 		// cache the key with direction: sender -> receiver(group)
@@ -89,21 +90,21 @@ func (messenger *Messenger) DeserializeKey(key []byte, sMsg SecureMessage) Symme
 //  Interfaces for Cipher Key
 //
 
-func (messenger *Messenger) GetEncryptKey(iMsg InstantMessage) SymmetricKey {
+func (messenger *BaseMessenger) GetEncryptKey(iMsg InstantMessage) SymmetricKey {
 	sender := iMsg.Sender()
 	target := CipherKeyDestinationForMessage(iMsg)
 	db := messenger.CipherKeyDelegate
 	return db.GetCipherKey(sender, target, true)
 }
 
-func (messenger *Messenger) GetDecryptKey(sMsg SecureMessage) SymmetricKey {
+func (messenger *BaseMessenger) GetDecryptKey(sMsg SecureMessage) SymmetricKey {
 	sender := sMsg.Sender()
 	target := CipherKeyDestinationForMessage(sMsg)
 	db := messenger.CipherKeyDelegate
 	return db.GetCipherKey(sender, target, false)
 }
 
-func (messenger *Messenger) CacheDecryptKey(key SymmetricKey, sMsg SecureMessage) {
+func (messenger *BaseMessenger) CacheDecryptKey(key SymmetricKey, sMsg SecureMessage) {
 	sender := sMsg.Sender()
 	target := CipherKeyDestinationForMessage(sMsg)
 	db := messenger.CipherKeyDelegate
@@ -113,39 +114,39 @@ func (messenger *Messenger) CacheDecryptKey(key SymmetricKey, sMsg SecureMessage
 //-------- IPacker
 
 // Override
-func (messenger *Messenger) EncryptMessage(iMsg InstantMessage) SecureMessage {
+func (messenger *BaseMessenger) EncryptMessage(iMsg InstantMessage) SecureMessage {
 	packer := messenger.Packer
 	return packer.EncryptMessage(iMsg)
 }
 
 // Override
-func (messenger *Messenger) SignMessage(sMsg SecureMessage) ReliableMessage {
+func (messenger *BaseMessenger) SignMessage(sMsg SecureMessage) ReliableMessage {
 	packer := messenger.Packer
 	return packer.SignMessage(sMsg)
 }
 
 /*/
 // Override
-func (messenger *Messenger) SerializeMessage(rMsg ReliableMessage) []byte {
+func (messenger *BaseMessenger) SerializeMessage(rMsg ReliableMessage) []byte {
 	packer := messenger.Packer
 	return packer.SerializeMessage(rMsg)
 }
 
 // Override
-func (messenger *Messenger) DeserializeMessage(data []byte) ReliableMessage {
+func (messenger *BaseMessenger) DeserializeMessage(data []byte) ReliableMessage {
 	packer := messenger.Packer
 	return packer.DeserializeMessage(data)
 }
 /*/
 
 // Override
-func (messenger *Messenger) VerifyMessage(rMsg ReliableMessage) SecureMessage {
+func (messenger *BaseMessenger) VerifyMessage(rMsg ReliableMessage) SecureMessage {
 	packer := messenger.Packer
 	return packer.VerifyMessage(rMsg)
 }
 
 // Override
-func (messenger *Messenger) DecryptMessage(sMsg SecureMessage) InstantMessage {
+func (messenger *BaseMessenger) DecryptMessage(sMsg SecureMessage) InstantMessage {
 	packer := messenger.Packer
 	return packer.DecryptMessage(sMsg)
 }
@@ -153,31 +154,31 @@ func (messenger *Messenger) DecryptMessage(sMsg SecureMessage) InstantMessage {
 //-------- IProcessor
 
 // Override
-func (messenger *Messenger) ProcessPackage(data []byte) [][]byte {
+func (messenger *BaseMessenger) ProcessPackage(data []byte) [][]byte {
 	processor := messenger.Processor
 	return processor.ProcessPackage(data)
 }
 
 // Override
-func (messenger *Messenger) ProcessReliableMessage(rMsg ReliableMessage) []ReliableMessage {
+func (messenger *BaseMessenger) ProcessReliableMessage(rMsg ReliableMessage) []ReliableMessage {
 	processor := messenger.Processor
 	return processor.ProcessReliableMessage(rMsg)
 }
 
 // Override
-func (messenger *Messenger) ProcessSecureMessage(sMsg SecureMessage, rMsg ReliableMessage) []SecureMessage {
+func (messenger *BaseMessenger) ProcessSecureMessage(sMsg SecureMessage, rMsg ReliableMessage) []SecureMessage {
 	processor := messenger.Processor
 	return processor.ProcessSecureMessage(sMsg, rMsg)
 }
 
 // Override
-func (messenger *Messenger) ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) []InstantMessage {
+func (messenger *BaseMessenger) ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) []InstantMessage {
 	processor := messenger.Processor
 	return processor.ProcessInstantMessage(iMsg, rMsg)
 }
 
 // Override
-func (messenger *Messenger) ProcessContent(content Content, rMsg ReliableMessage) []Content {
+func (messenger *BaseMessenger) ProcessContent(content Content, rMsg ReliableMessage) []Content {
 	processor := messenger.Processor
 	return processor.ProcessContent(content, rMsg)
 }

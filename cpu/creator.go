@@ -49,9 +49,7 @@ type BaseContentProcessorCreator struct {
 func (creator *BaseContentProcessorCreator) CreateContentProcessor(msgType MessageType) ContentProcessor {
 	switch msgType {
 	// application customized
-	case ContentType.APPLICATION:
-		return NewCustomizedContentProcessor(creator.Facebook, creator.Messenger)
-	case ContentType.CUSTOMIZED:
+	case ContentType.APPLICATION, ContentType.CUSTOMIZED:
 		return NewCustomizedContentProcessor(creator.Facebook, creator.Messenger)
 	// forward content
 	case ContentType.FORWARD:
@@ -93,7 +91,7 @@ func (creator *BaseContentProcessorCreator) CreateCommandProcessor(_ MessageType
 //  Factories
 //
 
-func NewBaseContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+func NewBaseContentProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
 	return &BaseContentProcessor{
 		TwinsHelper: TwinsHelper{
 			Facebook:  facebook,
@@ -102,7 +100,7 @@ func NewBaseContentProcessor(facebook IFacebook, messenger IMessenger) ContentPr
 	}
 }
 
-func NewBaseCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+func NewBaseCommandProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
 	return &BaseCommandProcessor{
 		BaseContentProcessor{
 			TwinsHelper: TwinsHelper{
@@ -113,7 +111,7 @@ func NewBaseCommandProcessor(facebook IFacebook, messenger IMessenger) ContentPr
 	}
 }
 
-func NewForwardContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+func NewForwardContentProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
 	return &ForwardContentProcessor{
 		BaseContentProcessor{
 			TwinsHelper{
@@ -124,7 +122,7 @@ func NewForwardContentProcessor(facebook IFacebook, messenger IMessenger) Conten
 	}
 }
 
-func NewArrayContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+func NewArrayContentProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
 	return &ArrayContentProcessor{
 		BaseContentProcessor{
 			TwinsHelper{
@@ -135,7 +133,7 @@ func NewArrayContentProcessor(facebook IFacebook, messenger IMessenger) ContentP
 	}
 }
 
-func NewMetaCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+func NewMetaCommandProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
 	return &MetaCommandProcessor{
 		BaseCommandProcessor{
 			BaseContentProcessor{
@@ -148,7 +146,7 @@ func NewMetaCommandProcessor(facebook IFacebook, messenger IMessenger) ContentPr
 	}
 }
 
-func NewDocumentCommandProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+func NewDocumentCommandProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
 	return &DocumentCommandProcessor{
 		MetaCommandProcessor{
 			BaseCommandProcessor{
@@ -163,7 +161,7 @@ func NewDocumentCommandProcessor(facebook IFacebook, messenger IMessenger) Conte
 	}
 }
 
-func NewCustomizedContentProcessor(facebook IFacebook, messenger IMessenger) ContentProcessor {
+func NewCustomizedContentProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
 	return &CustomizedContentProcessor{
 		BaseContentProcessor{
 			TwinsHelper{
@@ -183,7 +181,7 @@ type cpuHelper struct {
 }
 
 // Override
-func (helper cpuHelper) CreateContentProcessorFactory(facebook IFacebook, messenger IMessenger) ContentProcessorFactory {
+func (helper cpuHelper) CreateContentProcessorFactory(facebook Facebook, messenger Messenger) ContentProcessorFactory {
 	creator := &BaseContentProcessorCreator{
 		TwinsHelper{
 			Facebook:  facebook,
