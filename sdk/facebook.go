@@ -43,8 +43,8 @@ type Facebook interface {
 	//UserDataSource
 	//GroupDataSource
 
-	GetBarrack() Barrack
-	GetArchivist() Archivist
+	SaveMeta(meta Meta, did ID) bool
+	SaveDocument(document Document, did ID) bool
 
 	/**
 	 *  Select local user for receiver
@@ -63,6 +63,7 @@ type Facebook interface {
 	SelectMember(members []ID) ID
 }
 
+// abstract
 type BaseFacebook struct {
 	//Facebook
 
@@ -81,13 +82,14 @@ func (facebook *BaseFacebook) Init(db EntityDataSource) Facebook {
 	return facebook
 }
 
-// protected
-func (facebook *BaseFacebook) GetBarrack() Barrack {
-	return facebook.Barrack
+func (facebook *BaseFacebook) SaveMeta(meta Meta, did ID) bool {
+	archivist := facebook.Archivist
+	return archivist.SaveMeta(meta, did)
 }
 
-func (facebook *BaseFacebook) GetArchivist() Archivist {
-	return facebook.Archivist
+func (facebook *BaseFacebook) SaveDocument(document Document, did ID) bool {
+	archivist := facebook.Archivist
+	return archivist.SaveDocument(document, did)
 }
 
 func (facebook *BaseFacebook) SelectUser(receiver ID) ID {

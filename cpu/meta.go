@@ -36,7 +36,6 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 	. "github.com/dimchat/mkm-go/protocol"
 	. "github.com/dimchat/mkm-go/types"
-	. "github.com/dimchat/sdk-go/core"
 )
 
 /**
@@ -45,11 +44,6 @@ import (
  */
 type MetaCommandProcessor struct {
 	BaseCommandProcessor
-}
-
-func (cpu *MetaCommandProcessor) GetArchivist() Archivist {
-	facebook := cpu.Facebook
-	return facebook.GetArchivist()
 }
 
 // Override
@@ -115,7 +109,7 @@ func (cpu *MetaCommandProcessor) putMeta(meta Meta, did ID, envelope Envelope, c
 
 // protected
 func (cpu *MetaCommandProcessor) saveMeta(meta Meta, did ID, envelope Envelope, content MetaCommand) []Content {
-	archivist := cpu.GetArchivist()
+	facebook := cpu.Facebook
 	// check meta
 	if !cpu.checkMeta(meta, did) {
 		// meta invalid
@@ -125,7 +119,7 @@ func (cpu *MetaCommandProcessor) saveMeta(meta Meta, did ID, envelope Envelope, 
 				"did": did.String(),
 			},
 		})
-	} else if !archivist.SaveMeta(meta, did) {
+	} else if !facebook.SaveMeta(meta, did) {
 		// DB error?
 		return cpu.RespondReceipt("Meta not accepted.", envelope, content, StringKeyMap{
 			"template": "Meta not accepted: ${did}.",

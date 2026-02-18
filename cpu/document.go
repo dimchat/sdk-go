@@ -188,7 +188,7 @@ func (cpu *DocumentCommandProcessor) putDocuments(documents []Document, did ID, 
 
 // protected
 func (cpu *DocumentCommandProcessor) saveDocument(doc Document, meta Meta, did ID, envelope Envelope, content DocumentCommand) []Content {
-	archivist := cpu.GetArchivist()
+	facebook := cpu.Facebook
 	// check document
 	if !cpu.checkDocument(doc, meta, did) {
 		// document invalid
@@ -198,7 +198,7 @@ func (cpu *DocumentCommandProcessor) saveDocument(doc Document, meta Meta, did I
 				"did": did.String(),
 			},
 		})
-	} else if !archivist.SaveDocument(doc, did) {
+	} else if !facebook.SaveDocument(doc, did) {
 		// document expired
 		return cpu.RespondReceipt("Document not changed.", envelope, content, StringKeyMap{
 			"template": "Document not changed: ${did}",
