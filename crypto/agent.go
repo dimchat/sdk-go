@@ -136,7 +136,7 @@ func (agent DefaultVisaAgent) EncryptBundle(plaintext []byte, meta Meta, documen
 	if capacity < 1 {
 		capacity = 1
 	}
-	bundle := NewEncryptedBundle(capacity)
+	bundle := NewUserEncryptedBundle(capacity)
 	var terminal string
 	var pubKey EncryptKey
 	var ciphertext []byte

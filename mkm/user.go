@@ -116,23 +116,19 @@ type User interface {
 	VerifyVisa(visa Visa) bool
 }
 
-func NewUser(uid ID) User {
-	user := &BaseUser{}
-	return user.Init(uid)
-}
-
 /**
  *  Base User
  *  ~~~~~~~~~
  */
 type BaseUser struct {
-	BaseEntity
+	//User
+	*BaseEntity
 }
 
-func (user *BaseUser) Init(uid ID) User {
-	if user.BaseEntity.Init(uid) != nil {
+func NewBaseUser(uid ID) *BaseUser {
+	return &BaseUser{
+		BaseEntity: NewBaseEntity(uid),
 	}
-	return user
 }
 
 // Override
@@ -226,7 +222,7 @@ func (user *BaseUser) DecryptBundle(bundle EncryptedBundle) []byte {
 		// try decrypting it with each private key
 		for _, priKey := range keys {
 			plaintext = priKey.Decrypt(ciphertext, nil)
-			if plaintext != nil && len(plaintext) > 0 {
+			if len(plaintext) > 0 {
 				// OK!
 				return plaintext
 			}

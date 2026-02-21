@@ -177,21 +177,21 @@ type msgPackerFactory struct {
 }
 
 // Override
-func (factory msgPackerFactory) CreateInstantMessagePacker(messenger InstantMessageDelegate) InstantMessagePacker {
+func (msgPackerFactory) CreateInstantMessagePacker(messenger InstantMessageDelegate) InstantMessagePacker {
 	return &PlainMessagePacker{
 		Transceiver: messenger,
 	}
 }
 
 // Override
-func (factory msgPackerFactory) CreateSecureMessagePacker(messenger SecureMessageDelegate) SecureMessagePacker {
+func (msgPackerFactory) CreateSecureMessagePacker(messenger SecureMessageDelegate) SecureMessagePacker {
 	return &EncryptedMessagePacker{
 		Transceiver: messenger,
 	}
 }
 
 // Override
-func (factory msgPackerFactory) CreateReliableMessagePacker(messenger ReliableMessageDelegate) ReliableMessagePacker {
+func (msgPackerFactory) CreateReliableMessagePacker(messenger ReliableMessageDelegate) ReliableMessagePacker {
 	return &NetworkMessagePacker{
 		Transceiver: messenger,
 	}

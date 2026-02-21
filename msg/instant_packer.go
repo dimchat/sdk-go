@@ -48,11 +48,6 @@ type PlainMessagePacker struct {
 	Transceiver InstantMessageDelegate
 }
 
-func (packer PlainMessagePacker) Init(messenger InstantMessageDelegate) InstantMessagePacker {
-	packer.Transceiver = messenger
-	return packer
-}
-
 // Override
 func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password SymmetricKey, members []ID) SecureMessage {
 	// TODO: check attachment for File/Image/Audio/Video message content
@@ -67,7 +62,7 @@ func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password Sy
 	//  1. Serialize 'message.content' to data (JsON / ProtoBuf / ...)
 	//
 	body := transceiver.SerializeContent(iMsg.Content(), password, iMsg)
-	if body == nil || len(body) == 0 {
+	if len(body) == 0 {
 		panic("fail to serialize content")
 		return nil
 	}
@@ -76,7 +71,7 @@ func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password Sy
 	//  2. Encrypt content data to 'message.data' with symmetric key
 	//
 	ciphertext := transceiver.EncryptContent(body, password, iMsg)
-	if ciphertext == nil || len(ciphertext) == 0 {
+	if len(ciphertext) == 0 {
 		//panic("fail to encrypt content with key")
 		return nil
 	}
@@ -113,7 +108,7 @@ func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password Sy
 
 	// check serialized key data,
 	// if key data is null here, build the secure message directly.
-	if pwd == nil || len(pwd) == 0 {
+	if len(pwd) == 0 {
 		// A) broadcast message has no key
 		// B) reused key
 		return ParseSecureMessage(info)
@@ -147,7 +142,7 @@ func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password Sy
 	//  6. Encode message key to String (Base64)
 	//
 	msgKeys := packer.EncodeKeys(bundleMap, iMsg)
-	if msgKeys == nil || len(msgKeys) == 0 {
+	if len(msgKeys) == 0 {
 		// public key for member(s) not found
 		// TODO: suspend this message for waiting member's visa
 		return nil
@@ -171,7 +166,7 @@ func (packer PlainMessagePacker) EncodeKeys(bundleMap map[ID]EncryptedBundle, iM
 	var encodedKeys StringKeyMap
 	for receiver, bundle := range bundleMap {
 		encodedKeys = transceiver.EncodeKey(bundle, receiver, iMsg)
-		if encodedKeys == nil || len(encodedKeys) == 0 {
+		if len(encodedKeys) == 0 {
 			//panic("fail to encode key data")
 			continue
 		}

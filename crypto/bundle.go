@@ -98,12 +98,6 @@ func DecodeEncryptedBundle(encodedKeys StringKeyMap, did ID, terminals []string)
 	return helper.DecodeBundle(encodedKeys, did, terminals)
 }
 
-func NewEncryptedBundle(capacity int) EncryptedBundle {
-	return &UserEncryptedBundle{
-		_map: make(map[string][]byte, capacity),
-	}
-}
-
 /**
  *  Base EncryptedBundle
  */
@@ -111,26 +105,27 @@ type UserEncryptedBundle struct {
 	//EncryptedBundle
 
 	// terminal -> encrypted key.data
-	_map map[string][]byte
+	table map[string][]byte
 }
 
-func (bundle *UserEncryptedBundle) Init() EncryptedBundle {
-	bundle._map = make(map[string][]byte, 2)
-	return bundle
+func NewUserEncryptedBundle(capacity int) *UserEncryptedBundle {
+	return &UserEncryptedBundle{
+		table: make(map[string][]byte, capacity),
+	}
 }
 
 // Override
 func (bundle *UserEncryptedBundle) Map() map[string][]byte {
-	return bundle._map
+	return bundle.table
 }
 
 // Override
 func (bundle *UserEncryptedBundle) String() string {
 	clazz := "EncryptedBundle"
-	info := bundle._map
+	table := bundle.table
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("<%s count=%d>\n", clazz, len(info)))
-	for target, data := range info {
+	sb.WriteString(fmt.Sprintf("<%s count=%d>\n", clazz, len(table)))
+	for target, data := range table {
 		//if target == "" || data == nil {
 		//	continue
 		//}
@@ -142,32 +137,36 @@ func (bundle *UserEncryptedBundle) String() string {
 
 // Override
 func (bundle *UserEncryptedBundle) IsEmpty() bool {
-	return len(bundle._map) == 0
+	return len(bundle.table) == 0
 }
 
 // Override
 func (bundle *UserEncryptedBundle) Contains(key string) bool {
-	_, exists := bundle._map[key]
+	_, exists := bundle.table[key]
 	return exists
 }
 
 // Override
 func (bundle *UserEncryptedBundle) Get(key string) []byte {
-	return bundle._map[key]
+	data, ok := bundle.table[key]
+	if !ok {
+		return nil
+	}
+	return data
 }
 
 // Override
 func (bundle *UserEncryptedBundle) Set(key string, data []byte) {
 	if data == nil {
-		delete(bundle._map, key)
+		delete(bundle.table, key)
 	} else {
-		bundle._map[key] = data
+		bundle.table[key] = data
 	}
 }
 
 // Override
 func (bundle *UserEncryptedBundle) Remove(key string) {
-	delete(bundle._map, key)
+	delete(bundle.table, key)
 }
 
 // Override

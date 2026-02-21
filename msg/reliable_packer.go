@@ -39,11 +39,6 @@ type NetworkMessagePacker struct {
 	Transceiver ReliableMessageDelegate
 }
 
-func (packer NetworkMessagePacker) Init(messenger ReliableMessageDelegate) ReliableMessagePacker {
-	packer.Transceiver = messenger
-	return packer
-}
-
 // Override
 func (packer NetworkMessagePacker) VerifyMessage(rMsg ReliableMessage) SecureMessage {
 	transceiver := packer.Transceiver

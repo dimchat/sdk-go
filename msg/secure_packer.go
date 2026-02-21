@@ -47,11 +47,6 @@ type EncryptedMessagePacker struct {
 	Transceiver SecureMessageDelegate
 }
 
-func (packer EncryptedMessagePacker) Init(messenger SecureMessageDelegate) SecureMessagePacker {
-	packer.Transceiver = messenger
-	return packer
-}
-
 // protected
 func (packer EncryptedMessagePacker) DecodeKey(sMsg SecureMessage, receiver ID) EncryptedBundle {
 	msgKeys := sMsg.EncryptedKeys()
@@ -97,7 +92,7 @@ func (packer EncryptedMessagePacker) DecryptMessage(sMsg SecureMessage, receiver
 		//  2. Decrypt 'message.key' with receiver's private key
 		//
 		pwd = transceiver.DecryptKey(bundle, receiver, sMsg)
-		if pwd == nil || len(pwd) == 0 {
+		if len(pwd) == 0 {
 			// A: my visa updated but the sender doesn't got the new one;
 			// B: key data error.
 			panic(fmt.Sprintf("failed to decrypt message key: %s, %s => %s",
@@ -132,7 +127,7 @@ func (packer EncryptedMessagePacker) DecryptMessage(sMsg SecureMessage, receiver
 	//  5. Decrypt 'message.data' with symmetric key
 	//
 	body := transceiver.DecryptContent(ciphertext.Bytes(), password, sMsg)
-	if body == nil || len(body) == 0 {
+	if len(body) == 0 {
 		// A: password is a reused key loaded from local storage, but it's expired;
 		// B: key error.
 		panic(fmt.Sprintf("failed to decrypt message data with key: %v, data length: %d, %s => %s",
@@ -186,7 +181,7 @@ func (packer EncryptedMessagePacker) SignMessage(sMsg SecureMessage) ReliableMes
 	//  1. Sign 'message.data' with sender's private key
 	//
 	signature := transceiver.SignData(ciphertext.Bytes(), sMsg)
-	if signature == nil || len(signature) == 0 {
+	if len(signature) == 0 {
 		//panic("failed to sign message")
 		return nil
 	}

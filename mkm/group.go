@@ -30,9 +30,7 @@
  */
 package mkm
 
-import (
-	. "github.com/dimchat/mkm-go/protocol"
-)
+import . "github.com/dimchat/mkm-go/protocol"
 
 /**
  *  Group for organizing users
@@ -57,33 +55,29 @@ type Group interface {
 	Members() []ID
 }
 
-func NewGroup(gid ID) Group {
-	group := &BaseGroup{}
-	return group.Init(gid)
-}
-
 /**
  *  Base Group
  *  ~~~~~~~~~~
  */
 type BaseGroup struct {
-	BaseEntity
+	//Group
+	*BaseEntity
 
 	// once the group founder is set, it will never change
-	_founder ID
+	founder ID
 }
 
-func (group *BaseGroup) Init(gid ID) Group {
-	if group.BaseEntity.Init(gid) != nil {
+func NewBaseGroup(gid ID) *BaseGroup {
+	return &BaseGroup{
+		BaseEntity: NewBaseEntity(gid),
 		// lazy load
-		group._founder = nil
+		founder: nil,
 	}
-	return group
 }
 
 // Override
 func (group *BaseGroup) Founder() ID {
-	user := group._founder
+	user := group.founder
 	if user == nil {
 		facebook := group.DataSource()
 		if facebook == nil {
@@ -91,7 +85,7 @@ func (group *BaseGroup) Founder() ID {
 			return nil
 		}
 		user = facebook.GetFounder(group.ID())
-		group._founder = user
+		group.founder = user
 	}
 	return user
 }

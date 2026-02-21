@@ -64,7 +64,7 @@ type DefaultBundleHelper struct {
 }
 
 // Override
-func (helper DefaultBundleHelper) EncodeBundle(bundle EncryptedBundle, did ID) StringKeyMap {
+func (DefaultBundleHelper) EncodeBundle(bundle EncryptedBundle, did ID) StringKeyMap {
 	identifier := IDConcat(did.Name(), did.Address(), "")
 	encodedKeys := NewMap()
 	var base64 string
@@ -85,12 +85,12 @@ func (helper DefaultBundleHelper) EncodeBundle(bundle EncryptedBundle, did ID) S
 }
 
 // Override
-func (helper DefaultBundleHelper) DecodeBundle(encodedKeys StringKeyMap, did ID, terminals []string) EncryptedBundle {
+func (DefaultBundleHelper) DecodeBundle(encodedKeys StringKeyMap, did ID, terminals []string) EncryptedBundle {
 	capacity := len(terminals)
 	if capacity < 1 {
 		capacity = 1
 	}
-	bundle := NewEncryptedBundle(capacity)
+	bundle := NewUserEncryptedBundle(capacity)
 	//
 	//  0. ID string without terminal
 	//
@@ -126,7 +126,7 @@ func (helper DefaultBundleHelper) DecodeBundle(encodedKeys StringKeyMap, did ID,
 			continue
 		}
 		data = ted.Bytes()
-		if data == nil || len(data) == 0 {
+		if len(data) == 0 {
 			//panic("data is nil")
 			continue
 		}

@@ -80,19 +80,19 @@ type Entity interface {
 type BaseEntity struct {
 	//Entity
 
-	_identifier ID
+	identifier ID
 
-	_facebook EntityDataSource
+	facebook EntityDataSource
 }
 
-func (entity *BaseEntity) Init(did ID) Entity {
-	entity._identifier = did
-	entity._facebook = nil
-	return entity
+func NewBaseEntity(did ID) *BaseEntity {
+	return &BaseEntity{
+		identifier: did,
+		facebook:   nil,
+	}
 }
 
-//-------- IObject
-
+// Override
 func (entity *BaseEntity) Equal(other interface{}) bool {
 	e, ok := other.(Entity)
 	if ok {
@@ -103,27 +103,27 @@ func (entity *BaseEntity) Equal(other interface{}) bool {
 		// compare ids
 		other = e.ID()
 	}
-	return entity._identifier.Equal(other)
+	return entity.identifier.Equal(other)
 }
 
 // Override
 func (entity *BaseEntity) DataSource() EntityDataSource {
-	return entity._facebook
+	return entity.facebook
 }
 
 // Override
 func (entity *BaseEntity) SetDataSource(facebook EntityDataSource) {
-	entity._facebook = facebook
+	entity.facebook = facebook
 }
 
 // Override
 func (entity *BaseEntity) ID() ID {
-	return entity._identifier
+	return entity.identifier
 }
 
 // Override
 func (entity *BaseEntity) Type() EntityType {
-	return entity._identifier.Type()
+	return entity.identifier.Type()
 }
 
 // Override
@@ -133,7 +133,7 @@ func (entity *BaseEntity) Meta() Meta {
 		//panic("entity datasource not set yet")
 		return nil
 	}
-	return facebook.GetMeta(entity._identifier)
+	return facebook.GetMeta(entity.identifier)
 }
 
 // Override
@@ -143,5 +143,5 @@ func (entity *BaseEntity) Documents() []Document {
 		//panic("entity datasource not set yet")
 		return nil
 	}
-	return facebook.GetDocuments(entity._identifier)
+	return facebook.GetDocuments(entity.identifier)
 }
