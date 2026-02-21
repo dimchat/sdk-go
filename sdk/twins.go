@@ -49,10 +49,11 @@ type TwinsHelper struct {
 	Messenger Messenger
 }
 
-func (helper *TwinsHelper) Init(facebook Facebook, messenger Messenger) ITwinsHelper {
-	helper.Facebook = facebook
-	helper.Messenger = messenger
-	return helper
+func NewTwinsHelper(facebook Facebook, messenger Messenger) *TwinsHelper {
+	return &TwinsHelper{
+		Facebook:  facebook,
+		Messenger: messenger,
+	}
 }
 
 // protected

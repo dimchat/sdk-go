@@ -43,7 +43,7 @@ import (
  *  ~~~~~~~~~~~~~~~~~~~
  */
 type MetaCommandProcessor struct {
-	BaseCommandProcessor
+	*BaseCommandProcessor
 }
 
 // Override

@@ -61,11 +61,12 @@ type MessageShortener struct {
 	messageShortKeys []string
 }
 
-func (shortener *MessageShortener) Init(contentKeys, cryptoKeys, messageKeys []string) Shortener {
-	shortener.contentShortKeys = contentKeys
-	shortener.cryptoShortKeys = cryptoKeys
-	shortener.messageShortKeys = messageKeys
-	return shortener
+func NewMessageShortener(contentKeys, cryptoKeys, messageKeys []string) *MessageShortener {
+	return &MessageShortener{
+		contentShortKeys: contentKeys,
+		cryptoShortKeys:  cryptoKeys,
+		messageShortKeys: messageKeys,
+	}
 }
 
 // protected

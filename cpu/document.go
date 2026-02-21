@@ -44,7 +44,7 @@ import (
  *  ~~~~~~~~~~~~~~~~~~~~~~~
  */
 type DocumentCommandProcessor struct {
-	MetaCommandProcessor
+	*MetaCommandProcessor
 }
 
 // Override

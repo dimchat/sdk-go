@@ -42,7 +42,13 @@ import (
  */
 type BaseContentProcessorCreator struct {
 	//ContentProcessorCreator
-	TwinsHelper
+	*TwinsHelper
+}
+
+func NewBaseContentProcessorCreator(facebook Facebook, messenger Messenger) *BaseContentProcessorCreator {
+	return &BaseContentProcessorCreator{
+		TwinsHelper: NewTwinsHelper(facebook, messenger),
+	}
 }
 
 // Override
@@ -91,84 +97,45 @@ func (creator *BaseContentProcessorCreator) CreateCommandProcessor(_ MessageType
 //  Factories
 //
 
-func NewBaseContentProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
+func NewBaseContentProcessor(facebook Facebook, messenger Messenger) *BaseContentProcessor {
 	return &BaseContentProcessor{
-		TwinsHelper: TwinsHelper{
-			Facebook:  facebook,
-			Messenger: messenger,
-		},
+		TwinsHelper: NewTwinsHelper(facebook, messenger),
 	}
 }
 
-func NewBaseCommandProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
+func NewBaseCommandProcessor(facebook Facebook, messenger Messenger) *BaseCommandProcessor {
 	return &BaseCommandProcessor{
-		BaseContentProcessor{
-			TwinsHelper: TwinsHelper{
-				Facebook:  facebook,
-				Messenger: messenger,
-			},
-		},
+		BaseContentProcessor: NewBaseContentProcessor(facebook, messenger),
 	}
 }
 
-func NewForwardContentProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
+func NewForwardContentProcessor(facebook Facebook, messenger Messenger) *ForwardContentProcessor {
 	return &ForwardContentProcessor{
-		BaseContentProcessor{
-			TwinsHelper{
-				Facebook:  facebook,
-				Messenger: messenger,
-			},
-		},
+		BaseContentProcessor: NewBaseContentProcessor(facebook, messenger),
 	}
 }
 
-func NewArrayContentProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
+func NewArrayContentProcessor(facebook Facebook, messenger Messenger) *ArrayContentProcessor {
 	return &ArrayContentProcessor{
-		BaseContentProcessor{
-			TwinsHelper{
-				Facebook:  facebook,
-				Messenger: messenger,
-			},
-		},
+		BaseContentProcessor: NewBaseContentProcessor(facebook, messenger),
 	}
 }
 
-func NewMetaCommandProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
+func NewMetaCommandProcessor(facebook Facebook, messenger Messenger) *MetaCommandProcessor {
 	return &MetaCommandProcessor{
-		BaseCommandProcessor{
-			BaseContentProcessor{
-				TwinsHelper{
-					Facebook:  facebook,
-					Messenger: messenger,
-				},
-			},
-		},
+		BaseCommandProcessor: NewBaseCommandProcessor(facebook, messenger),
 	}
 }
 
-func NewDocumentCommandProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
+func NewDocumentCommandProcessor(facebook Facebook, messenger Messenger) *DocumentCommandProcessor {
 	return &DocumentCommandProcessor{
-		MetaCommandProcessor{
-			BaseCommandProcessor{
-				BaseContentProcessor{
-					TwinsHelper{
-						Facebook:  facebook,
-						Messenger: messenger,
-					},
-				},
-			},
-		},
+		MetaCommandProcessor: NewMetaCommandProcessor(facebook, messenger),
 	}
 }
 
-func NewCustomizedContentProcessor(facebook Facebook, messenger Messenger) ContentProcessor {
+func NewCustomizedContentProcessor(facebook Facebook, messenger Messenger) *CustomizedContentProcessor {
 	return &CustomizedContentProcessor{
-		BaseContentProcessor{
-			TwinsHelper{
-				Facebook:  facebook,
-				Messenger: messenger,
-			},
-		},
+		BaseContentProcessor: NewBaseContentProcessor(facebook, messenger),
 	}
 }
 
@@ -181,14 +148,9 @@ type cpuHelper struct {
 }
 
 // Override
-func (helper cpuHelper) CreateContentProcessorFactory(facebook Facebook, messenger Messenger) ContentProcessorFactory {
-	creator := &BaseContentProcessorCreator{
-		TwinsHelper{
-			Facebook:  facebook,
-			Messenger: messenger,
-		},
-	}
-	return NewContentProcessorFactory(creator)
+func (cpuHelper) CreateContentProcessorFactory(facebook Facebook, messenger Messenger) ContentProcessorFactory {
+	creator := NewBaseContentProcessorCreator(facebook, messenger)
+	return NewGeneralContentProcessorFactory(creator)
 }
 
 func init() {

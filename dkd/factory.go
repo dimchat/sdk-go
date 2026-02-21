@@ -37,21 +37,26 @@ import (
 
 type ContentProcessorMap = map[string]ContentProcessor
 
+func NewContentProcessorMap(capacity int) ContentProcessorMap {
+	return make(ContentProcessorMap, capacity)
+}
+
 // General ContentProcessor Factory
 type GeneralContentProcessorFactory struct {
 	//ContentProcessorFactory
 
-	_creator ContentProcessorCreator
+	creator ContentProcessorCreator
 
-	_contentProcessors ContentProcessorMap
-	_commandProcessors ContentProcessorMap
+	contentProcessors ContentProcessorMap
+	commandProcessors ContentProcessorMap
 }
 
-func (factory *GeneralContentProcessorFactory) Init(creator ContentProcessorCreator) ContentProcessorFactory {
-	factory._creator = creator
-	factory._contentProcessors = NewContentProcessorMap()
-	factory._commandProcessors = NewContentProcessorMap()
-	return factory
+func NewGeneralContentProcessorFactory(creator ContentProcessorCreator) *GeneralContentProcessorFactory {
+	return &GeneralContentProcessorFactory{
+		creator:           creator,
+		contentProcessors: NewContentProcessorMap(32),
+		commandProcessors: NewContentProcessorMap(32),
+	}
 }
 
 // Override
@@ -76,11 +81,11 @@ func (factory *GeneralContentProcessorFactory) GetContentProcessor(content Conte
 
 // Override
 func (factory *GeneralContentProcessorFactory) GetContentProcessorForType(msgType MessageType) ContentProcessor {
-	cpu := factory._contentProcessors[msgType]
+	cpu := factory.contentProcessors[msgType]
 	if cpu == nil {
-		cpu = factory._creator.CreateContentProcessor(msgType)
+		cpu = factory.creator.CreateContentProcessor(msgType)
 		if cpu != nil {
-			factory._contentProcessors[msgType] = cpu
+			factory.contentProcessors[msgType] = cpu
 		}
 	}
 	return cpu
@@ -88,11 +93,11 @@ func (factory *GeneralContentProcessorFactory) GetContentProcessorForType(msgTyp
 
 // private
 func (factory *GeneralContentProcessorFactory) GetCommandProcessor(msgType MessageType, cmdName string) ContentProcessor {
-	cpu := factory._commandProcessors[cmdName]
+	cpu := factory.commandProcessors[cmdName]
 	if cpu == nil {
-		cpu = factory._creator.CreateCommandProcessor(msgType, cmdName)
+		cpu = factory.creator.CreateCommandProcessor(msgType, cmdName)
 		if cpu != nil {
-			factory._commandProcessors[cmdName] = cpu
+			factory.commandProcessors[cmdName] = cpu
 		}
 	}
 	return cpu

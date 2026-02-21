@@ -62,9 +62,10 @@ type MessageCompressor struct {
 	shortener Shortener
 }
 
-func (compressor *MessageCompressor) Init(shortener Shortener) Compressor {
-	compressor.shortener = shortener
-	return compressor
+func NewMessageCompressor(shortener Shortener) *MessageCompressor {
+	return &MessageCompressor{
+		shortener: shortener,
+	}
 }
 
 // Override

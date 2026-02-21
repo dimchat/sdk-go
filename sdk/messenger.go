@@ -50,9 +50,10 @@ type Messenger interface {
 	CacheDecryptKey(key SymmetricKey, sMsg SecureMessage)
 }
 
+// abstract
 type BaseMessenger struct {
 	//Messenger
-	MessageTransceiver
+	*MessageTransceiver
 
 	// protected
 	CipherKeyDelegate CipherKeyDelegate
@@ -60,13 +61,13 @@ type BaseMessenger struct {
 	Processor         Processor
 }
 
-func (messenger *BaseMessenger) Init(facebook EntityDelegate, delegate CipherKeyDelegate) Messenger {
-	if messenger.MessageTransceiver.Init(facebook) != nil {
-		messenger.CipherKeyDelegate = delegate
-		messenger.Packer = nil
-		messenger.Processor = nil
+func NewBaseMessenger(facebook EntityDelegate, delegate CipherKeyDelegate) *BaseMessenger {
+	return &BaseMessenger{
+		MessageTransceiver: NewMessageTransceiver(facebook),
+		CipherKeyDelegate:  delegate,
+		Packer:             nil,
+		Processor:          nil,
 	}
-	return messenger
 }
 
 //-------- SecureMessageDelegate

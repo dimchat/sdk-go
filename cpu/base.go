@@ -43,7 +43,7 @@ import (
  */
 type BaseContentProcessor struct {
 	//ContentProcessor
-	TwinsHelper
+	*TwinsHelper
 }
 
 // Override
@@ -99,7 +99,7 @@ func createReceipt(text string, head Envelope, body Content, extra StringKeyMap)
  *  CPU - Command Processing Unit
  */
 type BaseCommandProcessor struct {
-	BaseContentProcessor
+	*BaseContentProcessor
 }
 
 // Override

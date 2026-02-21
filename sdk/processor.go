@@ -33,23 +33,22 @@ package sdk
 import (
 	. "github.com/dimchat/core-go/protocol"
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/sdk-go/core"
 	. "github.com/dimchat/sdk-go/dkd"
 )
 
 type MessageProcessor struct {
 	//Processor
-	TwinsHelper
+	*TwinsHelper
 
 	// protected
 	Factory ContentProcessorFactory
 }
 
-func (processor *MessageProcessor) Init(facebook Facebook, messenger Messenger) Processor {
-	if processor.TwinsHelper.Init(facebook, messenger) != nil {
-		processor.Factory = CreateContentProcessorFactory(facebook, messenger)
+func NewMessageProcessor(facebook Facebook, messenger Messenger) *MessageProcessor {
+	return &MessageProcessor{
+		TwinsHelper: NewTwinsHelper(facebook, messenger),
+		Factory:     CreateContentProcessorFactory(facebook, messenger),
 	}
-	return processor
 }
 
 // Override

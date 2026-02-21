@@ -85,15 +85,3 @@ type ContentProcessorFactory interface {
 
 	GetContentProcessorForType(msgType MessageType) ContentProcessor
 }
-
-func NewContentProcessorFactory(creator ContentProcessorCreator) ContentProcessorFactory {
-	return &GeneralContentProcessorFactory{
-		_creator:           creator,
-		_contentProcessors: NewContentProcessorMap(),
-		_commandProcessors: NewContentProcessorMap(),
-	}
-}
-
-func NewContentProcessorMap() ContentProcessorMap {
-	return make(ContentProcessorMap, 32)
-}

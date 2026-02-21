@@ -75,11 +75,12 @@ type BaseFacebook struct {
 	DataSource EntityDataSource
 }
 
-func (facebook *BaseFacebook) Init(db EntityDataSource) Facebook {
-	facebook.DataSource = db
-	facebook.Archivist = nil
-	facebook.Barrack = nil
-	return facebook
+func NewBaseFacebook(db EntityDataSource) *BaseFacebook {
+	return &BaseFacebook{
+		DataSource: db,
+		Archivist:  nil,
+		Barrack:    nil,
+	}
 }
 
 func (facebook *BaseFacebook) SaveMeta(meta Meta, did ID) bool {

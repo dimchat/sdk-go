@@ -130,7 +130,7 @@ func GetCustomizedContentFilter() CustomizedContentFilter {
  *  </p>
  */
 type CustomizedContentProcessor struct {
-	BaseContentProcessor
+	*BaseContentProcessor
 }
 
 // Override

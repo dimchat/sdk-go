@@ -32,13 +32,12 @@ package sdk
 
 import (
 	. "github.com/dimchat/dkd-go/protocol"
-	. "github.com/dimchat/sdk-go/core"
 	. "github.com/dimchat/sdk-go/msg"
 )
 
 type MessagePacker struct {
 	//Packer
-	TwinsHelper
+	*TwinsHelper
 
 	// protected
 	InstantPacker  InstantMessagePacker
@@ -46,13 +45,13 @@ type MessagePacker struct {
 	ReliablePacker ReliableMessagePacker
 }
 
-func (packer *MessagePacker) Init(facebook Facebook, messenger Messenger) Packer {
-	if packer.TwinsHelper.Init(facebook, messenger) != nil {
-		packer.InstantPacker = CreateInstantMessagePacker(messenger)
-		packer.SecurePacker = CreateSecureMessagePacker(messenger)
-		packer.ReliablePacker = CreateReliableMessagePacker(messenger)
+func NewMessagePacker(facebook Facebook, messenger Messenger) *MessagePacker {
+	return &MessagePacker{
+		TwinsHelper:    NewTwinsHelper(facebook, messenger),
+		InstantPacker:  CreateInstantMessagePacker(messenger),
+		SecurePacker:   CreateSecureMessagePacker(messenger),
+		ReliablePacker: CreateReliableMessagePacker(messenger),
 	}
-	return packer
 }
 
 //

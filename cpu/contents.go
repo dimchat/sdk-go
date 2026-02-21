@@ -41,7 +41,7 @@ import (
  *  ~~~~~~~~~~~~~~~~~~~~~~
  */
 type ForwardContentProcessor struct {
-	BaseContentProcessor
+	*BaseContentProcessor
 }
 
 // Override
@@ -80,7 +80,7 @@ func (cpu *ForwardContentProcessor) ProcessContent(content Content, _ ReliableMe
  *  ~~~~~~~~~~~~~~~~~~~~
  */
 type ArrayContentProcessor struct {
-	BaseContentProcessor
+	*BaseContentProcessor
 }
 
 // Override

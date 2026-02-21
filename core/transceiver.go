@@ -77,10 +77,11 @@ type MessageTransceiver struct {
 	Compressor     Compressor
 }
 
-func (transceiver *MessageTransceiver) Init(facebook EntityDelegate) Transceiver {
-	transceiver.EntityDelegate = facebook
-	transceiver.Compressor = CreateCompressor()
-	return transceiver
+func NewMessageTransceiver(facebook EntityDelegate) *MessageTransceiver {
+	return &MessageTransceiver{
+		EntityDelegate: facebook,
+		Compressor:     CreateCompressor(),
+	}
 }
 
 func (transceiver *MessageTransceiver) SerializeMessage(rMsg ReliableMessage) []byte {
