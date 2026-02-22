@@ -179,20 +179,20 @@ type msgPackerFactory struct {
 // Override
 func (msgPackerFactory) CreateInstantMessagePacker(messenger InstantMessageDelegate) InstantMessagePacker {
 	return &PlainMessagePacker{
-		Transceiver: messenger,
+		Transformer: messenger,
 	}
 }
 
 // Override
 func (msgPackerFactory) CreateSecureMessagePacker(messenger SecureMessageDelegate) SecureMessagePacker {
 	return &EncryptedMessagePacker{
-		Transceiver: messenger,
+		Transformer: messenger,
 	}
 }
 
 // Override
 func (msgPackerFactory) CreateReliableMessagePacker(messenger ReliableMessageDelegate) ReliableMessagePacker {
 	return &NetworkMessagePacker{
-		Transceiver: messenger,
+		Transformer: messenger,
 	}
 }

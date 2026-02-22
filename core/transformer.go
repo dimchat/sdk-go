@@ -41,7 +41,7 @@ import (
 	. "github.com/dimchat/sdk-go/msg"
 )
 
-type Transceiver interface {
+type Transformer interface {
 	InstantMessageDelegate
 	SecureMessageDelegate
 	ReliableMessageDelegate
@@ -64,34 +64,34 @@ type Transceiver interface {
 }
 
 /**
- *  Message Transceiver
+ *  Message Transformer
  *  <p>
  *      Converting message format between PlainMessage and NetworkMessage
  *  </p>
  */
-type MessageTransceiver struct {
-	//Transceiver
+type MessageTransformer struct {
+	//Transformer
 
 	// protected
 	EntityDelegate EntityDelegate // facebook
 	Compressor     Compressor
 }
 
-func NewMessageTransceiver(facebook EntityDelegate) *MessageTransceiver {
-	return &MessageTransceiver{
+func NewMessageTransformer(facebook EntityDelegate) *MessageTransformer {
+	return &MessageTransformer{
 		EntityDelegate: facebook,
 		Compressor:     CreateCompressor(),
 	}
 }
 
-func (transceiver *MessageTransceiver) SerializeMessage(rMsg ReliableMessage) []byte {
-	compressor := transceiver.Compressor
+func (transformer *MessageTransformer) SerializeMessage(rMsg ReliableMessage) []byte {
+	compressor := transformer.Compressor
 	info := rMsg.Map()
 	return compressor.CompressReliableMessage(info)
 }
 
-func (transceiver *MessageTransceiver) DeserializeMessage(data []byte) ReliableMessage {
-	compressor := transceiver.Compressor
+func (transformer *MessageTransformer) DeserializeMessage(data []byte) ReliableMessage {
+	compressor := transformer.Compressor
 	info := compressor.ExtractReliableMessage(data)
 	return ParseReliableMessage(info)
 }
@@ -99,24 +99,24 @@ func (transceiver *MessageTransceiver) DeserializeMessage(data []byte) ReliableM
 //-------- InstantMessageDelegate
 
 // Override
-func (transceiver *MessageTransceiver) SerializeContent(content Content, password SymmetricKey, _ InstantMessage) []byte {
+func (transformer *MessageTransformer) SerializeContent(content Content, password SymmetricKey, _ InstantMessage) []byte {
 	// NOTICE: check attachment for File/Image/Audio/Video message content
 	//         before serialize content, this job should be done in subclass
-	compressor := transceiver.Compressor
+	compressor := transformer.Compressor
 	info := content.Map()
 	dict := password.Map()
 	return compressor.CompressContent(info, dict)
 }
 
 // Override
-func (transceiver *MessageTransceiver) EncryptContent(data []byte, password SymmetricKey, iMsg InstantMessage) []byte {
+func (transformer *MessageTransformer) EncryptContent(data []byte, password SymmetricKey, iMsg InstantMessage) []byte {
 	// store 'IV' in iMsg for AES decryption
 	return password.Encrypt(data, iMsg.Map())
 }
 
 /*/
 // Override
-func (transceiver *MessageTransceiver) EncodeData(data []byte, iMsg InstantMessage) interface{} {
+func (transformer *MessageTransformer) EncodeData(data []byte, iMsg InstantMessage) interface{} {
 	if IsBroadcastMessage(iMsg) {
 		// broadcast message content will not be encrypted (just encoded to JSON),
 		// so no need to encode to Base64 here
@@ -130,20 +130,20 @@ func (transceiver *MessageTransceiver) EncodeData(data []byte, iMsg InstantMessa
 /*/
 
 // Override
-func (transceiver *MessageTransceiver) SerializeKey(password SymmetricKey, iMsg InstantMessage) []byte {
+func (transformer *MessageTransformer) SerializeKey(password SymmetricKey, iMsg InstantMessage) []byte {
 	if IsBroadcastMessage(iMsg) {
 		// broadcast message has no key
 		return nil
 	}
-	compressor := transceiver.Compressor
+	compressor := transformer.Compressor
 	dict := password.Map()
 	return compressor.CompressSymmetricKey(dict)
 }
 
 // Override
-func (transceiver *MessageTransceiver) EncryptKey(data []byte, receiver ID, _ InstantMessage) EncryptedBundle {
+func (transformer *MessageTransformer) EncryptKey(data []byte, receiver ID, _ InstantMessage) EncryptedBundle {
 	// TODO: make sure the receiver's public key exists
-	facebook := transceiver.EntityDelegate
+	facebook := transformer.EntityDelegate
 	contact := facebook.GetUser(receiver)
 	if contact == nil {
 		//panic("failed to encrypt message key for contact")
@@ -154,7 +154,7 @@ func (transceiver *MessageTransceiver) EncryptKey(data []byte, receiver ID, _ In
 }
 
 // Override
-func (transceiver *MessageTransceiver) EncodeKey(bundle EncryptedBundle, receiver ID, _ InstantMessage) StringKeyMap {
+func (transformer *MessageTransformer) EncodeKey(bundle EncryptedBundle, receiver ID, _ InstantMessage) StringKeyMap {
 	// message key had been encrypted by a public key,
 	// so the data should be encoded here (with algorithm 'base64' as default).
 	return bundle.Encode(receiver)
@@ -164,8 +164,8 @@ func (transceiver *MessageTransceiver) EncodeKey(bundle EncryptedBundle, receive
 //-------- ISecureMessageDelegate
 
 // Override
-func (transceiver *MessageTransceiver) DecodeKey(msgKeys StringKeyMap, receiver ID, _ SecureMessage) EncryptedBundle {
-	facebook := transceiver.EntityDelegate
+func (transformer *MessageTransformer) DecodeKey(msgKeys StringKeyMap, receiver ID, _ SecureMessage) EncryptedBundle {
+	facebook := transformer.EntityDelegate
 	user := facebook.GetUser(receiver)
 	if user == nil {
 		//panic("failed to decode key")
@@ -196,10 +196,10 @@ func (transceiver *MessageTransceiver) DecodeKey(msgKeys StringKeyMap, receiver 
 }
 
 // Override
-func (transceiver *MessageTransceiver) DecryptKey(bundle EncryptedBundle, receiver ID, _ SecureMessage) []byte {
+func (transformer *MessageTransformer) DecryptKey(bundle EncryptedBundle, receiver ID, _ SecureMessage) []byte {
 	// NOTICE: the receiver must be a member ID
 	//         if it's a group message
-	facebook := transceiver.EntityDelegate
+	facebook := transformer.EntityDelegate
 	user := facebook.GetUser(receiver)
 	if user == nil {
 		//panic("failed to decrypt key")
@@ -210,19 +210,19 @@ func (transceiver *MessageTransceiver) DecryptKey(bundle EncryptedBundle, receiv
 }
 
 // Override
-func (transceiver *MessageTransceiver) DeserializeKey(key []byte, _ SecureMessage) SymmetricKey {
+func (transformer *MessageTransformer) DeserializeKey(key []byte, _ SecureMessage) SymmetricKey {
 	if len(key) == 0 {
 		//panic("reused key? get it from local cache")
 		return nil
 	}
-	compressor := transceiver.Compressor
+	compressor := transformer.Compressor
 	info := compressor.ExtractSymmetricKey(key)
 	return ParseSymmetricKey(info)
 }
 
 /*/
 // Override
-func (transceiver *MessageTransceiver) DecodeData(data interface{}, sMsg SecureMessage) []byte {
+func (transformer *MessageTransformer) DecodeData(data interface{}, sMsg SecureMessage) []byte {
 	if IsBroadcastMessage(sMsg) {
 		// broadcast message content will not be encrypted (just encoded to JSON),
 		// so return the string data directly
@@ -240,14 +240,14 @@ func (transceiver *MessageTransceiver) DecodeData(data interface{}, sMsg SecureM
 /*/
 
 // Override
-func (transceiver *MessageTransceiver) DecryptContent(data []byte, password SymmetricKey, sMsg SecureMessage) []byte {
+func (transformer *MessageTransformer) DecryptContent(data []byte, password SymmetricKey, sMsg SecureMessage) []byte {
 	// check 'IV' in sMsg for AES decryption
 	return password.Decrypt(data, sMsg.Map())
 }
 
 // Override
-func (transceiver *MessageTransceiver) DeserializeContent(data []byte, password SymmetricKey, _ SecureMessage) Content {
-	compressor := transceiver.Compressor
+func (transformer *MessageTransformer) DeserializeContent(data []byte, password SymmetricKey, _ SecureMessage) Content {
+	compressor := transformer.Compressor
 	dict := password.Map()
 	info := compressor.ExtractContent(data, dict)
 	return ParseContent(info)
@@ -256,8 +256,8 @@ func (transceiver *MessageTransceiver) DeserializeContent(data []byte, password 
 }
 
 // Override
-func (transceiver *MessageTransceiver) SignData(data []byte, sMsg SecureMessage) []byte {
-	facebook := transceiver.EntityDelegate
+func (transformer *MessageTransformer) SignData(data []byte, sMsg SecureMessage) []byte {
+	facebook := transformer.EntityDelegate
 	sender := sMsg.Sender()
 	user := facebook.GetUser(sender)
 	if user == nil {
@@ -269,7 +269,7 @@ func (transceiver *MessageTransceiver) SignData(data []byte, sMsg SecureMessage)
 
 /*/
 // Override
-func (transceiver *MessageTransceiver) EncodeSignature(signature []byte, _ SecureMessage) interface{} {
+func (transformer *MessageTransformer) EncodeSignature(signature []byte, _ SecureMessage) interface{} {
 	ted := NewBase64DataWithBytes(signature)
 	return ted.Serialize()
 }
@@ -279,15 +279,15 @@ func (transceiver *MessageTransceiver) EncodeSignature(signature []byte, _ Secur
 
 /*/
 // Override
-func (transceiver *MessageTransceiver) DecodeSignature(signature interface{}, _ ReliableMessage) []byte {
+func (transformer *MessageTransformer) DecodeSignature(signature interface{}, _ ReliableMessage) []byte {
 	ted := ParseTransportableData(signature)
 	return ted.Bytes()
 }
 /*/
 
 // Override
-func (transceiver *MessageTransceiver) VerifyDataSignature(data []byte, signature []byte, rMsg ReliableMessage) bool {
-	facebook := transceiver.EntityDelegate
+func (transformer *MessageTransformer) VerifyDataSignature(data []byte, signature []byte, rMsg ReliableMessage) bool {
+	facebook := transformer.EntityDelegate
 	sender := rMsg.Sender()
 	contact := facebook.GetUser(sender)
 	if contact == nil {

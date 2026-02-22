@@ -44,11 +44,11 @@ type EncryptedMessagePacker struct {
 	//SecureMessagePacker
 
 	// protected
-	Transceiver SecureMessageDelegate
+	Transformer SecureMessageDelegate
 }
 
 // protected
-func (packer EncryptedMessagePacker) DecodeKey(sMsg SecureMessage, receiver ID) EncryptedBundle {
+func (packer *EncryptedMessagePacker) DecodeKey(sMsg SecureMessage, receiver ID) EncryptedBundle {
 	msgKeys := sMsg.EncryptedKeys()
 	if msgKeys == nil {
 		// get from 'key'
@@ -61,18 +61,18 @@ func (packer EncryptedMessagePacker) DecodeKey(sMsg SecureMessage, receiver ID) 
 		msgKeys = NewMap()
 		msgKeys[receiver.String()] = base64
 	}
-	transceiver := packer.Transceiver
-	if transceiver == nil {
+	transformer := packer.Transformer
+	if transformer == nil {
 		//panic("secure message delegate not found")
 		return nil
 	}
-	return transceiver.DecodeKey(msgKeys, receiver, sMsg)
+	return transformer.DecodeKey(msgKeys, receiver, sMsg)
 }
 
 // Override
-func (packer EncryptedMessagePacker) DecryptMessage(sMsg SecureMessage, receiver ID) InstantMessage {
-	transceiver := packer.Transceiver
-	if transceiver == nil {
+func (packer *EncryptedMessagePacker) DecryptMessage(sMsg SecureMessage, receiver ID) InstantMessage {
+	transformer := packer.Transformer
+	if transformer == nil {
 		//panic("secure message delegate not found")
 		return nil
 	}
@@ -91,7 +91,7 @@ func (packer EncryptedMessagePacker) DecryptMessage(sMsg SecureMessage, receiver
 		//
 		//  2. Decrypt 'message.key' with receiver's private key
 		//
-		pwd = transceiver.DecryptKey(bundle, receiver, sMsg)
+		pwd = transformer.DecryptKey(bundle, receiver, sMsg)
 		if len(pwd) == 0 {
 			// A: my visa updated but the sender doesn't got the new one;
 			// B: key data error.
@@ -105,7 +105,7 @@ func (packer EncryptedMessagePacker) DecryptMessage(sMsg SecureMessage, receiver
 	//  3. Deserialize message key from data (JsON / ProtoBuf / ...)
 	//     (if key is empty, means it should be reused, get it from key cache)
 	//
-	password := transceiver.DeserializeKey(pwd, sMsg)
+	password := transformer.DeserializeKey(pwd, sMsg)
 	if password == nil {
 		// A: key data is empty, and cipher key not found from local storage;
 		// B: key data error.
@@ -126,7 +126,7 @@ func (packer EncryptedMessagePacker) DecryptMessage(sMsg SecureMessage, receiver
 	//
 	//  5. Decrypt 'message.data' with symmetric key
 	//
-	body := transceiver.DecryptContent(ciphertext.Bytes(), password, sMsg)
+	body := transformer.DecryptContent(ciphertext.Bytes(), password, sMsg)
 	if len(body) == 0 {
 		// A: password is a reused key loaded from local storage, but it's expired;
 		// B: key error.
@@ -138,7 +138,7 @@ func (packer EncryptedMessagePacker) DecryptMessage(sMsg SecureMessage, receiver
 	//
 	//  6. Deserialize message content from data (JsON / ProtoBuf / ...)
 	//
-	content := transceiver.DeserializeContent(body, password, sMsg)
+	content := transformer.DeserializeContent(body, password, sMsg)
 	if content == nil {
 		//panic("failed to deserialize content")
 		return nil
@@ -161,9 +161,9 @@ func (packer EncryptedMessagePacker) DecryptMessage(sMsg SecureMessage, receiver
 }
 
 // Override
-func (packer EncryptedMessagePacker) SignMessage(sMsg SecureMessage) ReliableMessage {
-	transceiver := packer.Transceiver
-	if transceiver == nil {
+func (packer *EncryptedMessagePacker) SignMessage(sMsg SecureMessage) ReliableMessage {
+	transformer := packer.Transformer
+	if transformer == nil {
 		//panic("secure message delegate not found")
 		return nil
 	}
@@ -180,7 +180,7 @@ func (packer EncryptedMessagePacker) SignMessage(sMsg SecureMessage) ReliableMes
 	//
 	//  1. Sign 'message.data' with sender's private key
 	//
-	signature := transceiver.SignData(ciphertext.Bytes(), sMsg)
+	signature := transformer.SignData(ciphertext.Bytes(), sMsg)
 	if len(signature) == 0 {
 		//panic("failed to sign message")
 		return nil

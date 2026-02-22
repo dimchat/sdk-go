@@ -45,15 +45,15 @@ type PlainMessagePacker struct {
 	//InstantMessagePacker
 
 	// protected
-	Transceiver InstantMessageDelegate
+	Transformer InstantMessageDelegate
 }
 
 // Override
-func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password SymmetricKey, members []ID) SecureMessage {
+func (packer *PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password SymmetricKey, members []ID) SecureMessage {
 	// TODO: check attachment for File/Image/Audio/Video message content
 	//      (do it by application)
-	transceiver := packer.Transceiver
-	if transceiver == nil {
+	transformer := packer.Transformer
+	if transformer == nil {
 		//panic("instant message delegate not found")
 		return nil
 	}
@@ -61,7 +61,7 @@ func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password Sy
 	//
 	//  1. Serialize 'message.content' to data (JsON / ProtoBuf / ...)
 	//
-	body := transceiver.SerializeContent(iMsg.Content(), password, iMsg)
+	body := transformer.SerializeContent(iMsg.Content(), password, iMsg)
 	if len(body) == 0 {
 		panic("fail to serialize content")
 		return nil
@@ -70,7 +70,7 @@ func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password Sy
 	//
 	//  2. Encrypt content data to 'message.data' with symmetric key
 	//
-	ciphertext := transceiver.EncryptContent(body, password, iMsg)
+	ciphertext := transformer.EncryptContent(body, password, iMsg)
 	if len(ciphertext) == 0 {
 		//panic("fail to encrypt content with key")
 		return nil
@@ -97,7 +97,7 @@ func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password Sy
 	//
 	//  4. Serialize message key to data (JsON / ProtoBuf / ...)
 	//
-	pwd := transceiver.SerializeKey(password, iMsg)
+	pwd := transformer.SerializeKey(password, iMsg)
 	// NOTICE:
 	//    if the key is reused, iMsg must be updated with key digest.
 	info := iMsg.CopyMap(false)
@@ -129,7 +129,7 @@ func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password Sy
 		//
 		//  5. Encrypt key data to 'message.keys' with member's public keys
 		//
-		bundle = transceiver.EncryptKey(pwd, receiver, iMsg)
+		bundle = transformer.EncryptKey(pwd, receiver, iMsg)
 		if bundle == nil || bundle.IsEmpty() {
 			// public key for member not found
 			// TODO: suspend this message for waiting member's visa
@@ -156,16 +156,16 @@ func (packer PlainMessagePacker) EncryptMessage(iMsg InstantMessage, password Sy
 }
 
 // protected
-func (packer PlainMessagePacker) EncodeKeys(bundleMap map[ID]EncryptedBundle, iMsg InstantMessage) StringKeyMap {
-	transceiver := packer.Transceiver
-	if transceiver == nil {
+func (packer *PlainMessagePacker) EncodeKeys(bundleMap map[ID]EncryptedBundle, iMsg InstantMessage) StringKeyMap {
+	transformer := packer.Transformer
+	if transformer == nil {
 		//panic("instant message delegate not found")
 		return nil
 	}
 	msgKeys := NewMap()
 	var encodedKeys StringKeyMap
 	for receiver, bundle := range bundleMap {
-		encodedKeys = transceiver.EncodeKey(bundle, receiver, iMsg)
+		encodedKeys = transformer.EncodeKey(bundle, receiver, iMsg)
 		if len(encodedKeys) == 0 {
 			//panic("fail to encode key data")
 			continue

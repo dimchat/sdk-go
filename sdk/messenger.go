@@ -38,7 +38,7 @@ import (
 )
 
 type Messenger interface {
-	Transceiver
+	Transformer
 	Packer
 	Processor
 
@@ -53,7 +53,7 @@ type Messenger interface {
 // abstract
 type BaseMessenger struct {
 	//Messenger
-	*MessageTransceiver
+	*MessageTransformer
 
 	// protected
 	CipherKeyDelegate CipherKeyDelegate
@@ -63,7 +63,7 @@ type BaseMessenger struct {
 
 func NewBaseMessenger(facebook EntityDelegate, delegate CipherKeyDelegate) *BaseMessenger {
 	return &BaseMessenger{
-		MessageTransceiver: NewMessageTransceiver(facebook),
+		MessageTransformer: NewMessageTransformer(facebook),
 		CipherKeyDelegate:  delegate,
 		Packer:             nil,
 		Processor:          nil,
@@ -78,7 +78,7 @@ func (messenger *BaseMessenger) DeserializeKey(key []byte, sMsg SecureMessage) S
 		// get key from cache with direction: sender -> receiver(group)
 		return messenger.GetDecryptKey(sMsg)
 	}
-	password := messenger.MessageTransceiver.DeserializeKey(key, sMsg)
+	password := messenger.MessageTransformer.DeserializeKey(key, sMsg)
 	// cache decrypt key when success
 	if password != nil {
 		// cache the key with direction: sender -> receiver(group)

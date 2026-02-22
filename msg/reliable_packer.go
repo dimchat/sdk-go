@@ -36,13 +36,13 @@ type NetworkMessagePacker struct {
 	//ReliableMessagePacker
 
 	// protected
-	Transceiver ReliableMessageDelegate
+	Transformer ReliableMessageDelegate
 }
 
 // Override
-func (packer NetworkMessagePacker) VerifyMessage(rMsg ReliableMessage) SecureMessage {
-	transceiver := packer.Transceiver
-	if transceiver == nil {
+func (packer *NetworkMessagePacker) VerifyMessage(rMsg ReliableMessage) SecureMessage {
+	transformer := packer.Transformer
+	if transformer == nil {
 		panic("reliable message delegate not found")
 		return nil
 	}
@@ -68,7 +68,7 @@ func (packer NetworkMessagePacker) VerifyMessage(rMsg ReliableMessage) SecureMes
 	//
 	//  2. Verify the message data and signature with sender's public key
 	//
-	ok := transceiver.VerifyDataSignature(ciphertext.Bytes(), signature.Bytes(), rMsg)
+	ok := transformer.VerifyDataSignature(ciphertext.Bytes(), signature.Bytes(), rMsg)
 	if !ok {
 		//panic("message signature not match")
 		return nil
