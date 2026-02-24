@@ -36,6 +36,12 @@ import (
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
+// InstantMessagePacker defines the interface for packing (encrypting) InstantMessages into SecureMessages
+//
+//	Core responsibility: Convert plaintext instant messages to encrypted secure messages by:
+//	    1. Encrypting message content with a symmetric key (PW) → "data" field
+//	    2. Encrypting the symmetric key with receiver's public key (PK) → "key/keys" field
+//	Supports both personal (1:1) and group (1:N) message encryption
 type InstantMessagePacker interface {
 
 	/*
@@ -51,20 +57,30 @@ type InstantMessagePacker interface {
 	 *                      +----------+
 	 */
 
-	/**
-	 *  Encrypt personal / group message
-	 *  <p>
-	 *      Replace 'content' field with encrypted 'data'
-	 *  </p>
-	 *
-	 * @param iMsg     - plain message
-	 * @param password - symmetric key
-	 * @param members  - group members for group message; null for personal message
-	 * @return SecureMessage object, null on visa not found
-	 */
+	// EncryptMessage converts a plaintext InstantMessage to an encrypted SecureMessage
+	//
+	// Replaces the plaintext "content" field with encrypted "data" and adds encrypted key material
+	// Handles both personal messages (members = nil) and group messages (members = group member IDs)
+	//
+	// Parameters:
+	//   - iMsg     - Plaintext instant message to encrypt
+	//   - password - Symmetric key used to encrypt the message content
+	//   - members  - List of group member IDs (nil for personal messages)
+	// Returns: Encrypted SecureMessage (nil if receiver's visa/encryption key is not found)
 	EncryptMessage(iMsg InstantMessage, password SymmetricKey, members []ID) SecureMessage
 }
 
+// SecureMessagePacker defines the interface for two core packing operations:
+//  1. Unpacking (decrypting) SecureMessages back to InstantMessages
+//  2. Packing (signing) SecureMessages into ReliableMessages
+//
+// Decryption Workflow:
+//  1. Decrypt symmetric key (PW) from "key/keys" using receiver's private key (SK)
+//  2. Decrypt message content from "data" using the symmetric key → restore "content" field
+//
+// Signing Workflow:
+//  1. Generate digital signature for "data" field using sender's private key (SK)
+//  2. Add signature to "signature" field → convert to ReliableMessage
 type SecureMessagePacker interface {
 
 	/*
@@ -80,13 +96,15 @@ type SecureMessagePacker interface {
 	 *    +----------+
 	 */
 
-	/**
-	 *  Decrypt message, replace encrypted 'data' with 'content' field
-	 *
-	 * @param sMsg     - encrypted message
-	 * @param receiver - actual receiver (local user)
-	 * @return InstantMessage object
-	 */
+	// DecryptMessage converts an encrypted SecureMessage back to a plaintext InstantMessage
+	//
+	// Replaces the encrypted "data" field with the original plaintext "content" field
+	// Uses the receiver's private key to decrypt the symmetric key and message content
+	//
+	// Parameters:
+	//   - sMsg     - Encrypted secure message to decrypt
+	//   - receiver - Actual recipient ID (local user with access to private decryption keys)
+	// Returns: Plaintext InstantMessage (nil if decryption fails)
 	DecryptMessage(sMsg SecureMessage, receiver ID) InstantMessage
 
 	/*
@@ -103,15 +121,22 @@ type SecureMessagePacker interface {
 	 *                      +----------+
 	 */
 
-	/**
-	 *  Sign message.data, add 'signature' field
-	 *
-	 * @param sMsg - encrypted message
-	 * @return ReliableMessage object
-	 */
+	// SignMessage adds a digital signature to a SecureMessage to create a ReliableMessage
+	//
+	// Signs the encrypted "data" field with the sender's private key and adds to "signature" field
+	// The signature proves message authenticity (only the sender could generate a valid signature)
+	//
+	// Parameters:
+	//   - sMsg - Encrypted secure message to sign
+	// Returns: Signed ReliableMessage (nil if signing fails)
 	SignMessage(sMsg SecureMessage) ReliableMessage
 }
 
+// ReliableMessagePacker defines the interface for unpacking (verifying) ReliableMessages to SecureMessages
+//
+// Core responsibility: Validate the digital signature on a ReliableMessage to ensure authenticity:
+//  1. Verify the "data" field against the "signature" field using the sender's public key (PK)
+//  2. If verification succeeds, return the underlying SecureMessage (without signature validation risk)
 type ReliableMessagePacker interface {
 
 	/*
@@ -128,12 +153,14 @@ type ReliableMessagePacker interface {
 	 *    +----------+
 	 */
 
-	/**
-	 *  Verify 'data' and 'signature' field with sender's public key
-	 *
-	 * @param rMsg - received message
-	 * @return SecureMessage object
-	 */
+	// VerifyMessage validates a signed ReliableMessage and returns the underlying SecureMessage
+	//
+	// Verifies the "data" and "signature" fields using the sender's public key to ensure authenticity
+	// If verification fails (invalid signature), returns nil to indicate untrusted message
+	//
+	// Parameters:
+	//   - rMsg - Received signed reliable message to verify
+	// Returns: SecureMessage (nil if signature verification fails)
 	VerifyMessage(rMsg ReliableMessage) SecureMessage
 }
 

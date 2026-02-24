@@ -37,39 +37,48 @@ import (
 	. "github.com/dimchat/mkm-go/protocol"
 )
 
+// VisaAgent defines the interface for managing visa-based encryption/key operations
+//
+// Core responsibilities:
+//  1. Encrypt symmetric keys using multiple visa public keys (terminal-specific)
+//  2. Extract verification keys from meta/documents for signature validation
+//  3. Retrieve terminal identifiers from visa documents
 type VisaAgent interface {
 
-	/**
-	 *  Encrypt plaintext to ciphertexts with all visa keys
-	 *
-	 * @param plaintext - key data
-	 * @param meta      - meta for public key
-	 * @param documents - visa documents for public keys
-	 * @return encrypted data with terminals
-	 */
+	// EncryptBundle encrypts plaintext key data using all available visa public keys
+	//
+	// Creates terminal-specific ciphertexts for secure key distribution
+	//
+	// Parameters:
+	//   - plaintext - Raw symmetric key data to be encrypted
+	//   - meta      - Entity meta containing base public key for encryption
+	//   - documents - Visa documents providing additional terminal public keys
+	// Returns: EncryptedBundle mapping ID.terminals to encrypted key data
 	EncryptBundle(plaintext []byte, meta Meta, documents []Document) EncryptedBundle
 
-	/**
-	 *  Get all verify keys from documents and meta
-	 *
-	 * @param meta      - meta for public key
-	 * @param documents - visa documents for public keys
-	 * @return verify keys
-	 */
+	// GetVerifyKeys extracts all verification keys from meta and visa documents
+	//
+	// Combines base verification key (from meta) and terminal-specific keys (from documents)
+	//
+	// Parameters:
+	//   - meta      - Entity meta containing base verification key
+	//   - documents - Visa documents with additional terminal verification keys
+	// Returns: Slice of VerifyKey instances for signature validation
 	GetVerifyKeys(meta Meta, documents []Document) []VerifyKey
 
-	/**
-	 *  Get all terminals from documents
-	 *
-	 * @param documents - visa documents
-	 * @return terminals
-	 */
+	// GetTerminals retrieves all ID.terminals from visa documents
+	//
+	// Terminals represent different devices/clients associated with the user's visa
+	//
+	// Parameters:
+	//   - documents - Visa documents containing terminal metadata
+	// Returns: Slice of ID.terminal strings (empty slice if no terminals found)
 	GetTerminals(documents []Document) []string
 }
 
-/**
- *  Base VisaAgent
- */
+// DefaultVisaAgent is the default implementation of the VisaAgent interface
+//
+// Provides standard visa-based encryption and key extraction functionality
 type DefaultVisaAgent struct {
 	//VisaAgent
 }

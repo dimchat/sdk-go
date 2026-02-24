@@ -37,28 +37,36 @@ import (
 	. "github.com/dimchat/mkm-go/types"
 )
 
+// EncryptedBundleHelper defines the interface for EncryptedBundle serialization/deserialization
+//
+// Handles conversion between EncryptedBundle and StringKeyMap (for "message.keys" field)
 type EncryptedBundleHelper interface {
 
-	/**
-	 *  Encode key data
-	 *
-	 * @param bundle - encrypted key data with targets (ID terminals)
-	 * @param did    - user ID
-	 * @return encoded key data with targets (ID + terminals)
-	 */
+	// EncodeBundle serializes an EncryptedBundle to a StringKeyMap
+	//
+	// Formats the data for inclusion in the "message.keys" field of secure messages
+	//
+	// Parameters:
+	//   - bundle - Encrypted key data with targets (ID terminals)
+	//   - did    - Target user ID
+	// Returns: Encoded key data with targets (ID + terminals)
 	EncodeBundle(bundle EncryptedBundle, did ID) StringKeyMap
 
-	/**
-	 *  Decode key data from 'message.keys'
-	 *
-	 * @param encodedKeys - encoded key data with targets (ID + terminals)
-	 * @param did         - receiver ID
-	 * @param terminals   - visa terminals
-	 * @return encrypted key data with targets (ID terminals)
-	 */
+	// DecodeBundle parses a StringKeyMap into an EncryptedBundle
+	//
+	// Extracts terminal-specific encrypted keys from the "message.keys" field
+	//
+	// Parameters:
+	//   - encodedKeys - Encoded key data with targets (ID + terminals)
+	//   - did         - Receiver ID
+	//   - terminals   - Visa terminals
+	// Returns: Encrypted key data with targets (ID terminals)
 	DecodeBundle(encodedKeys StringKeyMap, did ID, terminals []string) EncryptedBundle
 }
 
+// DefaultBundleHelper is the default implementation of the EncryptedBundleHelper interface
+//
+// Provides standard serialization/deserialization for EncryptedBundle instances
 type DefaultBundleHelper struct {
 	//EncryptedBundleHelper
 }

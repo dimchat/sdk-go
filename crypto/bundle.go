@@ -38,73 +38,85 @@ import (
 	. "github.com/dimchat/mkm-go/types"
 )
 
-/**
- *  User Encrypted Key Data with Terminals
- */
+// EncryptedBundle defines the interface for terminal-specific encrypted key data
+//
+// Maps ID.terminals to their corresponding encrypted symmetric key data
+// Used for secure distribution of symmetric keys to multiple user terminals
 type EncryptedBundle interface {
 
-	// terminal -> encrypted key.data
+	// Map returns the raw terminal-to-encrypted-data mapping
+	// Key: ID.terminal string, Value: Encrypted key data ([]byte)
 	Map() map[string][]byte
 
+	// String returns a human-readable string representation of the bundle
 	String() string
 
+	// IsEmpty checks if the bundle contains any encrypted key data
+	//
+	// Returns: true if no terminal entries exist, false otherwise
 	IsEmpty() bool
 
-	Contains(key string) bool
+	// Contains checks if the bundle has encrypted data for a specific terminal
+	//
+	// Parameters:
+	//   - terminal - ID.terminal to check
+	// Returns: true if data exists for the terminal, false otherwise
+	Contains(terminal string) bool
 
-	/**
-	 *  Get encrypted key data for terminal
-	 *
-	 * @param terminal - ID terminal
-	 * @return encrypted key data
-	 */
-	Get(key string) []byte
+	// Get retrieves encrypted key data for a specific terminal
+	//
+	// Parameters:
+	//  - terminal - ID.terminal to get data for
+	// Returns: Encrypted key data ([]byte) or nil if terminal not found
+	Get(terminal string) []byte
 
-	/**
-	 *  Put encrypted key data for terminal
-	 *
-	 * @param terminal - ID terminal
-	 * @param data     - encrypted key data
-	 */
+	// Set stores encrypted key data for a specific terminal
+	//
+	// Parameters:
+	//   - terminal - ID.terminal to associate with
+	//   - data     - Encrypted key data to store (must not be nil)
 	Set(terminal string, data []byte)
 
-	/**
-	 *  Remove encrypted key data for terminal
-	 *
-	 * @param terminal - ID terminal
-	 * @return removed data
-	 */
+	// Remove deletes encrypted key data for a specific terminal
+	//
+	// Parameters:
+	//   - terminal - ID.terminal to remove data for
 	Remove(terminal string)
 
-	/**
-	 *  Encode key data
-	 *
-	 * @param did - user ID
-	 * @return encoded key data with targets (ID + terminals)
-	 */
+	// Encode serializes the bundle into a StringKeyMap for network transmission
+	//
+	// Structures the data with user ID and terminal-specific encrypted keys
+	//
+	// Parameters:
+	//   - did - User ID associated with the encrypted bundle
+	// Returns: Encoded StringKeyMap (compatible with "message.keys" field)
 	Encode(did ID) StringKeyMap
 }
 
-/**
- *  Decode key data from 'message.keys'
- *
- * @param encodedKeys - encoded key data with targets (ID + terminals)
- * @param did         - receiver ID
- * @param terminals   - visa terminals
- * @return encrypted key data with targets (ID terminals)
- */
+// DecodeEncryptedBundle parses encrypted key data from a "message.keys" StringKeyMap
+//
+// # Reconstructs an EncryptedBundle from encoded terminal-specific key data
+//
+// Parameters:
+//   - encodedKeys - Encoded key data (from "message.keys" field)
+//   - did         - Receiver's user ID (to validate key ownership)
+//   - terminals   - List of valid terminals to extract data for
+//
+// Returns: Decoded EncryptedBundle (empty bundle if no valid data found)
 func DecodeEncryptedBundle(encodedKeys StringKeyMap, did ID, terminals []string) EncryptedBundle {
 	helper := GetEncryptedBundleHelper()
 	return helper.DecodeBundle(encodedKeys, did, terminals)
 }
 
-/**
- *  Base EncryptedBundle
- */
+// UserEncryptedBundle is the concrete implementation of the EncryptedBundle interface
+//
+// Uses a map to store terminal-to-encrypted-key-data associations
 type UserEncryptedBundle struct {
 	//EncryptedBundle
 
-	// terminal -> encrypted key.data
+	// table stores the core terminal-to-encrypted-data mapping
+	//
+	// Key: terminal string, Value: Encrypted symmetric key data ([]byte)
 	table map[string][]byte
 }
 

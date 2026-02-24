@@ -32,38 +32,44 @@ package mkm
 
 import . "github.com/dimchat/mkm-go/protocol"
 
-/**
- *  Group for organizing users
- *
- * <pre>
- *  roles:
- *      founder
- *      owner
- *      members
- *      administrators - Optional
- *  </pre>
- */
+// Group defines the interface for group entities (collections of users)
+//
+// # Extends Entity with group-specific functionality for membership and ownership management
+//
+// Core Group Roles (hierarchy):
+//   - founder: Original creator of the group (immutable once set)
+//   - owner: Current administrator of the group (may change via consensus)
+//   - members: Regular users in the group (owner must be a member)
+//   - administrators: Optional privileged members (extended role)
 type Group interface {
 	Entity
 
+	// Founder returns the unique ID of the group's original creator
+	//
+	// This value is immutable - once set, it never changes
 	Founder() ID
 
+	// Owner returns the ID of the current group owner
+	//
+	// The owner may be different from the founder (ownership transfer)
 	Owner() ID
 
-	// NOTICE: the owner must be a member
-	//         (usually the first one)
+	// Members returns the list of all user IDs in the group
+	//
+	// Important: The group owner MUST be included in the members list (usually first)
 	Members() []ID
 }
 
-/**
- *  Base Group
- *  ~~~~~~~~~~
- */
+// BaseGroup is the base implementation of the Group interface
+//
+// Extends BaseEntity with group-specific fields (immutable founder ID)
 type BaseGroup struct {
 	//Group
 	*BaseEntity
 
-	// once the group founder is set, it will never change
+	// founder stores the immutable ID of the group's original creator
+	//
+	// Once set during group creation, this value can never be changed
 	founder ID
 }
 

@@ -35,53 +35,64 @@ import (
 	. "github.com/dimchat/mkm-go/types"
 )
 
-/**
- *  Entity (User/Group)
- *  <p>
- *      Base class of User and Group, ...
- *  </p>
- *
- *  <pre>
- *  properties:
- *      identifier - entity ID
- *      type       - entity type
- *      meta       - meta for generate ID
- *      documents  - visa for user, or bulletin for group
- *  </pre>
- */
+// Entity defines the core interface for all identifiable entities (User/Group)
+//
+// Serves as the base interface for user and group accounts, providing:
+//   - Unique entity identification (ID and type)
+//   - Access to identity metadata (Meta) and profile documents (Visa/Bulletin)
+//   - Data source integration for extended entity information
+//
+// Core Properties:
+//   - identifier: Unique entity ID (user/group address)
+//   - type: Entity type classification (user/group/bot/etc.)
+//   - meta: Identity metadata used to generate the entity ID
+//   - documents: Profile documents (Visa for users, Bulletin for groups)
 type Entity interface {
 	Object
 
-	/**
-	 *  Get entity ID
-	 *
-	 * @return ID
-	 */
+	// ID returns the unique identifier of the entity (user/group address)
+	//
+	// This is the primary key for all entity operations
 	ID() ID
 
-	/**
-	 *  Get ID.type
-	 *
-	 * @return network type
-	 */
+	// Type returns the entity type classification (EntityType)
+	//
+	// Also known as ID.type - identifies if the entity is a user, group, bot, etc.
 	Type() EntityType
 
+	// Meta returns the identity metadata used to generate the entity ID
+	//
+	// Contains cryptographic keys and seed data for identity verification
 	Meta() Meta
+
+	// Documents returns the profile documents associated with the entity
+	//
+	// For users:
+	//     Visa documents (encryption keys, nickname, avatar, etc.)
+	// For groups:
+	//     Bulletin documents (title, founder, etc.)
 	Documents() []Document
 
+	// DataSource returns the entity data source for extended information
+	//
+	// Provides access to dynamic data (group members, user contacts, keys, ...)
 	DataSource() EntityDataSource
 	SetDataSource(facebook EntityDataSource)
 }
 
-/**
- *  Base Entity
- *  ~~~~~~~~~~~
- */
+// BaseEntity is the base implementation of the Entity interface
+//
+// Provides core entity functionality (ID storage and data source management)
+// Used as the foundation for BaseUser and BaseGroup implementations
 type BaseEntity struct {
 	//Entity
 
+	// identifier stores the unique entity ID (user/group address)
 	identifier ID
 
+	// facebook stores the data source for extended entity information
+	//
+	// Provides access to dynamic data not stored in the base entity
 	facebook EntityDataSource
 }
 
