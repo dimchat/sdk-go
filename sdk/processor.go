@@ -36,11 +36,16 @@ import (
 	. "github.com/dimchat/sdk-go/dkd"
 )
 
+// MessageProcessor is the concrete implementation of the Processor interface
+//
+// Uses a ContentProcessorFactory to create specialized content handlers for different content types
 type MessageProcessor struct {
 	//Processor
 	*TwinsHelper
 
-	// protected
+	// Factory creates specialized content processors for different Content types
+	//
+	// Enables type-specific processing (text, file, command, etc.)
 	Factory ContentProcessorFactory
 }
 

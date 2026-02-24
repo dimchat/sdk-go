@@ -30,56 +30,59 @@
  */
 package sdk
 
-import (
-	. "github.com/dimchat/dkd-go/protocol"
-)
+import . "github.com/dimchat/dkd-go/protocol"
 
-/**
- *  Message Processor
- *  ~~~~~~~~~~~~~~~~~
- */
+// Processor defines the interface for processing messages at all format levels
+//
+// Handles message processing at binary, signed, encrypted, plaintext, and content levels
+// Each method returns multiple response messages to support complex workflows (replies, broadcasts, etc.)
 type Processor interface {
 
-	/**
-	 *  Process data package
-	 *
-	 * @param data - data to be processed
-	 * @return response data
-	 */
+	// ProcessPackage processes raw binary network data and returns response data packages
+	//
+	// Orchestrates full inbound flow: Deserialize → Verify → Decrypt → Process → Encrypt → Sign → Serialize
+	//
+	// Parameters:
+	//   - data - Raw binary data package received from network
+	// Returns: Slice of binary response data packages (empty slice if no response)
 	ProcessPackage(data []byte) [][]byte
 
-	/**
-	 *  Process network message
-	 *
-	 * @param rMsg - message to be processed
-	 * @return response message
-	 */
+	// ProcessReliableMessage processes a signed ReliableMessage and returns response messages
+	//
+	// Typically verifies the message first before delegating to ProcessSecureMessage
+	//
+	// Parameters:
+	//   - rMsg - Signed ReliableMessage to process
+	// Returns: Slice of signed ReliableMessage responses (empty slice if no response)
 	ProcessReliableMessage(rMsg ReliableMessage) []ReliableMessage
 
-	/**
-	 *  Process encrypted message
-	 *
-	 * @param sMsg - message to be processed
-	 * @param rMsg - message received
-	 * @return response message
-	 */
+	// ProcessSecureMessage processes an encrypted SecureMessage and returns response messages
+	//
+	// Typically decrypts the message first before delegating to ProcessInstantMessage
+	//
+	// Parameters:
+	//   - sMsg - Encrypted SecureMessage to process
+	//   - rMsg - Original signed ReliableMessage (for context/metadata)
+	// Returns: Slice of encrypted SecureMessage responses (empty slice if no response)
 	ProcessSecureMessage(sMsg SecureMessage, rMsg ReliableMessage) []SecureMessage
 
-	/**
-	 *  Process plain message
-	 *
-	 * @param iMsg - message to be processed
-	 * @param rMsg - message received
-	 * @return response message
-	 */
+	// ProcessInstantMessage processes a plaintext InstantMessage and returns response messages
+	//
+	// Extracts content and delegates to ProcessContent for business logic processing
+	//
+	// Parameters:
+	//   - iMsg - Plaintext InstantMessage to process
+	//   - rMsg - Original signed ReliableMessage (for context/metadata)
+	// Returns: Slice of plaintext InstantMessage responses (empty slice if no response)
 	ProcessInstantMessage(iMsg InstantMessage, rMsg ReliableMessage) []InstantMessage
 
-	/**
-	 *  Process message content
-	 *
-	 * @param content - content to be processed
-	 * @param rMsg - message received
-	 * @return response content
-	 */
+	// ProcessContent processes raw message content and returns response contents
+	//
+	// Core business logic handler (e.g., command execution, message routing, content transformation)
+	//
+	// Parameters:
+	//   - content - Raw message content to process (text/file/command/...)
+	//   - rMsg    - Original signed ReliableMessage (for sender/receiver context)
+	// Returns: Slice of response Content objects (empty slice if no response)
 	ProcessContent(content Content, rMsg ReliableMessage) []Content
 }

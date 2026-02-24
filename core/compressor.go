@@ -37,21 +37,24 @@ import (
 
 type Compressor interface {
 
-	//
-	//  Compress Content
-	//
+	/**
+	 *  Compress Content
+	 */
+
 	CompressContent(content StringKeyMap, key StringKeyMap) []byte
 	ExtractContent(data []byte, key StringKeyMap) StringKeyMap
 
-	//
-	//  Compress SymmetricKey
-	//
+	/**
+	 *  Compress SymmetricKey
+	 */
+
 	CompressSymmetricKey(key StringKeyMap) []byte
 	ExtractSymmetricKey(data []byte) StringKeyMap
 
-	//
-	//  Compress ReliableMessage
-	//
+	/**
+	 *  Compress ReliableMessage
+	 */
+
 	CompressReliableMessage(msg StringKeyMap) []byte
 	ExtractReliableMessage(data []byte) StringKeyMap
 }

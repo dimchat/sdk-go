@@ -35,19 +35,37 @@ import (
 	. "github.com/dimchat/dkd-go/protocol"
 )
 
+// ContentProcessorMap is a type alias for a map of processor identifiers to ContentProcessor instances
+//
+//	Key: Typically message type string or command name;
+//	Value: Corresponding ContentProcessor
 type ContentProcessorMap = map[string]ContentProcessor
 
 func NewContentProcessorMap(capacity int) ContentProcessorMap {
 	return make(ContentProcessorMap, capacity)
 }
 
-// General ContentProcessor Factory
+// GeneralContentProcessorFactory is a concrete implementation of ContentProcessorFactory
+//
+// Provides general-purpose content processor management with:
+//  1. Lazy processor creation via ContentProcessorCreator
+//  2. In-memory caching of processors (content/command specific)
 type GeneralContentProcessorFactory struct {
 	//ContentProcessorFactory
 
+	// creator generates new ContentProcessor instances when not found in cache
+	//
+	// Used for lazy initialization of processors
 	creator ContentProcessorCreator
 
+	// contentProcessors caches generic ContentProcessor instances by message type
+	//  Key: MessageType string
+	//  Value: Corresponding ContentProcessor
 	contentProcessors ContentProcessorMap
+
+	// commandProcessors caches command-specific ContentProcessor instances by command name
+	//  Key: Command name string
+	//  Value: Corresponding CommandProcessor (implements ContentProcessor)
 	commandProcessors ContentProcessorMap
 }
 

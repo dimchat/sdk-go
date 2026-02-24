@@ -37,41 +37,80 @@ import (
 	. "github.com/dimchat/sdk-go/mkm"
 )
 
+// Facebook defines the core interface for all account/entity-related operations in the system
+//
+// Acts as the unified entry point for entity management, combining:
+//   - EntityDelegate: User/Group instance creation/lookup
+//   - EntityDataSource: Metadata/document retrieval for users/groups
+//   - Persistent storage: Saving verified entity metadata and documents
+//   - Local user selection: Resolving local user identities for message reception
 type Facebook interface {
 	EntityDelegate
 	EntityDataSource
 	//UserDataSource
 	//GroupDataSource
 
+	// SaveMeta stores verified entity metadata to persistent storage
+	//
+	// Wraps Archivist.SaveMeta with entity validation and access control
+	//
+	// Parameters:
+	//   - meta - Verified entity metadata to save
+	//   - did  - Target entity ID (user/group) associated with the metadata
+	// Returns: true if metadata saved successfully, false otherwise
 	SaveMeta(meta Meta, did ID) bool
+
+	// SaveDocument stores a verified entity document to persistent storage
+	//
+	// Wraps Archivist.SaveDocument with entity validation and access control
+	//     For users: Saves Visa documents;
+	//     For groups: Saves Bulletin documents
+	//
+	// Parameters:
+	//   - document - Verified entity document to save
+	//   - did      - Target entity ID (user/group) associated with the document
+	// Returns: true if document saved successfully, false otherwise
 	SaveDocument(document Document, did ID) bool
 
-	/**
-	 *  Select local user for receiver
-	 *
-	 * @param receiver - user/broadcast ID
-	 * @return local user
-	 */
+	// SelectUser identifies the local user account for a given receiver ID
+	//
+	// Resolves which local user should process incoming messages for the target receiver
+	// Used for personal messages or broadcast messages targeting local users
+	//
+	// Parameters:
+	//   - receiver - Target receiver ID (user/broadcast address)
+	// Returns: Local user ID (nil if no matching local user found)
 	SelectUser(receiver ID) ID
 
-	/**
-	 *  Select local user for group members
-	 *
-	 * @param members - group members
-	 * @return local user
-	 */
+	// SelectMember identifies the local user account within a group member list
+	//
+	// Finds which group member corresponds to a local user (for group message decryption)
+	//
+	// Parameters:
+	//   - members - Slice of group member IDs
+	// Returns: Local user ID from the member list (nil if no local user is a group member)
 	SelectMember(members []ID) ID
 }
 
-// abstract
+// BaseFacebook is the base implementation of the Facebook interface
+//
+// Provides core dependencies and infrastructure for account/entity operations
 type BaseFacebook struct {
 	//Facebook
 
-	// public
+	// Archivist provides persistent storage access for entity metadata/documents
+	//
+	// Used by SaveMeta and SaveDocument for data persistence
 	Archivist Archivist
-	// protected
+
+	// Barrack manages in-memory cache of User/Group instances (entity factory)
+	//
+	// Used for lazy initialization and reuse of entity instances
 	Barrack Barrack
-	// private
+
+	// DataSource provides access to entity metadata and documents
+	//
+	// Backend implementation for EntityDataSource interface methods
 	DataSource EntityDataSource
 }
 

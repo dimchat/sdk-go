@@ -37,28 +37,71 @@ import (
 	. "github.com/dimchat/sdk-go/mkm"
 )
 
+// Messenger defines the core interface for all message-related operations in the system
+//
+// Acts as the unified entry point for message processing, combining:
+//   - Transformer: Message serialization/deserialization and format conversion
+//   - Packer: Message encryption/signing/verification/decryption workflows
+//   - Processor: Message processing at all format levels (binary to content)
+//   - Cipher key management: Retrieval and caching of symmetric encryption keys
 type Messenger interface {
 	Transformer
 	Packer
 	Processor
 
+	// -------------------------------------------------------------------------
+	//  Cipher Key Management (Symmetric Key Handling)
+	// -------------------------------------------------------------------------
+
+	// GetEncryptKey retrieves a symmetric key for encrypting an InstantMessage
 	//
-	//  Interfaces for Cipher Key
+	// Uses CipherKeyDelegate to get/cache direction-specific (sender→receiver) keys
 	//
+	// Parameters:
+	//   - iMsg - Plaintext InstantMessage to be encrypted
+	// Returns: SymmetricKey for message encryption (nil if key generation/retrieval fails)
 	GetEncryptKey(iMsg InstantMessage) SymmetricKey
+
+	// GetDecryptKey retrieves a symmetric key for decrypting a SecureMessage
+	//
+	// Extracts and decrypts the key from the message's encrypted key bundle
+	//
+	// Parameters:
+	//   - sMsg - Encrypted SecureMessage to be decrypted
+	// Returns: SymmetricKey for message decryption (nil if key extraction fails)
 	GetDecryptKey(sMsg SecureMessage) SymmetricKey
+
+	// CacheDecryptKey stores a decrypted symmetric key for future reuse
+	//
+	// Caches the key with direction-specific context from the SecureMessage
+	//
+	// Parameters:
+	//   - key  - Decrypted symmetric key to cache (must not be nil)
+	//   - sMsg - Encrypted SecureMessage associated with the key
 	CacheDecryptKey(key SymmetricKey, sMsg SecureMessage)
 }
 
-// abstract
+// BaseMessenger is the base implementation of the Messenger interface
+//
+// Provides core dependencies and infrastructure for message processing operations
 type BaseMessenger struct {
 	//Messenger
 	*MessageTransformer
 
-	// protected
+	// CipherKeyDelegate manages caching/retrieval of symmetric encryption keys
+	//
+	// Backend implementation for GetEncryptKey/GetDecryptKey/CacheDecryptKey
 	CipherKeyDelegate CipherKeyDelegate
-	Packer            Packer
-	Processor         Processor
+
+	// Packer handles message encryption/signing/verification/decryption workflows
+	//
+	// Implements the Packer interface methods
+	Packer Packer
+
+	// Processor handles message processing at all format levels
+	//
+	// Implements the Processor interface methods
+	Processor Processor
 }
 
 func NewBaseMessenger(facebook EntityDelegate, delegate CipherKeyDelegate) *BaseMessenger {

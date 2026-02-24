@@ -41,40 +41,52 @@ import (
 	. "github.com/dimchat/sdk-go/msg"
 )
 
+// Transformer defines the core interface for message format conversion and serialization
+//
+// Integrates encryption/decryption (InstantMessageDelegate),
+// signing/verification (SecureMessageDelegate/ReliableMessageDelegate)
+// and binary serialization capabilities to convert between PlainMessage and NetworkMessage formats
+//
+// Core responsibility: Bidirectional conversion between structured messages and binary network packets
 type Transformer interface {
 	InstantMessageDelegate
 	SecureMessageDelegate
 	ReliableMessageDelegate
 
-	/**
-	 *  Serialize network message
-	 *
-	 * @param rMsg - network message
-	 * @return data package
-	 */
+	// SerializeMessage converts a structured ReliableMessage to binary data for network transmission
+	//
+	// Packages all message fields (envelope, data, keys, signature) into a byte array
+	//
+	// Parameters:
+	//   - rMsg - Structured ReliableMessage to serialize
+	// Returns: Binary data package ([]byte) ready for network send (nil if serialization fails)
 	SerializeMessage(rMsg ReliableMessage) []byte
 
-	/**
-	 *  Deserialize network message
-	 *
-	 * @param data - data package
-	 * @return network message
-	 */
+	// DeserializeMessage parses binary network data back to a structured ReliableMessage
+	//
+	// Reconstructs all message components from the binary data package
+	//
+	// Parameters:
+	//   - data - Binary data package received from network
+	// Returns: Structured ReliableMessage (nil if deserialization fails or data is invalid)
 	DeserializeMessage(data []byte) ReliableMessage
 }
 
-/**
- *  Message Transformer
- *  <p>
- *      Converting message format between PlainMessage and NetworkMessage
- *  </p>
- */
+// MessageTransformer is the concrete implementation of the Transformer interface
+//
+// Combines entity management, compression, and message conversion capabilities
 type MessageTransformer struct {
 	//Transformer
 
-	// protected
+	// EntityDelegate provides User/Group entity creation/lookup (nicknamed "facebook")
+	//
+	// Required for resolving sender/receiver identities during message processing
 	EntityDelegate EntityDelegate // facebook
-	Compressor     Compressor
+
+	// Compressor handles data compression/decompression for message content
+	//
+	// Optimizes network transmission size of serialized message data
+	Compressor Compressor
 }
 
 func NewMessageTransformer(facebook EntityDelegate) *MessageTransformer {

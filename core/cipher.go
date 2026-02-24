@@ -69,9 +69,7 @@ import (
     +-------------+-------------+-------------+-------------+-------------+
 */
 
-/**
- *  get destination for cipher key vector: (sender, dest)
- */
+// CipherKeyDestinationForMessage returns destination for cipher key vector: (sender, dest)
 func CipherKeyDestinationForMessage(msg Message) ID {
 	receiver := msg.Receiver()
 	group := ParseID(msg.Get("group"))
@@ -106,24 +104,30 @@ func CipherKeyDestination(receiver, group ID) ID {
 	return group
 }
 
+// CipherKeyDelegate defines the interface for symmetric cipher key caching and retrieval
+//
+// Manages direction-specific symmetric keys used for message encryption between entities
+// Keys are cached with sender→receiver directionality to enable key reuse for subsequent messages
 type CipherKeyDelegate interface {
 
-	/**
-	 *  Get cipher key for encrypt message from 'sender' to 'receiver'
-	 *
-	 * @param sender   - from where (user or contact ID)
-	 * @param receiver - to where (contact or user/group ID)
-	 * @param generate - generate when key not exists
-	 * @return cipher key
-	 */
+	// GetCipherKey retrieves a symmetric cipher key for message encryption between sender and receiver
+	//
+	// If the key doesn't exist and generate=true, creates a new symmetric key (AES/DES/...)
+	//
+	// Parameters:
+	//   - sender   - From where (user or contact ID)
+	//   - receiver - To where (contact or user/group ID)
+	//   - generate - If true, generates a new key when no cached key exists; if false, returns nil
+	// Returns: SymmetricKey for encryption (nil if no key exists)
 	GetCipherKey(sender, receiver ID, generate bool) SymmetricKey
 
-	/**
-	 *  Cache cipher key for reusing, with the direction (from 'sender' to 'receiver')
-	 *
-	 * @param sender   - from where (user or contact ID)
-	 * @param receiver - to where (contact or user/group ID)
-	 * @param key      - cipher key
-	 */
+	// CacheCipherKey stores a symmetric cipher key for reuse in future message encryption
+	//
+	// Keys are cached with directionality (sender→receiver) - keys are not bidirectional
+	//
+	// Parameters:
+	//   - sender   - From where (user or contact ID)
+	//   - receiver - To where (contact or user/group ID)
+	//   - key      - Symmetric key to cache (must not be nil)
 	CacheCipherKey(sender, receiver ID, key SymmetricKey)
 }

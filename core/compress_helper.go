@@ -118,21 +118,14 @@ type defaultCompressFactory struct {
 }
 
 // Override
-func (factory defaultCompressFactory) CreateCompressor() Compressor {
-	shortener := NewShortener(ShortKeys.ContentKeys, ShortKeys.CryptoKeys, ShortKeys.MessageKeys)
-	return NewCompressor(shortener)
+func (defaultCompressFactory) CreateCompressor() Compressor {
+	shortener := NewShortener()
+	return NewMessageCompressor(shortener)
 }
 
-func NewShortener(contentKeys, cryptoKeys, messageKeys []string) Shortener {
-	return &MessageShortener{
-		contentShortKeys: contentKeys,
-		cryptoShortKeys:  cryptoKeys,
-		messageShortKeys: messageKeys,
-	}
-}
-
-func NewCompressor(shortener Shortener) Compressor {
-	return &MessageCompressor{
-		shortener: shortener,
-	}
+func NewShortener() Shortener {
+	contentKeys := ShortKeys.ContentKeys
+	cryptoKeys := ShortKeys.CryptoKeys
+	messageKeys := ShortKeys.MessageKeys
+	return NewMessageShortener(contentKeys, cryptoKeys, messageKeys)
 }

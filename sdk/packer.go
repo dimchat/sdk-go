@@ -35,6 +35,10 @@ import (
 	. "github.com/dimchat/sdk-go/msg"
 )
 
+// MessagePacker is the concrete implementation of the Packer interface
+//
+// Coordinates specialized packers for each message type
+// to handle encryption/signing/verification/decryption
 type MessagePacker struct {
 	//Packer
 	*TwinsHelper

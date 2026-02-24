@@ -35,17 +35,38 @@ import (
 	. "github.com/dimchat/sdk-go/mkm"
 )
 
+// ITwinsHelper defines the interface for bridging Facebook (account) and Messenger (message) systems
+//
+// Core responsibility: Resolve local user identities for message processing by combining
+// account information (Facebook) with message context (Messenger)
 type ITwinsHelper interface {
 
-	// check local user for receiver
+	// SelectLocalUser resolves the local User instance for a given receiver ID
+	//
+	// Uses Facebook.SelectUser to find the local user ID, then retrieves the User instance
+	// from Facebook's Barrack (entity cache)
+	//
+	// Parameters:
+	//   - receiver - Target receiver ID (user/group/broadcast)
+	// Returns: Local User instance (nil if no matching local user found)
 	SelectLocalUser(receiver ID) User
 }
 
+// TwinsHelper is the concrete implementation of the ITwinsHelper interface
+//
+// Acts as the core integration layer between account management (Facebook)
+// and message processing (Messenger) subsystems
 type TwinsHelper struct {
 	//ITwinsHelper
 
-	// protected
-	Facebook  Facebook
+	// Facebook provides access to account/entity operations
+	//
+	// Used to resolve local user identities for message processing
+	Facebook Facebook
+
+	// Messenger provides access to message processing operations
+	//
+	// Used to handle message encryption/decryption for resolved local users
 	Messenger Messenger
 }
 

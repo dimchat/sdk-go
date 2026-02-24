@@ -37,18 +37,21 @@ type Shortener interface {
 	/**
 	 *  Compress Content
 	 */
+
 	CompressContent(content StringKeyMap) StringKeyMap
 	ExtractContent(content StringKeyMap) StringKeyMap
 
 	/**
 	 *  Compress SymmetricKey
 	 */
+
 	CompressSymmetricKey(key StringKeyMap) StringKeyMap
 	ExtractSymmetricKey(key StringKeyMap) StringKeyMap
 
 	/**
 	 *  Compress ReliableMessage
 	 */
+
 	CompressReliableMessage(msg StringKeyMap) StringKeyMap
 	ExtractReliableMessage(msg StringKeyMap) StringKeyMap
 }

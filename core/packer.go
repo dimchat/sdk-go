@@ -30,69 +30,74 @@
  */
 package sdk
 
-import (
-	. "github.com/dimchat/dkd-go/protocol"
-)
+import . "github.com/dimchat/dkd-go/protocol"
 
-/**
- *  Message Packer
- *  ~~~~~~~~~~~~~~
- */
+// Packer defines the interface for end-to-end message packing/unpacking workflows
+//
+// Orchestrates the complete message lifecycle between plaintext and network formats:
+//
+//	Outbound Flow (Sending Message):
+//	    InstantMessage → [Encrypt] → SecureMessage → [Sign] → ReliableMessage → [Serialize] → Binary Data
+//
+//	Inbound Flow (Receiving Message):
+//	    Binary Data → [Deserialize] → ReliableMessage → [Verify] → SecureMessage → [Decrypt] → InstantMessage
 type Packer interface {
 
-	//
-	//  InstantMessage -> SecureMessage -> ReliableMessage -> Data
-	//
+	// -------------------------------------------------------------------------
+	//  Outbound Message Flow (Plain → Encrypted → Signed → Stream)
+	// -------------------------------------------------------------------------
 
-	/**
-	 *  Encrypt message content
-	 *
-	 * @param iMsg - plain message
-	 * @return encrypted message
-	 */
+	// EncryptMessage converts a plaintext InstantMessage to an encrypted SecureMessage
+	//
+	// Encrypts message content with symmetric key and wraps key with receiver's public key
+	//
+	// Parameters:
+	//   - iMsg - Plaintext message to encrypt
+	// Returns: Encrypted SecureMessage (nil if encryption fails)
 	EncryptMessage(iMsg InstantMessage) SecureMessage
 
-	/**
-	 *  Sign content data
-	 *
-	 * @param sMsg - encrypted message
-	 * @return network message
-	 */
+	// SignMessage adds a digital signature to a SecureMessage to create a ReliableMessage
+	//
+	// Signs encrypted content with sender's private key to ensure authenticity
+	//
+	// Parameters:
+	//   - sMsg - Encrypted SecureMessage to sign
+	// Returns: Signed ReliableMessage (nil if signing fails)
 	SignMessage(sMsg SecureMessage) ReliableMessage
 
-	/*
-	 *  Serialize network message
-	 *
-	 * @param rMsg - network message
-	 * @return data package
-	 */
+	// SerializeMessage converts ReliableMessage to binary data (see Transformer)
+	//
+	// Parameters:
+	//   - rMsg - Signed ReliableMessage to serialize
+	// Returns: Binary data package for network transmission
 	//SerializeMessage(rMsg ReliableMessage) []byte
 
-	//
-	//  Data -> ReliableMessage -> SecureMessage -> InstantMessage
-	//
+	// -------------------------------------------------------------------------
+	//  Inbound Message Flow (Stream → Signed → Encrypted → Plain)
+	// -------------------------------------------------------------------------
 
-	/*
-	 *  Deserialize network message
-	 *
-	 * @param data - data package
-	 * @return network message
-	 */
+	// DeserializeMessage parses binary data to ReliableMessage (see Transformer)
+	//
+	// Parameters:
+	//   - data - Binary data package from network
+	// Returns: Structured ReliableMessage
 	//DeserializeMessage(data []byte) ReliableMessage
 
-	/**
-	 *  Verify encrypted content data
-	 *
-	 * @param rMsg - network message
-	 * @return encrypted message
-	 */
+	// VerifyMessage validates the signature on a ReliableMessage to get a SecureMessage
+	//
+	// Verifies signature with sender's public key; returns nil if verification fails (untrusted message)
+	//
+	// Parameters:
+	//   - rMsg - Received signed ReliableMessage to verify
+	// Returns: Trusted SecureMessage (nil if signature is invalid)
 	VerifyMessage(rMsg ReliableMessage) SecureMessage
 
-	/**
-	 *  Decrypt message content
-	 *
-	 * @param sMsg - encrypted message
-	 * @return plain message
-	 */
+	// DecryptMessage converts an encrypted SecureMessage back to plaintext InstantMessage
+	//
+	// Decrypts symmetric key with receiver's private key and content with symmetric key
+	//
+	// Parameters:
+	//   - sMsg - Encrypted SecureMessage to decrypt
+	// Returns: Plaintext InstantMessage (nil if decryption fails)
 	DecryptMessage(sMsg SecureMessage) InstantMessage
 }
