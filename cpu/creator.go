@@ -40,6 +40,7 @@ import (
 /**
  *  Base ContentProcessor Creator
  */
+
 type BaseContentProcessorCreator struct {
 	//ContentProcessorCreator
 	*TwinsHelper

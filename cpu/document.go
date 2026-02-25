@@ -41,8 +41,8 @@ import (
 
 /**
  *  CPU for DocumentCommand
- *  ~~~~~~~~~~~~~~~~~~~~~~~
  */
+
 type DocumentCommandProcessor struct {
 	*MetaCommandProcessor
 }

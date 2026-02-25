@@ -41,6 +41,11 @@ import (
 /**
  *  CPU - Content Processing Unit
  */
+
+// BaseContentProcessor is the base implementation of ContentProcessor
+//
+// Provides default content processing behavior and utility methods for response generation
+// Serves as the foundation for all specialized content processors (text, file, image, etc.)
 type BaseContentProcessor struct {
 	//ContentProcessor
 	*TwinsHelper
@@ -56,26 +61,40 @@ func (cpu *BaseContentProcessor) ProcessContent(content Content, rMsg ReliableMe
 	})
 }
 
-//
-//  Convenient responding
-//
+// -------------------------------------------------------------------------
+//  Response Utility Methods (Protected - for internal/extension use)
+// -------------------------------------------------------------------------
 
-// protected
+// RespondReceipt is a protected utility method to generate standardized receipt responses
+//
+// Creates a ReceiptCommand with the specified text, context, and template parameters
+// Used by base and specialized processors to generate consistent response formatting
+//
+// Parameters:
+//   - text  - Human-readable response text (fallback if template is used)
+//   - head  - Original message envelope (for response routing/context)
+//   - body  - Original content being processed (for correlation)
+//   - extra - Template parameters and additional metadata (supports ${var} replacement)
+//
+// Returns: Slice containing a single ReceiptCommand response
 func (cpu *BaseContentProcessor) RespondReceipt(text string, head Envelope, body Content, extra StringKeyMap) []Content {
 	// create base receipt command with text & original envelope
 	res := createReceipt(text, head, body, extra)
 	return []Content{res}
 }
 
-/**
- *  Create receipt command with text, original envelope, serial number &amp; group
- *
- * @param text     - text message
- * @param head     - original envelope
- * @param body     - original content
- * @param extra    - extra info
- * @return receipt command
- */
+// createReceipt is a helper function to build a complete ReceiptCommand with context
+//
+// Populates receipt with original message context (group ID, envelope) and extra metadata
+// Automatically adds group ID from content if present and merges extra key-value pairs
+//
+// Parameters:
+//   - text  - Base text message for the receipt
+//   - head  - Original message envelope (for sender/receiver/timestamp context)
+//   - body  - Original content (used to extract group ID if present)
+//   - extra - Additional key-value metadata (template params, custom fields)
+//
+// Returns: Fully populated ReceiptCommand with context and metadata
 func createReceipt(text string, head Envelope, body Content, extra StringKeyMap) ReceiptCommand {
 	// create base receipt command with text, original envelope, serial number & group ID
 	res := NewReceiptCommand(text, head, body)
@@ -98,6 +117,11 @@ func createReceipt(text string, head Envelope, body Content, extra StringKeyMap)
 /**
  *  CPU - Command Processing Unit
  */
+
+// BaseCommandProcessor is the base implementation for command-specific ContentProcessors
+//
+// Extends BaseContentProcessor with command-specific default behavior
+// Handles type checking for Command content and provides "command not supported" fallback
 type BaseCommandProcessor struct {
 	*BaseContentProcessor
 }

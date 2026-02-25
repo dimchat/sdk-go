@@ -40,8 +40,8 @@ import (
 
 /**
  *  CPU for MetaCommand
- *  ~~~~~~~~~~~~~~~~~~~
  */
+
 type MetaCommandProcessor struct {
 	*BaseCommandProcessor
 }

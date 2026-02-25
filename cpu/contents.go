@@ -38,8 +38,8 @@ import (
 
 /**
  *  CPU for ForwardContent
- *  ~~~~~~~~~~~~~~~~~~~~~~
  */
+
 type ForwardContentProcessor struct {
 	*BaseContentProcessor
 }
@@ -77,8 +77,8 @@ func (cpu *ForwardContentProcessor) ProcessContent(content Content, _ ReliableMe
 
 /**
  *  CPU for ArrayContent
- *  ~~~~~~~~~~~~~~~~~~~~
  */
+
 type ArrayContentProcessor struct {
 	*BaseContentProcessor
 }
