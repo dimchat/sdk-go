@@ -55,9 +55,6 @@ func NewBaseContentProcessorCreator(facebook Facebook, messenger Messenger) *Bas
 // Override
 func (creator *BaseContentProcessorCreator) CreateContentProcessor(msgType MessageType) ContentProcessor {
 	switch msgType {
-	// application customized
-	case ContentType.APPLICATION, ContentType.CUSTOMIZED:
-		return NewCustomizedContentProcessor(creator.Facebook, creator.Messenger)
 	// forward content
 	case ContentType.FORWARD:
 		return NewForwardContentProcessor(creator.Facebook, creator.Messenger)
@@ -131,12 +128,6 @@ func NewMetaCommandProcessor(facebook Facebook, messenger Messenger) *MetaComman
 func NewDocumentCommandProcessor(facebook Facebook, messenger Messenger) *DocumentCommandProcessor {
 	return &DocumentCommandProcessor{
 		MetaCommandProcessor: NewMetaCommandProcessor(facebook, messenger),
-	}
-}
-
-func NewCustomizedContentProcessor(facebook Facebook, messenger Messenger) *CustomizedContentProcessor {
-	return &CustomizedContentProcessor{
-		BaseContentProcessor: NewBaseContentProcessor(facebook, messenger),
 	}
 }
 

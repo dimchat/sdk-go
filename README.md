@@ -194,7 +194,7 @@ type ClientContentProcessorCreator struct {
 func (creator *ClientContentProcessorCreator) CreateContentProcessor(msgType MessageType) ContentProcessor {
 	switch msgType {
 	// application customized
-	case "application", "customized":
+	case ContentType.APPLICATION, ContentType.CUSTOMIZED:
 		return NewCustomizedContentProcessor(creator.Facebook, creator.Messenger)
 	
 	// ...
