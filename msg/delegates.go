@@ -102,8 +102,8 @@ type InstantMessageDelegate interface {
 	// Parameters:
 	//   - data - Encrypted content bytes (from EncryptContent)
 	//   - iMsg - Source InstantMessage context
-	// Returns: Base64-encoded string (interface{} for format flexibility)
-	//EncodeData(data []byte, iMsg InstantMessage) interface{}
+	// Returns: Base64-encoded string (any type for format flexibility)
+	//EncodeData(data []byte, iMsg InstantMessage) any
 
 	// -------------------------------------------------------------------------
 	//  Key Encryption (Steps 4-6)
@@ -225,7 +225,7 @@ type SecureMessageDelegate interface {
 	//   - data - Base64-encoded encrypted content string
 	//   - sMsg - Source SecureMessage context
 	// Returns: Binary encrypted content bytes (nil if decoding fails)
-	//DecodeData(data interface{}, sMsg SecureMessage) []byte
+	//DecodeData(data any, sMsg SecureMessage) []byte
 
 	// DecryptContent decrypts encrypted content data with symmetric key
 	//
@@ -284,8 +284,8 @@ type SecureMessageDelegate interface {
 	// Parameters:
 	//   - signature - Digital signature bytes (from SignData)
 	//   - sMsg      - Source SecureMessage context
-	// Returns: Base64-encoded signature string (interface{} for format flexibility)
-	//EncodeSignature(signature []byte, sMsg SecureMessage) interface{}
+	// Returns: Base64-encoded signature string (any type for format flexibility)
+	//EncodeSignature(signature []byte, sMsg SecureMessage) any
 }
 
 // ReliableMessageDelegate defines the interface for verifying ReliableMessages to SecureMessages
@@ -328,7 +328,7 @@ type ReliableMessageDelegate interface {
 	//   - signature - Base64-encoded signature string
 	//   - rMsg      - Source ReliableMessage context
 	// Returns: Binary signature bytes (nil if decoding fails)
-	//DecodeSignature(signature interface{}, rMsg ReliableMessage) []byte
+	//DecodeSignature(signature any, rMsg ReliableMessage) []byte
 
 	// VerifyDataSignature validates the authenticity of encrypted content data
 	//

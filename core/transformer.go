@@ -128,7 +128,7 @@ func (transformer *MessageTransformer) EncryptContent(data []byte, password Symm
 
 /*/
 // Override
-func (transformer *MessageTransformer) EncodeData(data []byte, iMsg InstantMessage) interface{} {
+func (transformer *MessageTransformer) EncodeData(data []byte, iMsg InstantMessage) any {
 	if IsBroadcastMessage(iMsg) {
 		// broadcast message content will not be encrypted (just encoded to JSON),
 		// so no need to encode to Base64 here
@@ -234,7 +234,7 @@ func (transformer *MessageTransformer) DeserializeKey(key []byte, _ SecureMessag
 
 /*/
 // Override
-func (transformer *MessageTransformer) DecodeData(data interface{}, sMsg SecureMessage) []byte {
+func (transformer *MessageTransformer) DecodeData(data any, sMsg SecureMessage) []byte {
 	if IsBroadcastMessage(sMsg) {
 		// broadcast message content will not be encrypted (just encoded to JSON),
 		// so return the string data directly
@@ -281,7 +281,7 @@ func (transformer *MessageTransformer) SignData(data []byte, sMsg SecureMessage)
 
 /*/
 // Override
-func (transformer *MessageTransformer) EncodeSignature(signature []byte, _ SecureMessage) interface{} {
+func (transformer *MessageTransformer) EncodeSignature(signature []byte, _ SecureMessage) any {
 	ted := NewBase64DataWithBytes(signature)
 	return ted.Serialize()
 }
@@ -291,7 +291,7 @@ func (transformer *MessageTransformer) EncodeSignature(signature []byte, _ Secur
 
 /*/
 // Override
-func (transformer *MessageTransformer) DecodeSignature(signature interface{}, _ ReliableMessage) []byte {
+func (transformer *MessageTransformer) DecodeSignature(signature any, _ ReliableMessage) []byte {
 	ted := ParseTransportableData(signature)
 	return ted.Bytes()
 }

@@ -104,7 +104,7 @@ func NewBaseEntity(did ID) *BaseEntity {
 }
 
 // Override
-func (entity *BaseEntity) Equal(other interface{}) bool {
+func (entity *BaseEntity) Equal(other any) bool {
 	e, ok := other.(Entity)
 	if ok {
 		// compare pointers

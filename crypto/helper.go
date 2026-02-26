@@ -104,7 +104,7 @@ func (DefaultBundleHelper) DecodeBundle(encodedKeys StringKeyMap, did ID, termin
 	//
 	identifier := IDConcat(did.Name(), did.Address(), "")
 	var target string
-	var base64 interface{}
+	var base64 any
 	var ted TransportableData
 	var data []byte
 	for _, item := range terminals {
